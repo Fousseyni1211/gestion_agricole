@@ -1,0 +1,249 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Ajouter une Dépense{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-plus-circle"></i>
+                        Ajouter une Dépense
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'tableau_bord_financier' %}">Finances</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'liste_depenses' %}">Dépenses</a></li>
+                        <li class="breadcrumb-item active">Ajouter</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-edit"></i>
+                                Informations de la Dépense
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.titre.label_tag }}
+                                            {{ form.titre }}
+                                            {% if form.titre.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.titre.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.categorie.label_tag }}
+                                            {{ form.categorie }}
+                                            {% if form.categorie.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.categorie.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.montant.label_tag }}
+                                            {{ form.montant }}
+                                            {% if form.montant.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.montant.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.date_depense.label_tag }}
+                                            {{ form.date_depense }}
+                                            {% if form.date_depense.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.date_depense.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.fournisseur.label_tag }}
+                                            {{ form.fournisseur }}
+                                            {% if form.fournisseur.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.fournisseur.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.numero_facture.label_tag }}
+                                            {{ form.numero_facture }}
+                                            {% if form.numero_facture.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.numero_facture.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    {{ form.description.label_tag }}
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <div class="text-danger">
+                                            {{ form.description.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.piece_jointe.label_tag }}
+                                            {{ form.piece_jointe }}
+                                            {% if form.piece_jointe.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.piece_jointe.errors }}
+                                                </div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">
+                                                Optionnel : Téléchargez une facture ou un justificatif
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.statut.label_tag }}
+                                            {{ form.statut }}
+                                            {% if form.statut.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.statut.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Enregistrer la dépense
+                                    </button>
+                                    <a href="{% url 'liste_depenses' %}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Annuler
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i>
+                                Aide
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <h6>Types de dépenses courants</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-seedling text-success"></i> Intrants (semences, engrais)</li>
+                                <li><i class="fas fa-users text-primary"></i> Main d'œuvre</li>
+                                <li><i class="fas fa-gas-pump text-warning"></i> Carburant</li>
+                                <li><i class="fas fa-tools text-info"></i> Entretien matériel</li>
+                                <li><i class="fas fa-truck text-secondary"></i> Transport</li>
+                                <li><i class="fas fa-file-invoice text-danger"></i> Services externes</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Conseils</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Soyez précis dans la description</li>
+                                <li><i class="fas fa-check text-success"></i> Conservez les factures et justificatifs</li>
+                                <li><i class="fas fa-check text-success"></i> Catégorisez correctement vos dépenses</li>
+                                <li><i class="fas fa-check text-success"></i> Enregistrez les dépenses régulièrement</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-pie"></i>
+                                Répartition du mois
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="depenseChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Graphique des dépenses par catégorie (placeholder)
+    const ctx = document.getElementById('depenseChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Intrants', 'Main d\'œuvre', 'Carburant', 'Autres'],
+            datasets: [{
+                data: [30, 25, 20, 25],
+                backgroundColor: [
+                    '#28a745',
+                    '#007bff',
+                    '#ffc107',
+                    '#6c757d'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,211 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Liste des Factures{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-file-invoice"></i>
+                        Liste des Factures
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'tableau_bord_financier' %}">Finances</a></li>
+                        <li class="breadcrumb-item active">Factures</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Filtres -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-filter"></i>
+                        Filtres
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row">
+                        <div class="col-md-3">
+                            {{ search_form.client.label_tag }}
+                            {{ search_form.client }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ search_form.date_debut.label_tag }}
+                            {{ search_form.date_debut }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ search_form.date_fin.label_tag }}
+                            {{ search_form.date_fin }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ search_form.statut.label_tag }}
+                            {{ search_form.statut }}
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label><br>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Filtrer
+                            </button>
+                            <a href="{% url 'liste_factures' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Réinitialiser
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tableau des factures -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-list"></i>
+                        Factures 
+                        {% if page_obj %}
+                            ({{ page_obj.paginator.count }} résultats)
+                        {% endif %}
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'ajouter_facture' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Ajouter une facture
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if page_obj %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>N° Facture</th>
+                                        <th>Client</th>
+                                        <th>Date émission</th>
+                                        <th>Échéance</th>
+                                        <th>Montant total</th>
+                                        <th>Montant réglé</th>
+                                        <th>Restant</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for facture in page_obj %}
+                                    <tr>
+                                        <td><strong>{{ facture.numero_facture }}</strong></td>
+                                        <td>{{ facture.client }}</td>
+                                        <td>{{ facture.date_emission|date:"d/m/Y" }}</td>
+                                        <td>{{ facture.date_echeance|date:"d/m/Y" }}</td>
+                                        <td class="text-end">{{ facture.montant_total|floatformat:0 }} FCFA</td>
+                                        <td class="text-end">{{ facture.montant_regle|floatformat:0 }} FCFA</td>
+                                        <td class="text-end">
+                                            {% if facture.montant_restant > 0 %}
+                                                <span class="text-danger">{{ facture.montant_restant|floatformat:0 }} FCFA</span>
+                                            {% else %}
+                                                <span class="text-success">0 FCFA</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if facture.statut == 'payee' %}
+                                                <span class="badge bg-success">Payée</span>
+                                            {% elif facture.statut == 'partiellement_payee' %}
+                                                <span class="badge bg-warning">Partiellement payée</span>
+                                            {% elif facture.statut == 'en_retard' %}
+                                                <span class="badge bg-danger">En retard</span>
+                                            {% elif facture.statut == 'annulee' %}
+                                                <span class="badge bg-secondary">Annulée</span>
+                                            {% else %}
+                                                <span class="badge bg-info">En attente</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{% url 'detail_facture' facture.pk %}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'ajouter_paiement_client' facture.pk %}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-plus"></i> Payer
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if page_obj.has_other_pages %}
+                            <div class="row">
+                                <div class="col-sm-12 col-md-7">
+                                    <div class="dataTables_paginate paging_simple_numbers">
+                                        <ul class="pagination">
+                                            {% if page_obj.has_previous %}
+                                                <li class="paginate_button page-item previous">
+                                                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="page-link">Précédent</a>
+                                                </li>
+                                            {% endif %}
+                                            
+                                            {% for num in page_obj.paginator.page_range %}
+                                                {% if page_obj.number == num %}
+                                                    <li class="paginate_button page-item active">
+                                                        <span class="page-link">{{ num }}</span>
+                                                    </li>
+                                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                                    <li class="paginate_button page-item">
+                                                        <a href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="page-link">{{ num }}</a>
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                            
+                                            {% if page_obj.has_next %}
+                                                <li class="paginate_button page-item next">
+                                                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="page-link">Suivant</a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-md-5">
+                                    <div class="dataTables_info">
+                                        Affichage de {{ page_obj.start_index }} à {{ page_obj.end_index }} de {{ page_obj.paginator.count }} entrées
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Total -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <strong>Total des factures filtrées:</strong> 
+                                    <span class="float-right">{{ total_factures|floatformat:0 }} FCFA</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center">
+                            <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                            <h4>Aucune facture trouvée</h4>
+                            <p class="text-muted">Commencez par créer votre première facture.</p>
+                            <a href="{% url 'ajouter_facture' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Ajouter une facture
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

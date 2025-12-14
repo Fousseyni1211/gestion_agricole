@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Mes alertes</h2>
+<ul>
+  {% for alerte in alertes %}
+    <li>{{ alerte.date }} - {{ alerte.message }}</li>
+  {% empty %}
+    <li>Aucune alerte pour le moment.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

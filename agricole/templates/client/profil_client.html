@@ -1,0 +1,161 @@
+{% extends 'client/base.html' %}
+{% load static %}
+
+{% block title %}Mon Profil{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card bg-dark text-white shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <div class="avatar-circle mx-auto mb-3">
+                            <span class="initials">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</span>
+                        </div>
+                        <h4>{{ user.first_name }} {{ user.last_name }}</h4>
+                        <p class="text-muted">Client depuis {{ user.date_joined|date:"F Y" }}</p>
+                    </div>
+                    <div class="d-grid">
+                        <button class="btn btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#editProfileForm">
+                            <i class="bi bi-pencil-square"></i> Modifier mon profil
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card bg-dark text-white shadow-sm mt-4">
+                <div class="card-header bg-dark">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Statistiques</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush bg-dark">
+                        <li class="list-group-item bg-dark d-flex justify-content-between align-items-center">
+                            <span>Commandes</span>
+                            <span class="badge bg-primary rounded-pill">{{ nb_commandes|default:"0" }}</span>
+                        </li>
+                        <li class="list-group-item bg-dark d-flex justify-content-between align-items-center">
+                            <span>Réservations</span>
+                            <span class="badge bg-warning rounded-pill">{{ nb_reservations|default:"0" }}</span>
+                        </li>
+                        <li class="list-group-item bg-dark d-flex justify-content-between align-items-center">
+                            <span>Total payé</span>
+                            <span class="badge bg-success rounded-pill">{{ total_paiements|default:"0" }} FCFA</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <div class="card bg-dark text-white shadow-sm mb-4">
+                <div class="card-header bg-dark">
+                    <h5 class="mb-0"><i class="bi bi-person-vcard"></i> Informations personnelles</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0 text-muted">Nom complet</h6>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ user.first_name }} {{ user.last_name }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0 text-muted">Email</h6>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ user.email }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0 text-muted">Téléphone</h6>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ user.phone|default:"Non renseigné" }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0 text-muted">Adresse</h6>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ user.address|default:"Non renseignée" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="collapse" id="editProfileForm">
+                <div class="card bg-dark text-white shadow-sm">
+                    <div class="card-header bg-dark">
+                        <h5 class="mb-0"><i class="bi bi-pencil"></i> Modifier mon profil</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'profil_client' %}">
+                            {% csrf_token %}
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="first_name" class="form-label">Prénom</label>
+                                    <input type="text" class="form-control bg-dark text-white" id="first_name" name="first_name" value="{{ user.first_name }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="last_name" class="form-label">Nom</label>
+                                    <input type="text" class="form-control bg-dark text-white" id="last_name" name="last_name" value="{{ user.last_name }}">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control bg-dark text-white" id="email" name="email" value="{{ user.email }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control bg-dark text-white" id="phone" name="phone" value="{{ user.phone }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Adresse</label>
+                                <textarea class="form-control bg-dark text-white" id="address" name="address" rows="3">{{ user.address }}</textarea>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Enregistrer les modifications
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#editProfileForm">
+                                    Annuler
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: #0d6efd;
+        text-align: center;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .initials {
+        font-size: 40px;
+        line-height: 1;
+        color: #fff;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

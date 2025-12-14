@@ -1,0 +1,38 @@
+{% extends 'admin/base_template.html' %}
+
+{% block main_content %}
+<div class="container py-4">
+    <h2 class="text-primary">Détail du Paiement #{{ paiement.id }}</h2>
+    <hr>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    Informations sur le Paiement
+                </div>
+                <div class="card-body">
+                    <p><strong>Montant :</strong> {{ paiement.amount|floatformat:2 }} FCFA</p>
+                    <p><strong>Méthode :</strong> {{ paiement.get_payment_method_display }}</p>
+                    <p><strong>Statut :</strong> {{ paiement.get_payment_status_display }}</p>
+                    <p><strong>Date :</strong> {{ paiement.payment_date|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    Informations sur la Commande
+                </div>
+                <div class="card-body">
+                    <p><strong>Commande :</strong> <a href="{% url 'detail_commande' paiement.commande.id %}">#{{ paiement.commande.id }}</a></p>
+                    <p><strong>Client :</strong> {{ paiement.commande.client.get_full_name|default:paiement.commande.client.username }}</p>
+                    <p><strong>Email :</strong> <a href="mailto:{{ paiement.commande.client.email }}">{{ paiement.commande.client.email }}</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="{% url 'liste_paiements_client' %}" class="btn btn-secondary mt-3">Retour à la liste</a>
+</div>
+{% endblock %}

@@ -1,0 +1,178 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Gestion des Itinéraires Techniques{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-route"></i> Gestion des Itinéraires Techniques
+        </h1>
+        <a href="{% url 'ajouter_itineraire_technique' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Ajouter un Itinéraire
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des Itinéraires Techniques</h6>
+        </div>
+        <div class="card-body">
+            {% if itineraires %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Culture</th>
+                                <th>Durée</th>
+                                <th>Coût estimé</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for itineraire in itineraires %}
+                            <tr>
+                                <td>
+                                    <strong>{{ itineraire.nom }}</strong>
+                                    {% if itineraire.description %}
+                                        <br><small class="text-muted">{{ itineraire.description|truncatechars:50 }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if itineraire.culture %}
+                                        <span class="badge badge-info">{{ itineraire.culture.nom }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Non spécifiée</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ itineraire.duree_estimee|default:"N/A" }} jours</td>
+                                <td>
+                                    {% if itineraire.cout_estime %}
+                                        {{ itineraire.cout_estime|floatformat:0 }} FCFA
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if itineraire.statut == 'en_cours' %}
+                                        <span class="badge badge-primary">En cours</span>
+                                    {% elif itineraire.statut == 'termine' %}
+                                        <span class="badge badge-success">Terminé</span>
+                                    {% elif itineraire.statut == 'en_attente' %}
+                                        <span class="badge badge-warning">En attente</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">{{ itineraire.statut }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'modifier_itineraire_technique' itineraire.id %}" class="btn btn-sm btn-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info" title="Voir détails" 
+                                                onclick="showItineraireDetails({{ itineraire.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-route fa-3x text-gray-300 mb-3"></i>
+                    <h5 class="text-gray-500">Aucun itinéraire technique enregistré</h5>
+                    <p class="text-gray-400">Commencez par ajouter votre premier itinéraire technique.</p>
+                    <a href="{% url 'ajouter_itineraire_technique' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter un Itinéraire
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal détails itinéraire -->
+<div class="modal fade" id="itineraireModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails de l'Itinéraire Technique</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="itineraireDetails">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function showItineraireDetails(itineraireId) {
+    // Charger les détails de l'itinéraire
+    fetch(`/api/itineraire-details/${itineraireId}/`)
+        .then(response => response.json())
+        .then(data => {
+            const detailsHtml = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Informations générales</h6>
+                        <p><strong>Nom:</strong> ${data.nom}</p>
+                        <p><strong>Culture:</strong> ${data.culture || 'Non spécifiée'}</p>
+                        <p><strong>Durée estimée:</strong> ${data.duree_estimee || 'N/A'} jours</p>
+                        <p><strong>Coût estimé:</strong> ${data.cout_estime || 'N/A'} FCFA</p>
+                        <p><strong>Statut:</strong> ${data.statut}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Description</h6>
+                        <p>${data.description || 'Aucune description'}</p>
+                    </div>
+                </div>
+                ${data.activites ? `
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Activités associées</h6>
+                            <ul class="list-group">
+                                ${data.activites.map(activite => `
+                                    <li class="list-group-item">
+                                        <strong>${activite.nom}</strong> - ${activite.date} - ${activite.statut}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+            document.getElementById('itineraireDetails').innerHTML = detailsHtml;
+            $('#itineraireModal').modal('show');
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors du chargement des détails');
+        });
+}
+</script>
+{% endblock %}
+{% endblock %}

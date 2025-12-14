@@ -1,0 +1,306 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+
+{% block custom_css %}
+<style>
+:root {
+  --primary-green: #10b981;
+  --primary-dark: #059669;
+  --secondary-green: #34d399;
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  --text-dark: #1f2937;
+  --text-light: #6b7280;
+  --text-white: #ffffff;
+  --bg-light: #f9fafb;
+  --bg-white: #ffffff;
+  --border-color: #e5e7eb;
+}
+
+.notifications-dashboard {
+  background: var(--bg-light);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.dashboard-header {
+  background: var(--bg-white);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-color);
+}
+
+/* ... (autres styles CSS) ... */
+
+</style>
+{% endblock %}
+
+{% block main_content %}
+<div class="notifications-dashboard">
+  <div class="container">
+    <!-- En-tête du tableau de bord -->
+    <div class="dashboard-header">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="header-title">Notifications</h1>
+          <p class="header-description">Consultez toutes vos notifications en un seul endroit</p>
+        </div>
+        <div class="d-flex gap-2">
+          <button id="mark-all-read" class="btn btn-mark-all">
+            <i class="fas fa-check-double me-2"></i>
+            Tout marquer comme lu
+          </button>
+          <button id="delete-all-notifications" class="btn btn-delete-all">
+            <i class="fas fa-trash me-2"></i>
+            Tout supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des notifications -->
+    <div class="notifications-list">
+      {% if notifications %}
+        {% for notification in notifications %}
+          <div class="notification-card {% if not notification.is_read %}unread{% endif %}" 
+               data-notification-id="{{ notification.id }}">
+            <div class="d-flex align-items-start">
+              <div class="notification-icon">
+                <i class="fas {% if notification.type == 'success' %}fa-check-circle{% elif notification.type == 'warning' %}fa-exclamation-triangle{% elif notification.type == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+              </div>
+              <div class="notification-content">
+                <div class="notification-message">
+                  {{ notification.message|safe }}
+                </div>
+                <div class="notification-meta">
+                  <span class="notification-time">
+                    <i class="far fa-clock me-1"></i>
+                    {{ notification.created_at|timesince }} ago
+                  </span>
+                  <span class="notification-type type-{{ notification.type }}">
+                    {{ notification.get_type_display }}
+                  </span>
+                </div>
+              </div>
+              <div class="ms-3">
+                {% if not notification.is_read %}
+                  <button class="btn btn-sm btn-outline-primary mark-as-read" 
+                          data-id="{{ notification.id }}" 
+                          title="Marquer comme lue">
+                    <i class="far fa-check-circle"></i>
+                  </button>
+                {% endif %}
+                <button class="btn btn-sm btn-outline-danger delete-notification" 
+                        data-id="{{ notification.id }}" 
+                        title="Supprimer">
+                  <i class="far fa-trash-alt"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">
+            <i class="far fa-bell-slash"></i>
+          </div>
+          <h3 class="empty-title">Aucune notification</h3>
+          <p class="empty-description">Vous n'avez pas encore de notifications.</p>
+        </div>
+      {% endif %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+      <div class="mt-4">
+        <nav aria-label="Pagination">
+          <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+  $(document).ready(function() {
+    // Marquer une notification comme lue
+    $('.mark-as-read').click(function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const notificationId = $(this).data('id');
+      const $card = $(this).closest('.notification-card');
+      
+      if ($card.hasClass('unread')) {
+        $.ajax({
+          url: `/notifications/mark-as-read/${notificationId}/`,
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          success: function(response) {
+            if (response.status === 'success') {
+              $card.removeClass('unread');
+              updateUnreadCount(-1);
+            }
+          }
+        });
+      }
+    });
+    
+    // Supprimer une notification
+    $('.delete-notification').click(function(e) {
+      e.stopPropagation();
+      
+      if (confirm('Êtes-vous sûr de vouloir supprimer cette notification ?')) {
+        const notificationId = $(this).data('id');
+        const $card = $(this).closest('.notification-card');
+        const wasUnread = $card.hasClass('unread');
+        
+        $.ajax({
+          url: `/notifications/delete/${notificationId}/`,
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          success: function(response) {
+            if (response.status === 'success') {
+              $card.fadeOut(300, function() {
+                $(this).remove();
+                
+                // Si c'était la dernière notification, afficher l'état vide
+                if ($('.notification-card').length === 0) {
+                  $('.notifications-list').html(`
+                    <div class="empty-state">
+                      <div class="empty-icon">
+                        <i class="far fa-bell-slash"></i>
+                      </div>
+                      <h3 class="empty-title">Aucune notification</h3>
+                      <p class="empty-description">Vous n'avez pas encore de notifications.</p>
+                    </div>
+                  `);
+                }
+                
+                if (wasUnread) {
+                  updateUnreadCount(-1);
+                }
+              });
+            }
+          }
+        });
+      }
+    });
+    
+    // Marquer toutes les notifications comme lues
+    $('#mark-all-read').click(function(e) {
+      e.preventDefault();
+      
+      $.ajax({
+        url: '/notifications/mark-all-read/',
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        success: function(response) {
+          if (response.status === 'success') {
+            $('.notification-card').removeClass('unread');
+            updateUnreadCount(-$('.notification-card.unread').length);
+            showToast('Toutes les notifications ont été marquées comme lues', 'success');
+          }
+        }
+      });
+    });
+    
+    // Supprimer toutes les notifications
+    $('#delete-all-notifications').click(function(e) {
+      e.preventDefault();
+      
+      if (confirm('Êtes-vous sûr de vouloir supprimer toutes les notifications ? Cette action est irréversible.')) {
+        $.ajax({
+          url: '/notifications/delete-all/',
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          success: function(response) {
+            if (response.status === 'success') {
+              $('.notification-card').fadeOut(300, function() {
+                $(this).remove();
+                $('.notifications-list').html(`
+                  <div class="empty-state">
+                    <div class="empty-icon">
+                      <i class="far fa-bell-slash"></i>
+                    </div>
+                    <h3 class="empty-title">Aucune notification</h3>
+                    <p class="empty-description">Vous n'avez pas encore de notifications.</p>
+                  </div>
+                `);
+              });
+              updateUnreadCount(-$('.notification-card.unread').length);
+              showToast('Toutes les notifications ont été supprimées', 'success');
+            }
+          }
+        });
+      }
+    });
+    
+    // Mettre à jour le compteur de notifications non lues
+    function updateUnreadCount(change) {
+      const $badge = $('.notification-badge');
+      let count = parseInt($badge.text()) || 0;
+      count += change;
+      
+      if (count > 0) {
+        $badge.text(count).show();
+      } else {
+        $badge.hide();
+      }
+    }
+    
+    // Afficher une notification toast
+    function showToast(message, type = 'info') {
+      // Implémentez votre propre système de notifications toast ici
+      // Par exemple avec Toastr.js ou un équivalent
+      console.log(`${type.toUpperCase()}: ${message}`);
+    }
+  });
+</script>
+{% endblock %}

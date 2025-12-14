@@ -1,0 +1,248 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Ajouter un Revenu{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-plus-circle"></i>
+                        Ajouter un Revenu
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'tableau_bord_financier' %}">Finances</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'liste_revenus' %}">Revenus</a></li>
+                        <li class="breadcrumb-item active">Ajouter</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-edit"></i>
+                                Informations du Revenu
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.titre.label_tag }}
+                                            {{ form.titre }}
+                                            {% if form.titre.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.titre.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.categorie.label_tag }}
+                                            {{ form.categorie }}
+                                            {% if form.categorie.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.categorie.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.montant.label_tag }}
+                                            {{ form.montant }}
+                                            {% if form.montant.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.montant.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.date_revenu.label_tag }}
+                                            {{ form.date_revenu }}
+                                            {% if form.date_revenu.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.date_revenu.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.client.label_tag }}
+                                            {{ form.client }}
+                                            {% if form.client.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.client.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.reference.label_tag }}
+                                            {{ form.reference }}
+                                            {% if form.reference.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.reference.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    {{ form.description.label_tag }}
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <div class="text-danger">
+                                            {{ form.description.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.piece_jointe.label_tag }}
+                                            {{ form.piece_jointe }}
+                                            {% if form.piece_jointe.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.piece_jointe.errors }}
+                                                </div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">
+                                                Optionnel : Téléchargez un contrat ou une facture
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.statut.label_tag }}
+                                            {{ form.statut }}
+                                            {% if form.statut.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.statut.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save"></i> Enregistrer le revenu
+                                    </button>
+                                    <a href="{% url 'liste_revenus' %}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Annuler
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i>
+                                Aide
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <h6>Types de revenus courants</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-shopping-cart text-success"></i> Vente de produits</li>
+                                <li><i class="fas fa-tractor text-primary"></i> Location de matériel</li>
+                                <li><i class="fas fa-handshake text-warning"></i> Services agricoles</li>
+                                <li><i class="fas fa-certificate text-info"></i> Subventions</li>
+                                <li><i class="fas fa-piggy-bank text-secondary"></i> Autres revenus</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Conseils</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Précisez le client/la source</li>
+                                <li><i class="fas fa-check text-success"></i> Conservez les contrats et factures</li>
+                                <li><i class="fas fa-check text-success"></i> Catégorisez correctement vos revenus</li>
+                                <li><i class="fas fa-check text-success"></i> Enregistrez les revenus rapidement</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-pie"></i>
+                                Répartition du mois
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="revenuChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Graphique des revenus par catégorie (placeholder)
+    const ctx = document.getElementById('revenuChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Ventes', 'Location matériel', 'Services', 'Autres'],
+            datasets: [{
+                data: [45, 20, 25, 10],
+                backgroundColor: [
+                    '#28a745',
+                    '#007bff',
+                    '#ffc107',
+                    '#6c757d'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

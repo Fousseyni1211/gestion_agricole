@@ -1,0 +1,258 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Gestion des Réservations de Matériel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-calendar-check"></i> Gestion des Réservations de Matériel
+                    </h3>
+                    <div class="card-tools">
+                        <div class="btn-group">
+                            <a href="{% url 'gerant_planning_locations' %}" class="btn btn-info btn-sm">
+                                <i class="fas fa-calendar"></i> Planning
+                            </a>
+                            <a href="{% url 'gerant_statistiques_locations' %}" class="btn btn-success btn-sm">
+                                <i class="fas fa-chart-bar"></i> Statistiques
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Statistiques -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3>{{ total_reservations }}</h3>
+                                    <p>Total réservations</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-list"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3>{{ reservations_en_attente }}</h3>
+                                    <p>En attente</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3>{{ reservations_validees }}</h3>
+                                    <p>Validées</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="small-box bg-primary">
+                                <div class="inner">
+                                    <h3>{{ reservations_en_cours }}</h3>
+                                    <p>En cours</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filtres -->
+                    <form method="GET" class="row mb-3">
+                        <div class="col-md-4">
+                            <select name="statut" class="form-control">
+                                <option value="">Tous les statuts</option>
+                                {% for value, label in statuts %}
+                                    <option value="{{ value }}" {% if request.GET.statut == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select name="materiel" class="form-control">
+                                <option value="">Tous les matériels</option>
+                                {% for materiel in materiels %}
+                                    <option value="{{ materiel.id }}" {% if request.GET.materiel == materiel.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ materiel.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter"></i> Filtrer
+                            </button>
+                            <a href="{% url 'gerant_reservations_materiel' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Réinitialiser
+                            </a>
+                        </div>
+                    </form>
+
+                    <!-- Tableau des réservations -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Client</th>
+                                    <th>Matériel</th>
+                                    <th>Période</th>
+                                    <th>Prix total</th>
+                                    <th>Statut</th>
+                                    <th>Date réservation</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reservation in reservations %}
+                                <tr>
+                                    <td>{{ reservation.id }}</td>
+                                    <td>
+                                        {{ reservation.client.get_full_name|default:reservation.client.username }}
+                                        <br><small class="text-muted">{{ reservation.client.email }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ reservation.materiel.nom }}</strong>
+                                        <br><small class="text-muted">{{ reservation.materiel.get_categorie_display }}</small>
+                                    </td>
+                                    <td>
+                                        Du {{ reservation.date_debut|date:"d/m/Y" }}
+                                        <br>au {{ reservation.date_fin|date:"d/m/Y" }}
+                                        <br><small class="text-muted">{{ reservation.get_nombre_jours }} jour(s)</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ reservation.prix_total|floatformat:0 }} FCFA</strong>
+                                        <br><small class="text-muted">{{ reservation.prix_jour_applique|floatformat:0 }} FCFA/jour</small>
+                                    </td>
+                                    <td>
+                                        {% if reservation.statut == 'en_attente' %}
+                                            <span class="badge badge-warning">En attente</span>
+                                        {% elif reservation.statut == 'validee' %}
+                                            <span class="badge badge-success">Validée</span>
+                                        {% elif reservation.statut == 'en_cours' %}
+                                            <span class="badge badge-primary">En cours</span>
+                                        {% elif reservation.statut == 'terminee' %}
+                                            <span class="badge badge-info">Terminée</span>
+                                        {% elif reservation.statut == 'annulee' %}
+                                            <span class="badge badge-danger">Annulée</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ reservation.date_reservation|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            {% if reservation.statut == 'en_attente' %}
+                                                <a href="{% url 'gerant_valider_reservation_materiel' reservation.id %}" 
+                                                   class="btn btn-success btn-sm" title="Valider">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                <a href="{% url 'gerant_annuler_reservation_materiel' reservation.id %}" 
+                                                   class="btn btn-danger btn-sm" title="Annuler">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            {% endif %}
+                                            <button type="button" class="btn btn-info btn-sm" title="Voir détails" 
+                                                    onclick="showReservationDetails({{ reservation.id }})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">Aucune réservation trouvée</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal détails réservation -->
+<div class="modal fade" id="reservationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails de la réservation</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="reservationDetails">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function showReservationDetails(reservationId) {
+    // Charger les détails de la réservation
+    fetch(`/api/reservation-details/${reservationId}/`)
+        .then(response => response.json())
+        .then(data => {
+            const detailsHtml = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Informations client</h6>
+                        <p><strong>Nom:</strong> ${data.client_name}</p>
+                        <p><strong>Email:</strong> ${data.client_email}</p>
+                        <p><strong>Téléphone:</strong> ${data.client_phone || 'Non spécifié'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Informations matériel</h6>
+                        <p><strong>Nom:</strong> ${data.materiel_nom}</p>
+                        <p><strong>Catégorie:</strong> ${data.materiel_categorie}</p>
+                        <p><strong>Marque:</strong> ${data.materiel_marque || 'Non spécifiée'}</p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6>Période de location</h6>
+                        <p><strong>Date début:</strong> ${data.date_debut}</p>
+                        <p><strong>Date fin:</strong> ${data.date_fin}</p>
+                        <p><strong>Nombre de jours:</strong> ${data.nombre_jours}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Coût</h6>
+                        <p><strong>Prix par jour:</strong> ${data.prix_jour} FCFA</p>
+                        <p><strong>Prix total:</strong> ${data.prix_total} FCFA</p>
+                    </div>
+                </div>
+                ${data.commentaire ? `<div class="row mt-3"><div class="col-12"><h6>Commentaire</h6><p>${data.commentaire}</p></div></div>` : ''}
+                ${data.commentaire_annulation ? `<div class="row mt-3"><div class="col-12"><h6>Motif d'annulation</h6><p class="text-danger">${data.commentaire_annulation}</p></div></div>` : ''}
+            `;
+            document.getElementById('reservationDetails').innerHTML = detailsHtml;
+            $('#reservationModal').modal('show');
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors du chargement des détails');
+        });
+}
+</script>
+{% endblock %}
+{% endblock %}

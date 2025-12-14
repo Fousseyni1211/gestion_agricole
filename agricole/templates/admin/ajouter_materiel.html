@@ -1,0 +1,147 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Ajouter un Matériel Agricole{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-plus-circle"></i> Ajouter un Matériel Agricole
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'gerant_materiels_agricoles' %}" class="btn btn-default btn-sm">
+                            <i class="fas fa-arrow-left"></i> Retour
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nom">Nom du matériel <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="nom" name="nom" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="categorie">Catégorie <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="categorie" name="categorie" required>
+                                        <option value="">Sélectionner une catégorie</option>
+                                        {% for value, label in materiels.CATEGORIES %}
+                                            <option value="{{ value }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="marque">Marque</label>
+                                    <input type="text" class="form-control" id="marque" name="marque">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="modele">Modèle</label>
+                                    <input type="text" class="form-control" id="modele" name="modele">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="prix_location_jour">Prix de location par jour (FCFA) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="prix_location_jour" name="prix_location_jour" 
+                                           min="0" step="0.01" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="quantite_totale">Quantité totale <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="quantite_totale" name="quantite_totale" 
+                                           min="1" value="1" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="annee_fabrication">Année de fabrication</label>
+                                    <input type="number" class="form-control" id="annee_fabrication" name="annee_fabrication" 
+                                           min="1900" max="{{ current_year|default:2025 }}">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="numero_serie">Numéro de série</label>
+                                    <input type="text" class="form-control" id="numero_serie" name="numero_serie">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="photo">Photo</label>
+                                    <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                                    <small class="form-text text-muted">Formats acceptés: JPG, PNG, GIF</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="description">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="4"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Ajouter le matériel
+                                    </button>
+                                    <a href="{% url 'gerant_materiels_agricoles' %}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Annuler
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation du formulaire
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const prix = parseFloat(document.getElementById('prix_location_jour').value);
+        const quantite = parseInt(document.getElementById('quantite_totale').value);
+        
+        if (prix <= 0) {
+            e.preventDefault();
+            alert('Le prix de location doit être supérieur à 0.');
+            return;
+        }
+        
+        if (quantite < 1) {
+            e.preventDefault();
+            alert('La quantité doit être d\'au moins 1.');
+            return;
+        }
+    });
+    
+    // Prévisualisation de l'image
+    const photoInput = document.getElementById('photo');
+    photoInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Créer une prévisualisation si nécessaire
+                console.log('Image sélectionnée:', file.name);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

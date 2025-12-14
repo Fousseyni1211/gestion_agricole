@@ -1,0 +1,10 @@
+<!-- templates/emails/bienvenue.html -->
+<p>Bonjour {{ utilisateur.username }},</p>
+<p>Bienvenue sur notre plateforme ! Vous pouvez vous connecter en utilisant les identifiants suivants :</p>
+<ul>
+    <li><strong>Nom d'utilisateur :</strong> {{ utilisateur.username }}</li>
+    <li><strong>Mot de passe :</strong> {{ utilisateur.password }}</li>
+</ul>
+<p>Pour activer votre compte, veuillez cliquer sur le lien suivant :</p>
+<p><a href="http://{{ domain }}/activer/{{ uid }}/{{ token }}/">Activer mon compte</a></p>
+<p>Merci et à bientôt !</p>

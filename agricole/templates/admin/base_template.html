@@ -1,0 +1,282 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>FAMA | Gestion Agricole Moderne</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 & Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- AdminLTE & Plugins -->
+  <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
+  <link rel="stylesheet" href="{% static 'plugins/overlayScrollbars/css/OverlayScrollbars.min.css' %}">
+  <link rel="stylesheet" href="{% static 'plugins/daterangepicker/daterangepicker.css' %}">
+  <link rel="stylesheet" href="{% static 'plugins/summernote/summernote-bs4.css' %}">
+
+  <!-- Dark Mode & Custom Styles -->
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .switch {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    .dark-mode {
+      background-color: #121212 !important;
+      color: #5bf782ff !important;
+    }
+    .dark-mode .navbar,
+    .dark-mode .main-sidebar,
+    .dark-mode .content-wrapper,
+    .dark-mode .card {
+      background-color: #1f1f1f !important;
+      color: #79f1a1ff !important;
+    }
+    .dark-mode a {
+      color: #90caf9 !important;
+    }
+    .card {
+      border-radius: 1rem;
+      box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
+    }
+  </style>
+
+  {% block custom_css %}{% endblock %}
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+  <!-- Dark Mode Toggle -->
+  <label class="switch">
+    <input type="checkbox" id="toggle-dark">
+    <span class="slider round"></span>
+  </label>
+
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-light bg-white border-bottom">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+      </li>
+      
+    </ul>
+    <ul class="navbar-nav ml-auto">
+      <!-- Notifications Dropdown Menu -->
+      <li class="nav-item dropdown">
+        <a class="nav-link" data-toggle="dropdown" href="#">
+          <i class="far fa-bell"></i>
+          <span class="badge badge-warning navbar-badge" id="unread-count">0</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+          <span class="dropdown-header">Notifications non lues: <span id="dropdown-unread-count">0</span></span>
+          <div class="dropdown-divider"></div>
+          <div id="notification-list">
+            <!-- Les notifications seront chargées ici via AJAX -->
+            <div class="dropdown-item text-center py-3">
+              <i class="fas fa-spinner fa-spin"></i> Chargement...
+            </div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a href="{% url 'notification_list' %}" class="dropdown-item dropdown-footer">Voir toutes les notifications</a>
+        </div>
+      </li>
+      
+      <!-- User Menu -->
+      <li class="nav-item dropdown">
+        <a class="nav-link" data-toggle="dropdown" href="#">
+          <i class="fas fa-cog"></i>
+        </a>
+        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+          <a href="{% url 'notification_list' %}" class="dropdown-item">
+            <i class="far fa-bell mr-2"></i> Notifications
+            <span class="float-right text-muted text-sm" id="menu-unread-count">0 non lues</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="{% url 'gerant_profile' %}" class="dropdown-item">
+            <i class="fas fa-user mr-2"></i> Mon profil
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="{% url 'logout_user' %}" class="dropdown-item">
+            <i class="fas fa-power-off mr-2"></i> Déconnexion
+          </a>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Sidebar -->
+  {% include 'admin/sidebar_template.html' with user=user id=id %}
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper">
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0 text-dark">{% block page_title %}{% endblock %}</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              {% comment %} <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li> {% endcomment %}
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="content">
+      {% block main_content %}{% endblock %}
+    </section>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js' %}"></script>
+<script src="{% static 'dist/js/adminlte.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script>
+  document.getElementById('toggle-dark').addEventListener('change', function () {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark-mode', document.body.classList.contains('dark-mode'));
+  });
+
+  window.onload = () => {
+    if (localStorage.getItem('dark-mode') === 'true') {
+      document.body.classList.add('dark-mode');
+      document.getElementById('toggle-dark').checked = true;
+    }
+  };
+
+  // Empêcher l'accès aux pages admin après déconnexion via le bouton retour
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+      // Page chargée depuis le cache (bouton retour)
+      // Vérifier si l'utilisateur est toujours connecté
+      fetch('{% url "gerant_home" %}', {
+        method: 'HEAD',
+        credentials: 'same-origin'
+      }).then(response => {
+        if (response.status === 302 || response.status === 401 || response.status === 403) {
+          // Utilisateur non authentifié, rediriger vers login
+          window.location.replace('{% url "login" %}');
+        }
+      }).catch(() => {
+        // En cas d'erreur, rediriger vers login par sécurité
+        window.location.replace('{% url "login" %}');
+      });
+    }
+  });
+
+  // Empêcher la mise en cache des pages admin
+  if (window.history && window.history.pushState) {
+    window.history.pushState('forward', null, '');
+    window.addEventListener('popstate', function() {
+      window.history.pushState('forward', null, '');
+    });
+  }
+
+  // Gestion des notifications
+  function updateNotificationBadge(count) {
+    $('#unread-count, #dropdown-unread-count, #menu-unread-count').text(count);
+    if (count > 0) {
+      $('#unread-count').show();
+    } else {
+      $('#unread-count').hide();
+    }
+  }
+
+  function updateNotificationList(notifications) {
+    const notificationList = $('#notification-list');
+    
+    if (notifications.length === 0) {
+      notificationList.html(`
+        <div class="dropdown-item text-center py-3 text-muted">
+          <i class="far fa-bell-slash fa-2x mb-2"></i>
+          <p class="mb-0">Aucune notification</p>
+        </div>
+      `);
+      return;
+    }
+
+    let html = '';
+    notifications.forEach(notification => {
+      const icon = notification.icon || 'fas fa-bell';
+      const timeAgo = moment(notification.created_at).fromNow();
+      
+      html += `
+        <a href="${notification.url || '#'}" class="dropdown-item" data-notification-id="${notification.id}">
+          <div class="media">
+            <div class="media-left">
+              <i class="${icon} fa-2x text-${notification.type} mr-3"></i>
+            </div>
+            <div class="media-body">
+              <p class="text-sm mb-0">${notification.message}</p>
+              <p class="text-muted text-xs">
+                <i class="far fa-clock mr-1"></i> ${timeAgo}
+                ${notification.is_read ? '' : '<span class="badge badge-primary ml-2">Nouveau</span>'}
+              </p>
+            </div>
+          </div>
+        </a>
+        <div class="dropdown-divider"></div>
+      `;
+    });
+    
+    notificationList.html(html);
+  }
+
+  // Charger les notifications au chargement de la page
+  function loadNotifications() {
+    $.ajax({
+      url: '{% url "get_notifications" %}',
+      method: 'GET',
+      dataType: 'json',
+      success: function(response) {
+        updateNotificationBadge(response.unread_count);
+        updateNotificationList(response.notifications);
+      },
+      error: function(xhr, status, error) {
+        console.error('Erreur lors du chargement des notifications:', error);
+      }
+    });
+  }
+
+  // Rafraîchir les notifications toutes les 30 secondes
+  loadNotifications();
+  setInterval(loadNotifications, 30000);
+
+  // Marquer une notification comme lue lors du clic
+  $(document).on('click', '[data-notification-id]', function(e) {
+    const notificationId = $(this).data('notification-id');
+    const url = `/notifications/mark-as-read/${notificationId}/`;
+    
+    $.ajax({
+      url: url,
+      method: 'POST',
+      headers: {
+        'X-CSRFTTOKEN': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      success: function() {
+        // Mettre à jour le compteur
+        const currentCount = parseInt($('#unread-count').text()) || 0;
+        updateNotificationBadge(Math.max(0, currentCount - 1));
+      }
+    });
+  });
+</script>
+{% block custom_js %}{% endblock %}
+</body>
+</html>

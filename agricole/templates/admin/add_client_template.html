@@ -1,0 +1,178 @@
+{% extends 'admin_template/base_template.html' %}
+
+{% block page_title %}
+    Ajouter un client
+{% endblock page_title %}
+
+{% block main_content %}
+{% load static %}
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Ajouter un nouveau client</h3>
+                    </div>
+                    
+                    <form role="form" method="POST" action="{% url 'ajouter_client' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if messages %}
+                        <div class="form-group">
+                            <div class="col-12">
+                                {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="margin-top: 10px;">
+                                    {{ message }}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Prénom *</label>
+                                        <input type="text" class="form-control" name="first_name" placeholder="Prénom" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Nom *</label>
+                                        <input type="text" class="form-control" name="last_name" placeholder="Nom de famille" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Email *</label>
+                                        <input type="email" class="form-control" name="email" placeholder="email@exemple.com" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Téléphone *</label>
+                                        <input type="text" class="form-control" name="phone_number" placeholder="Ex: +221 77 123 45 67" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Mot de passe *</label>
+                                        <input type="password" class="form-control" name="password" placeholder="Mot de passe" required>
+                                        <small class="form-text text-muted">Minimum 8 caractères, avec au moins une majuscule et un chiffre</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Sexe *</label>
+                                        <select class="form-control" name="gender" required>
+                                            <option value="">Sélectionner un genre</option>
+                                            <option value="M">Homme</option>
+                                            <option value="F">Femme</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Adresse</label>
+                                <textarea class="form-control" name="address" rows="2" placeholder="Adresse complète"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Ville</label>
+                                        <input type="text" class="form-control" name="city" placeholder="Ville">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Code postal</label>
+                                        <input type="text" class="form-control" name="postal_code" placeholder="Code postal">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Pays</label>
+                                        <input type="text" class="form-control" name="country" value="Sénégal" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Photo de profil</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="profile_pic" name="profile_pic">
+                                    <label class="custom-file-label" for="profile_pic">Choisir un fichier</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Notes supplémentaires</label>
+                                <textarea class="form-control" name="notes" rows="2" placeholder="Informations complémentaires sur le client"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">Enregistrer le client</button>
+                            <a href="{% url 'liste_clients' %}" class="btn btn-secondary">Annuler</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock main_content %}
+
+{% block custom_js %}
+<!-- bs-custom-file-input -->
+<script src="{% static 'plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+
+<script>
+    $(document).ready(function(){
+        // Gestion de l'affichage du nom du fichier sélectionné
+        bsCustomFileInput.init();
+        
+        // Vérification de l'email existant
+        $("input[name='email']").keyup(function(){
+            var email = $(this).val();
+            if(email !== "") {
+                $.ajax({
+                    url: '{% url 'check_email_exist' %}',
+                    type: 'POST',
+                    data: {
+                        'email': email, 
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if(response.exists) {
+                            $("input[name='email']").addClass('is-invalid').next('.invalid-feedback').remove();
+                            $("<div class='invalid-feedback'>Cet email est déjà utilisé par un autre compte.</div>").insertAfter($("input[name='email']"));
+                        } else {
+                            $("input[name='email']").removeClass('is-invalid').next('.invalid-feedback').remove();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Erreur lors de la vérification de l'email:", error);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+{% endblock custom_js %}

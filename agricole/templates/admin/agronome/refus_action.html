@@ -1,0 +1,136 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-times-circle"></i> {{ titre }}
+        </h1>
+        <a href="{% url 'validation_arrosages' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-danger">Détails de l'Action</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Informations générales</h6>
+                            <p><strong>Type d'action:</strong> 
+                                <span class="badge badge-warning">{{ activite.get_type_activite_display }}</span>
+                            </p>
+                            <p><strong>Date:</strong> {{ activite.date_activite|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Statut:</strong> 
+                                <span class="badge badge-warning">{{ activite.get_statut_display }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Informations sur le terrain</h6>
+                            <p><strong>Agriculteur:</strong> {{ activite.agriculteur.farm_name }}</p>
+                            <p><strong>Parcelle:</strong> 
+                                {% if activite.parcelle %}
+                                    {{ activite.parcelle.nom }} ({{ activite.parcelle.superficie }} ha)
+                                {% else %}
+                                    <span class="text-muted">Non spécifiée</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Culture:</strong> 
+                                {% if activite.culture %}
+                                    <span class="badge badge-success">{{ activite.culture.nom }}</span>
+                                {% else %}
+                                    <span class="text-muted">Non spécifiée</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if activite.description %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Description</h6>
+                            <p>{{ activite.description }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if activite.photos.exists %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Photos jointes</h6>
+                            <div class="row">
+                                {% for photo in activite.photos.all %}
+                                <div class="col-md-4 mb-3">
+                                    <img src="{{ photo.image.url }}" class="img-fluid rounded" alt="Photo {{ forloop.counter }}">
+                                    <p class="small text-muted mt-1">Envoyée le {{ photo.date_envoi|date:"d/m/Y H:i" }}</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-danger">Refus de l'Action</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle"></i> Attention</h6>
+                        <p class="mb-0">Le refus de cette action sera notifié à l'agriculteur avec le motif que vous spécifierez.</p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label for="motif" class="form-label">
+                                <i class="fas fa-comment-alt"></i> Motif du refus
+                            </label>
+                            <textarea class="form-control" id="motif" name="motif" rows="4" required
+                                      placeholder="Expliquez pourquoi cette action est refusée..."></textarea>
+                            <div class="form-text">
+                                Soyez clair et constructif dans vos explications.
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-lightbulb"></i> Motifs courants:</h6>
+                            <ul class="mb-0">
+                                <li>Mauvais timing/période</li>
+                                <li>Quantité inappropriée</li>
+                                <li>Méthode incorrecte</li>
+                                <li>Manque d'informations</li>
+                                <li>Risques pour la culture</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times"></i> Confirmer le refus
+                            </button>
+                            <a href="{% url 'valider_action' activite.id %}" class="btn btn-success">
+                                <i class="fas fa-check"></i> Valider plutôt
+                            </a>
+                            <a href="{% url 'validation_arrosages' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

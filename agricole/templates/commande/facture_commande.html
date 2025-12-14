@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture - Commande {{ commande.id }}</title>
+    <style>
+        /* Polices standard pour ReportLab */
+        body {
+            font-family: Helvetica, sans-serif;
+            color: #333333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid #dddddd;
+            padding: 20px;
+        }
+        .header {
+            display: block;
+            margin-bottom: 20px;
+        }
+        .logo {
+            float: left;
+            width: 60%;
+        }
+        .logo img {
+            width: 60px;
+            height: 60px;
+        }
+        .company-info {
+            float: right;
+            width: 35%;
+            font-size: 12px;
+            text-align: right;
+        }
+        .barcode {
+            clear: both;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .info-block {
+            display: block;
+            margin-bottom: 20px;
+        }
+        .info-col {
+            float: left;
+            width: 48%;
+            font-size: 12px;
+        }
+        .info-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #dddddd;
+            padding-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            padding: 6px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .total-row {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+        .footer {
+            clear: both;
+            margin-top: 20px;
+            font-size: 10px;
+            text-align: center;
+            color: #777777;
+            border-top: 1px solid #dddddd;
+            padding-top: 10px;
+        }
+        /* Badges fixes pour ReportLab */
+        .badge {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #28a745; /* valeur par défaut */
+        }
+        .badge-success { background-color: #28a745; }
+        .badge-warning { background-color: #ffc107; color: #212529; }
+        .badge-danger { background-color: #dc3545; }
+        /* Clear floats */
+        .clear { clear: both; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <img src="{% static 'images/logo_coccinelle.png' %}" alt="Logo">
+                <div>
+                    <strong>Supermarché Coccinelle</strong><br>
+                    Bamako, ACI 2000
+                </div>
+            </div>
+            <div class="company-info">
+                Tél: +223 70 00 00 00<br>
+                Email: contact@coccinelle.ml
+            </div>
+            <div class="clear"></div>
+        </div>
+
+        <div class="barcode">
+            <img src="{% static 'images/barcode_placeholder.png' %}" alt="Code-barres">
+        </div>
+
+        <div class="info-block">
+            <div class="info-col">
+                <div class="info-title">Informations client</div>
+                <p>
+                    <strong>Nom :</strong> {{ commande.client.first_name|default:"-" }} {{ commande.client.last_name|default:"-" }}<br>
+                    <strong>Contact :</strong> {{ commande.client.phone|default:"-" }}
+                </p>
+            </div>
+            <div class="info-col">
+                <div class="info-title">Informations commande</div>
+                <p>
+                    <strong>Référence :</strong> RECU{{ commande.id|default:"0000" }}<br>
+                    <strong>Date :</strong> {{ commande.date_commande|date:"d/m/Y H:i"|default:"-" }}<br>
+                    <strong>Statut :</strong>
+                    <span class="badge 
+                        {% if commande.statut == 'validee' %}badge-success
+                        {% elif commande.statut == 'en_attente' %}badge-warning
+                        {% elif commande.statut == 'annulee' %}badge-danger
+                        {% else %}badge-success{% endif %}">
+                        {{ commande.get_statut_display|default:"En attente" }}
+                    </span>
+                </p>
+            </div>
+            <div class="clear"></div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th class="text-center">Qté</th>
+                    <th class="text-right">PU</th>
+                    <th class="text-right">Sous-total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in commande.details.all %}
+                <tr>
+                    <td>{{ detail.produit.nom_produit|default:"-" }}</td>
+                    <td class="text-center">{{ detail.quantite|default:"0" }}</td>
+                    <td class="text-right">{{ detail.prix_unitaire|default:"0" }} FCFA</td>
+                    <td class="text-right">{{ detail.sous_total|default:"0" }} FCFA</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">Aucun produit</td>
+                </tr>
+                {% endfor %}
+                <tr class="total-row">
+                    <td colspan="3" class="text-right">Total</td>
+                    <td class="text-right">{{ commande.total|default:"0" }} FCFA</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="footer">
+            Facture générée le {{ now|date:"d/m/Y H:i"|default:"-" }}<br>
+            FAMA - Gestion Agricole | Bamako, Mali | contact@fama-agri.ml | +223 XX XX XX XX
+        </div>
+    </div>
+</body>
+</html>

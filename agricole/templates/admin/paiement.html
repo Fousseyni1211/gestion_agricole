@@ -1,0 +1,560 @@
+{% extends "admin/base_template.html" %}
+{% load static %}
+
+{% block page_title %}Paiement{% endblock %}
+
+{% block custom_css %}
+<style>
+  .payment-card {
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .payment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.15);
+  }
+  
+  .payment-header {
+    background: linear-gradient(135deg, #673AB7 0%, #9C27B0 100%);
+    padding: 1.5rem;
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .payment-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  
+  .payment-header:hover::before {
+    opacity: 1;
+  }
+  
+  .payment-header h3 {
+    font-weight: 700;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .payment-header .payment-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  
+  .payment-body {
+    padding: 2rem;
+    background-color: white;
+  }
+  
+  .payment-method {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .payment-method-item {
+    flex: 1;
+    min-width: 120px;
+    position: relative;
+  }
+  
+  .payment-method-item input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .payment-method-item label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    height: 100%;
+  }
+  
+  .payment-method-item input[type="radio"]:checked + label {
+    border-color: #673AB7;
+    background-color: #f3e5f5;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+  }
+  
+  .payment-method-item label i {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: #673AB7;
+  }
+  
+  .payment-method-item label span {
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+  
+  .form-control, .form-select {
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e9ecef;
+    transition: all 0.2s ease;
+  }
+  
+  .form-control:focus, .form-select:focus {
+    border-color: #673AB7;
+    box-shadow: 0 0 0 0.25rem rgba(103, 58, 183, 0.25);
+  }
+  
+  .form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  
+  .payment-form {
+    animation: fadeIn 0.5s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .btn-payment {
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  
+  .btn-payment::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+    z-index: -1;
+    transition: all 0.5s ease;
+  }
+  
+  .btn-payment:hover::before {
+    left: 100%;
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, #673AB7 0%, #9C27B0 100%);
+    border: none;
+  }
+  
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #5E35B1 0%, #8E24AA 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+  
+  .btn-success {
+    background: linear-gradient(135deg, #43A047 0%, #66BB6A 100%);
+    border: none;
+  }
+  
+  .btn-success:hover {
+    background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+  
+  .card-element {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 2px solid #e9ecef;
+    background-color: #f8f9fa;
+    transition: all 0.2s ease;
+  }
+  
+  .card-element:focus {
+    border-color: #673AB7;
+    box-shadow: 0 0 0 0.25rem rgba(103, 58, 183, 0.25);
+  }
+  
+  .payment-info {
+    background-color: #f8f9fa;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid #673AB7;
+  }
+  
+  .payment-info-title {
+    font-weight: 600;
+    color: #673AB7;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .payment-info-title i {
+    margin-right: 0.5rem;
+  }
+  
+  .payment-info-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0;
+  }
+  
+  .payment-success {
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .payment-success-icon {
+    font-size: 4rem;
+    color: #4CAF50;
+    margin-bottom: 1rem;
+  }
+  
+  .payment-success-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .payment-success-text {
+    color: #6c757d;
+    margin-bottom: 2rem;
+  }
+  
+  .payment-error {
+    color: #dc3545;
+    font-weight: 500;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background-color: rgba(220, 53, 69, 0.1);
+    margin-top: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block main_content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- En-tête de la page -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0 text-purple"><i class="fas fa-credit-card me-2"></i>Paiement sécurisé</h4>
+        <a href="{% url 'liste_commandes' %}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Retour aux commandes
+        </a>
+      </div>
+      
+      <!-- Carte de paiement -->
+      <div class="card payment-card">
+        <div class="payment-header">
+          <span class="payment-icon"><i class="fas fa-lock"></i></span>
+          <h3>Effectuer un paiement</h3>
+        </div>
+        
+        <div class="payment-body">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+          
+          <!-- Information de paiement -->
+          <div class="payment-info mb-4">
+            <div class="payment-info-title">
+              <i class="fas fa-info-circle"></i>
+              <span>Information importante</span>
+            </div>
+            <p class="payment-info-text">
+              Toutes vos transactions sont sécurisées et cryptées. Nous ne stockons jamais vos informations de carte bancaire.
+            </p>
+          </div>
+          
+          <!-- Choix du mode de paiement -->
+          <h5 class="mb-3">Choisissez votre mode de paiement</h5>
+          <div class="payment-method">
+            <div class="payment-method-item">
+              <input type="radio" name="payment-method" id="method-card" value="carte" checked>
+              <label for="method-card">
+                <i class="fas fa-credit-card"></i>
+                <span>Carte Bancaire</span>
+              </label>
+            </div>
+            
+            <div class="payment-method-item">
+              <input type="radio" name="payment-method" id="method-orange" value="orange">
+              <label for="method-orange">
+                <i class="fas fa-mobile-alt"></i>
+                <span>Orange Money</span>
+              </label>
+            </div>
+            
+            <div class="payment-method-item">
+              <input type="radio" name="payment-method" id="method-moov" value="moov">
+              <label for="method-moov">
+                <i class="fas fa-mobile"></i>
+                <span>Moov Money</span>
+              </label>
+            </div>
+            
+            <div class="payment-method-item">
+              <input type="radio" name="payment-method" id="method-cash" value="espece">
+              <label for="method-cash">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Espèces</span>
+              </label>
+            </div>
+            
+            <div class="payment-method-item">
+              <input type="radio" name="payment-method" id="method-delivery" value="manuel">
+              <label for="method-delivery">
+                <i class="fas fa-truck"></i>
+                <span>Paiement à la livraison</span>
+              </label>
+            </div>
+          </div>
+          
+          <!-- Formulaire Carte Bancaire (Stripe) -->
+          <div id="paiement-carte" class="payment-form">
+            <form id="stripe-form">
+              <div class="row mb-3">
+                <div class="col-md-6 mb-3 mb-md-0">
+                  <label class="form-label">Montant à payer (FCFA)</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="montant-stripe" min="1" required>
+                    <span class="input-group-text">FCFA</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="card-holder-name" class="form-label">Nom sur la carte</label>
+                  <input type="text" id="card-holder-name" class="form-control" required>
+                </div>
+              </div>
+              
+              <div class="mb-4">
+                <label class="form-label">Détails de carte</label>
+                <div id="card-element" class="card-element"></div>
+                <div id="card-errors" class="payment-error" style="display: none;"></div>
+              </div>
+              
+              <button id="card-button" class="btn btn-success btn-payment w-100" type="button" data-secret="{{ client_secret }}">
+                <i class="fas fa-lock me-2"></i>Payer maintenant
+              </button>
+            </form>
+          </div>
+          
+          <!-- Paiements alternatifs -->
+          <div id="paiement-alternatif" class="payment-form" style="display: none;">
+            <form method="post" action="{% url 'paiement_succes' %}">
+              {% csrf_token %}
+              <div class="row mb-3">
+                <div class="col-md-6 mb-3 mb-md-0">
+                  <label class="form-label">Montant à payer (FCFA)</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" name="montant" required>
+                    <span class="input-group-text">FCFA</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="telephone" class="form-label">Numéro de téléphone</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                    <input type="tel" id="telephone" name="telephone" class="form-control" placeholder="Ex: 77 123 45 67">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="payment-notes" class="form-label">Notes supplémentaires (optionnel)</label>
+                <textarea id="payment-notes" name="notes" class="form-control" rows="3" placeholder="Informations complémentaires pour le paiement..."></textarea>
+              </div>
+              
+              <button type="submit" class="btn btn-primary btn-payment w-100">
+                <i class="fas fa-check-circle me-2"></i>Valider la commande
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Informations de sécurité -->
+      <div class="row mt-4">
+        <div class="col-md-4 mb-3 mb-md-0">
+          <div class="d-flex align-items-center">
+            <div class="me-3 text-purple">
+              <i class="fas fa-shield-alt fa-2x"></i>
+            </div>
+            <div>
+              <h6 class="mb-1">Paiement sécurisé</h6>
+              <p class="mb-0 small text-muted">Toutes les transactions sont cryptées</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4 mb-3 mb-md-0">
+          <div class="d-flex align-items-center">
+            <div class="me-3 text-purple">
+              <i class="fas fa-undo-alt fa-2x"></i>
+            </div>
+            <div>
+              <h6 class="mb-1">Remboursement facile</h6>
+              <p class="mb-0 small text-muted">Politique de remboursement sous 30 jours</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="d-flex align-items-center">
+            <div class="me-3 text-purple">
+              <i class="fas fa-headset fa-2x"></i>
+            </div>
+            <div>
+              <h6 class="mb-1">Support 24/7</h6>
+              <p class="mb-0 small text-muted">Assistance disponible à tout moment</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stripe -->
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  // Gestion des méthodes de paiement
+  document.querySelectorAll('input[name="payment-method"]').forEach(input => {
+    input.addEventListener('change', function() {
+      const method = this.value;
+      document.getElementById('paiement-carte').style.display = method === 'carte' ? 'block' : 'none';
+      document.getElementById('paiement-alternatif').style.display = method !== 'carte' ? 'block' : 'none';
+    });
+  });
+
+  // Configuration Stripe
+  const stripe = Stripe("{{ stripe_public_key }}");
+  const elements = stripe.elements();
+  
+  // Style personnalisé pour l'élément de carte
+  const style = {
+    base: {
+      color: '#495057',
+      fontFamily: 'Arial, sans-serif',
+      fontSmoothing: 'antialiased',
+      fontSize: '16px',
+      '::placeholder': {
+        color: '#aab7c4'
+      }
+    },
+    invalid: {
+      color: '#dc3545',
+      iconColor: '#dc3545'
+    }
+  };
+  
+  const cardElement = elements.create('card', { style: style });
+  cardElement.mount('#card-element');
+  
+  // Gestion des erreurs de saisie de carte
+  cardElement.addEventListener('change', function(event) {
+    const displayError = document.getElementById('card-errors');
+    if (event.error) {
+      displayError.textContent = event.error.message;
+      displayError.style.display = 'block';
+    } else {
+      displayError.textContent = '';
+      displayError.style.display = 'none';
+    }
+  });
+
+  // Gestion du paiement
+  const cardButton = document.getElementById('card-button');
+  const clientSecret = cardButton.dataset.secret;
+  
+  cardButton.addEventListener('click', async () => {
+    // Afficher un indicateur de chargement
+    cardButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Traitement en cours...';
+    cardButton.disabled = true;
+    
+    const cardHolderName = document.getElementById('card-holder-name');
+    const montant = parseFloat(document.getElementById('montant-stripe').value);
+    const displayError = document.getElementById('card-errors');
+
+    if (isNaN(montant) || montant <= 0) {
+      displayError.textContent = "Veuillez entrer un montant valide.";
+      displayError.style.display = 'block';
+      cardButton.innerHTML = '<i class="fas fa-lock me-2"></i>Payer maintenant';
+      cardButton.disabled = false;
+      return;
+    }
+
+    try {
+      const { paymentMethod, error } = await stripe.createPaymentMethod(
+        'card', cardElement, {
+          billing_details: { name: cardHolderName.value }
+        }
+      );
+
+      if (error) {
+        displayError.textContent = error.message;
+        displayError.style.display = 'block';
+        cardButton.innerHTML = '<i class="fas fa-lock me-2"></i>Payer maintenant';
+        cardButton.disabled = false;
+      } else {
+        const { paymentIntent, error: confirmError } = await stripe.confirmCardPayment(
+          clientSecret, {
+            payment_method: paymentMethod.id
+          }
+        );
+        
+        if (confirmError) {
+          displayError.textContent = confirmError.message;
+          displayError.style.display = 'block';
+          cardButton.innerHTML = '<i class="fas fa-lock me-2"></i>Payer maintenant';
+          cardButton.disabled = false;
+        } else {
+          window.location.href = "{% url 'paiement_succes' %}?montant=" + montant;
+        }
+      }
+    } catch (e) {
+      displayError.textContent = "Une erreur est survenue lors du traitement du paiement. Veuillez réessayer.";
+      displayError.style.display = 'block';
+      cardButton.innerHTML = '<i class="fas fa-lock me-2"></i>Payer maintenant';
+      cardButton.disabled = false;
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,284 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Générer un Rapport Financier{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-chart-bar"></i>
+                        Générer un Rapport Financier
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'tableau_bord_financier' %}">Finances</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'liste_rapports_financiers' %}">Rapports</a></li>
+                        <li class="breadcrumb-item active">Générer</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-edit"></i>
+                                Configuration du Rapport
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.type_rapport.label_tag }}
+                                            {{ form.type_rapport }}
+                                            {% if form.type_rapport.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.type_rapport.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.titre.label_tag }}
+                                            {{ form.titre }}
+                                            {% if form.titre.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.titre.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.periode_debut.label_tag }}
+                                            {{ form.periode_debut }}
+                                            {% if form.periode_debut.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.periode_debut.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.periode_fin.label_tag }}
+                                            {{ form.periode_fin }}
+                                            {% if form.periode_fin.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.periode_fin.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Options de génération -->
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4 class="card-title">
+                                            <i class="fas fa-cog"></i>
+                                            Options de Génération
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Formats à générer:</label>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="generer_pdf" id="generer_pdf" checked>
+                                                        <label class="form-check-label" for="generer_pdf">
+                                                            <i class="fas fa-file-pdf text-danger"></i> PDF
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="generer_excel" id="generer_excel" checked>
+                                                        <label class="form-check-label" for="generer_excel">
+                                                            <i class="fas fa-file-excel text-success"></i> Excel
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Inclure dans le rapport:</label>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="inclure_depenses" id="inclure_depenses" checked>
+                                                        <label class="form-check-label" for="inclure_depenses">
+                                                            Dépenses détaillées
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="inclure_revenus" id="inclure_revenus" checked>
+                                                        <label class="form-check-label" for="inclure_revenus">
+                                                            Revenus détaillés
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="inclure_factures" id="inclure_factures" checked>
+                                                        <label class="form-check-label" for="inclure_factures">
+                                                            État des factures
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="inclure_graphiques" id="inclure_graphiques" checked>
+                                                        <label class="form-check-label" for="inclure_graphiques">
+                                                            Graphiques et statistiques
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mt-3">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-chart-bar"></i> Générer le rapport
+                                    </button>
+                                    <a href="{% url 'liste_rapports_financiers' %}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Annuler
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i>
+                                Aide
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <h6>Types de rapports</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-calendar text-primary"></i> <strong>Mensuel:</strong> Rapport du mois en cours</li>
+                                <li><i class="fas fa-calendar-alt text-success"></i> <strong>Annuel:</strong> Rapport de l'année</li>
+                                <li><i class="fas fa-cog text-info"></i> <strong>Personnalisé:</strong> Période au choix</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Formats disponibles</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-file-pdf text-danger"></i> <strong>PDF:</strong> Format d'impression</li>
+                                <li><i class="fas fa-file-excel text-success"></i> <strong>Excel:</strong> Pour analyse</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Conseils</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Choisissez une période pertinente</li>
+                                <li><i class="fas fa-check text-success"></i> Donnez un titre clair au rapport</li>
+                                <li><i class="fas fa-check text-success"></i> Sélectionnez les sections utiles</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-lightbulb"></i>
+                                Suggestions
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-action" onclick="preRemplirRapport('mensuel')">
+                                    <h6 class="mb-1">Rapport mensuel standard</h6>
+                                    <p class="mb-1 text-muted">Dépenses, revenus et soldes du mois</p>
+                                    <small>Cliquez pour pré-remplir</small>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action" onclick="preRemplirRapport('trimestriel')">
+                                    <h6 class="mb-1">Rapport trimestriel</h6>
+                                    <p class="mb-1 text-muted">Bilan des 3 derniers mois</p>
+                                    <small>Cliquez pour pré-remplir</small>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action" onclick="preRemplirRapport('annuel')">
+                                    <h6 class="mb-1">Rapport annuel complet</h6>
+                                    <p class="mb-1 text-muted">Analyse complète de l'année</p>
+                                    <small>Cliquez pour pré-remplir</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function preRemplirRapport(type) {
+    const today = new Date();
+    let typeRapport = '';
+    let titre = '';
+    let dateDebut = '';
+    let dateFin = '';
+    
+    switch(type) {
+        case 'mensuel':
+            typeRapport = 'mensuel';
+            titre = `Rapport mensuel - ${today.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}`;
+            dateDebut = new Date(today.getFullYear(), today.getMonth(), 1);
+            dateFin = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            break;
+        case 'trimestriel':
+            typeRapport = 'personnalise';
+            titre = `Rapport trimestriel - Q${Math.ceil((today.getMonth() + 1) / 3)} ${today.getFullYear()}`;
+            const trimestre = Math.ceil((today.getMonth() + 1) / 3);
+            dateDebut = new Date(today.getFullYear(), (trimestre - 1) * 3, 1);
+            dateFin = new Date(today.getFullYear(), trimestre * 3, 0);
+            break;
+        case 'annuel':
+            typeRapport = 'annuel';
+            titre = `Rapport annuel - ${today.getFullYear()}`;
+            dateDebut = new Date(today.getFullYear(), 0, 1);
+            dateFin = new Date(today.getFullYear(), 11, 31);
+            break;
+    }
+    
+    // Remplir le formulaire
+    document.getElementById('id_type_rapport').value = typeRapport;
+    document.getElementById('id_titre').value = titre;
+    document.getElementById('id_periode_debut').value = formatDate(dateDebut);
+    document.getElementById('id_periode_fin').value = formatDate(dateFin);
+    
+    // Scroller vers le formulaire
+    document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+}
+
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+</script>
+{% endblock %}

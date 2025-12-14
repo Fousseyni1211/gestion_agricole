@@ -1,0 +1,65 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+
+{% block main_content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Confirmer la suppression du produit</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">Attention !</h5>
+                        <p>Le produit <strong>{{ produit.nom_produit }}</strong> est utilisé dans <strong>{{ total_commandes }} commande(s)</strong>.</p>
+                        <p>La suppression de ce produit affectera les commandes suivantes :</p>
+                        
+                        {% if details_commande %}
+                        <div class="mb-3">
+                            <h6>Détails de commande :</h6>
+                            <ul class="list-group">
+                                {% for detail in details_commande %}
+                                <li class="list-group-item">
+                                    Commande #{{ detail.commande.id }} - {{ detail.commande.date_commande|date:"d/m/Y H:i" }}
+                                    <span class="badge bg-secondary">{{ detail.quantite }} unité(s)</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        {% if lignes_commande %}
+                        <div class="mb-3">
+                            <h6>Lignes de commande :</h6>
+                            <ul class="list-group">
+                                {% for ligne in lignes_commande %}
+                                <li class="list-group-item">
+                                    Commande #{{ ligne.commande.id }} - {{ ligne.commande.date_commande|date:"d/m/Y H:i" }}
+                                    <span class="badge bg-secondary">{{ ligne.quantite }} unité(s)</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        <p class="mb-0">Souhaitez-vous vraiment supprimer ce produit ? Cette action est irréversible.</p>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'manage_produit' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Annuler
+                        </a>
+                        <form method="post" action="{% url 'delete_product_confirm' produit.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt me-2"></i>Supprimer quand même
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

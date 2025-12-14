@@ -1,0 +1,420 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Location de Matériel Agricole{% endblock %}
+
+{% block content %}
+<!-- Agricultural Equipment Rental Section -->
+<section class="equipment-rental py-5">
+  <div class="container">
+    <!-- Hero Header -->
+    <div class="rental-header text-center mb-5">
+      <div class="header-content">
+        <h1 class="display-4 fw-bold mb-3">
+          <i class="fas fa-tractor me-3 text-warning"></i>
+          Location de Matériel Agricole
+        </h1>
+        <p class="lead mb-4">Accédez à une flotte moderne de machines agricoles professionnelles pour optimiser vos rendements</p>
+        <div class="header-stats d-flex justify-content-center gap-4 flex-wrap">
+          <div class="stat-item">
+            <span class="stat-number">50+</span>
+            <span class="stat-label">Machines</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">24/7</span>
+            <span class="stat-label">Support</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">98%</span>
+            <span class="stat-label">Satisfaction</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section mb-5">
+      <div class="card filter-card">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">Catégorie</label>
+              <select class="form-select" id="categoryFilter">
+                <option value="">Toutes catégories</option>
+                <option value="tracteur">Tracteurs</option>
+                <option value="moissonneuse">Moissonneuses</option>
+                <option value="semoir">Semoirs</option>
+                <option value="pulverisateur">Pulvérisateurs</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">Puissance</label>
+              <select class="form-select" id="powerFilter">
+                <option value="">Toute puissance</option>
+                <option value="50-100">50-100 CV</option>
+                <option value="100-200">100-200 CV</option>
+                <option value="200+">200+ CV</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">Disponibilité</label>
+              <input type="date" class="form-control" id="dateFilter">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <button class="btn btn-primary w-100" id="searchBtn">
+                <i class="fas fa-search me-2"></i>Rechercher
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Equipment Grid -->
+    <div class="equipment-grid">
+      <div class="row g-4" id="equipmentGrid">
+        <!-- Tracteur John Deere -->
+        <div class="col-lg-4 col-md-6 equipment-item" data-category="tracteur" data-power="150">
+          <div class="equipment-card">
+            <div class="card-image-container">
+              <img src="https://images.unsplash.com/photo-1574869020349-6f0b4c2b6e5a?w=400&h=250&fit=crop" class="card-img-top" alt="Tracteur John Deere">
+              <div class="availability-badge available">
+                <i class="fas fa-check-circle"></i> Disponible
+              </div>
+              <div class="power-badge">150 CV</div>
+            </div>
+            <div class="card-body">
+              <div class="equipment-header">
+                <h5 class="card-title">Tracteur John Deere 6150R</h5>
+                <div class="rating">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <span class="rating-text">4.9</span>
+                </div>
+              </div>
+              <p class="card-text">Tracteur haute performance avec transmission PowerShift, idéal pour les travaux intensifs.</p>
+              <div class="equipment-specs">
+                <div class="spec-item">
+                  <i class="fas fa-cogs"></i>
+                  <span>Transmission automatique</span>
+                </div>
+                <div class="spec-item">
+                  <i class="fas fa-gas-pump"></i>
+                  <span>Économique</span>
+                </div>
+                <div class="spec-item">
+                  <i class="fas fa-tools"></i>
+                  <span>Multi-outils</span>
+                </div>
+              </div>
+              <div class="pricing">
+                <div class="price-info">
+                  <span class="price">78 000 F CFA</span>
+                  <span class="period">/jour</span>
+                </div>
+                <div class="price-options">
+                  <small class="text-muted">À partir de 525 000 F CFA/semaine</small>
+                </div>
+              </div>
+              <button class="btn btn-primary w-100 reserve-btn" data-equipment="Tracteur John Deere 6150R">
+                <i class="fas fa-calendar-plus me-2"></i>Réserver maintenant
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Moissonneuse Claas -->
+        <div class="col-lg-4 col-md-6 equipment-item" data-category="moissonneuse" data-power="300">
+          <div class="equipment-card">
+            <div class="card-image-container">
+              <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=250&fit=crop" class="card-img-top" alt="Moissonneuse Claas">
+              <div class="availability-badge available">
+                <i class="fas fa-check-circle"></i> Disponible
+              </div>
+              <div class="power-badge">300 CV</div>
+            </div>
+            <div class="card-body">
+              <div class="equipment-header">
+                <h5 class="card-title">Moissonneuse Claas Lexion 760</h5>
+                <div class="rating">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <span class="rating-text">4.8</span>
+                </div>
+              </div>
+              <p class="card-text">Moissonneuse-batteuse haut de gamme avec système de nettoyage 3D pour une récolte optimale.</p>
+              <div class="equipment-specs">
+                <div class="spec-item">
+                  <i class="fas fa-cut"></i>
+                  <span>Coupe 7.5m</span>
+                </div>
+                <div class="spec-item">
+                  <i class="fas fa-microchip"></i>
+                  <span>GPS intégré</span>
+                </div>
+                <div class="spec-item">
+                  <i class="fas fa-chart-line"></i>
+                  <span>Analyse rendement</span>
+                </div>
+              </div>
+              <div class="pricing">
+                <div class="price-info">
+                  <span class="price">229 500 F CFA</span>
+                  <span class="period">/jour</span>
+                </div>
+                <div class="price-options">
+                  <small class="text-muted">À partir de 1 377 000 F CFA/semaine</small>
+                </div>
+              </div>
+              <button class="btn btn-primary w-100 reserve-btn" data-equipment="Moissonneuse Claas Lexion 760">
+                <i class="fas fa-calendar-plus me-2"></i>Réserver maintenant
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Semoir Amazone -->
+        <div class="col-lg-4 col-md-6 equipment-item" data-category="semoir" data-power="80">
+          <div class="equipment-card">
+            <div class="card-image-container">
+              <img src="https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=400&h=250&fit=crop" class="card-img-top" alt="Semoir Amazone">
+              <div class="availability-badge available">
+                <i class="fas fa-check-circle"></i> Disponible
+              </div>
+              <div class="power-badge">80 CV</div>
+            </div>
+            <div class="card-body">
+              <div class="equipment-header">
+                <h5 class="card-title">Semoir Amazone Cirrus 6003</h5>
+                <div class="rating">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="far fa-star"></i>
+                  <span class="rating-text">4.6</span>
+                </div>
+              </div>
+              <p class="card-text">Semoir pneumatique de précision avec distribution parfaite pour tous types de graines.</p>
+              <div class="equipment-specs">
+                <div class="spec-item">
+                  <i class="fas fa-seedling"></i>
+                  <span>6m de largeur</span>
+                </div>
+                <div class="spec-item">
+                  <i class="fas fa-bullseye"></i>
+                  <span>Précision GPS</span>
+                </div>
+                <div class="spec-item">
+                  <i class="fas fa-leaf"></i>
+                  <span>Multi-cultures</span>
+                </div>
+              </div>
+              <div class="pricing">
+                <div class="price-info">
+                  <span class="price">55 750 F CFA</span>
+                  <span class="period">/jour</span>
+                </div>
+                <div class="price-options">
+                  <small class="text-muted">À partir de 328 000 F CFA/semaine</small>
+                </div>
+              </div>
+              <button class="btn btn-primary w-100 reserve-btn" data-equipment="Semoir Amazone Cirrus 6003">
+                <i class="fas fa-calendar-plus me-2"></i>Réserver maintenant
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pulvérisateur Hardi -->
+        <div class="col-lg-4 col-md-6 equipment-item" data-category="pulverisateur" data-power="120">
+          <div class="equipment-card">
+            <div class="card-image-container">
+              <img src="https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&h=250&fit=crop" class="card-img-top" alt="Pulvérisateur Hardi">
+              <div class="availability-badge available">
+                <i class="fas fa-check-circle"></i> Disponible
+              </div>
+              <div class="power-badge">120 CV</div>
+            </div>
+            <div class="card-body">
+              <div class="equipment-header">
+                <h5 class="card-title">Pulvérisateur Hardi Navigator 4000</h5>
+                <div class="rating">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <span class="rating-text">4.7</span>
+                </div>
+              </div>
+              <p class="card-text">Pulvérisateur traîné haute capacité avec système de guidage automatique pour une application précise.</p>
+              <div class="equipment-specs">
+                <div class="spec-item">
+                  <i class="fas fa-spray-can"></i>
+                  <span>4000L capacité</span>
+                </div>
+                <div class="spec-item">
+                  <i class="fas fa-ruler"></i>
+                  <span>Rampe 24m</span>
+                </div>
+                <div class="spec-item">
+                  <i class="fas fa-crosshairs"></i>
+                  <span>Guidage auto</span>
+                </div>
+              </div>
+              <div class="pricing">
+                <div class="price-info">
+                  <span class="price">62 300 F CFA</span>
+                  <span class="period">/jour</span>
+                </div>
+                <div class="price-options">
+                  <small class="text-muted">À partir de 393 600 F CFA/semaine</small>
+                </div>
+              </div>
+              <button class="btn btn-primary w-100 reserve-btn" data-equipment="Pulvérisateur Hardi Navigator 4000">
+                <i class="fas fa-calendar-plus me-2"></i>Réserver maintenant
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charrue Lemken -->
+        <div class="col-lg-4 col-md-6 equipment-item" data-category="tracteur" data-power="100">
+          <div class="equipment-card">
+            <div class="card-image-container">
+              <img src="https://images.unsplash.com/photo-1595429035839-c99c298ffdde?w=400&h=250&fit=crop" class="card-img-top" alt="Charrue Lemken">
+              <div class="availability-badge rented">
+                <i class="fas fa-clock"></i> Louée
+              </div>
+              <div class="power-badge">100 CV</div>
+            </div>
+            <div class="card-body">
+              <div class="equipment-header">
+                <h5 class="card-title">Charrue Lemken Juwel 8</h5>
+                <div class="rating">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="far fa-star"></i>
+                  <span class="rating-text">4.5</span>
+                </div>
+              </div>
+              <p class="card-text">Charrue réversible 8 corps avec système de sécurité hydraulique pour un labour parfait.</p>
+              <div class="equipment-specs">
+                <div class="spec-item">
+                  <i class="fas fa-arrows-alt-h"></i>
+                  <span>8 corps</span>
+                </div>
+                <div class="spec-item">
+                  <i class="fas fa-shield-alt"></i>
+                  <span>Sécurité hydraulique</span>
+                </div>
+                <div class="spec-item">
+                  <i class="fas fa-sync-alt"></i>
+                  <span>Réversible</span>
+                </div>
+              </div>
+              <div class="pricing">
+                <div class="price-info">
+                  <span class="price">42 650 F CFA</span>
+                  <span class="period">/jour</span>
+                </div>
+                <div class="price-options">
+                  <small class="text-muted">Disponible le 25/08</small>
+                </div>
+              </div>
+              <button class="btn btn-outline-secondary w-100" disabled>
+                <i class="fas fa-clock me-2"></i>Indisponible
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Épandeur Kuhn -->
+        <div class="col-lg-4 col-md-6 equipment-item" data-category="tracteur" data-power="90">
+          <div class="equipment-card">
+            <div class="card-image-container">
+              <img src="https://images.unsplash.com/photo-1566220150096-7e8f2c1e9e2c?w=400&h=250&fit=crop" class="card-img-top" alt="Épandeur Kuhn">
+              <div class="availability-badge available">
+                <i class="fas fa-check-circle"></i> Disponible
+              </div>
+              <div class="power-badge">90 CV</div>
+            </div>
+            <div class="card-body">
+              <div class="equipment-header">
+                <h5 class="card-title">Épandeur Kuhn Axis 40.2</h5>
+                <div class="rating">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <span class="rating-text">4.9</span>
+                </div>
+              </div>
+              <p class="card-text">Épandeur centrifuge haute précision pour fertilisants avec pesée embarquée.</p>
+              <div class="equipment-specs">
+                <div class="spec-item">
+                  <i class="fas fa-weight"></i>
+                  <span>Pesée embarquée</span>
+                </div>
+                <div class="spec-item">
+                  <i class="fas fa-circle-notch"></i>
+                  <span>Centrifuge</span>
+                </div>
+                <div class="spec-item">
+                  <i class="fas fa-calculator"></i>
+                  <span>Dosage auto</span>
+                </div>
+              </div>
+              <div class="pricing">
+                <div class="price-info">
+                  <span class="price">36 100 F CFA</span>
+                  <span class="period">/jour</span>
+                </div>
+                <div class="price-options">
+                  <small class="text-muted">À partir de 229 600 F CFA/semaine</small>
+                </div>
+              </div>
+              <button class="btn btn-primary w-100 reserve-btn" data-equipment="Épandeur Kuhn Axis 40.2">
+                <i class="fas fa-calendar-plus me-2"></i>Réserver maintenant
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="cta-section text-center mt-5">
+      <div class="cta-card">
+        <h3 class="mb-3">Besoin d'aide pour choisir ?</h3>
+        <p class="mb-4">Nos experts agricoles sont là pour vous conseiller et vous aider à sélectionner le matériel adapté à vos besoins.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+          <a href="tel:+33123456789" class="btn btn-success btn-lg">
+            <i class="fas fa-phone me-2"></i>Appeler un expert
+          </a>
+          <a href="#" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-comments me-2"></i>Chat en ligne
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Include Modal -->
+{% include 'agriculteur/location_materiel_modal.html' %}
+
+<!-- Include Styles and Scripts -->
+{% include 'agriculteur/location_materiel_styles.html' %}
+
+{% endblock %}

@@ -1,0 +1,279 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Rapports Financiers{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-chart-bar"></i>
+                        Rapports Financiers
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'tableau_bord_financier' %}">Finances</a></li>
+                        <li class="breadcrumb-item active">Rapports</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Actions rapides -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt"></i>
+                        Actions Rapides
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'generer_rapport_financier' %}" class="btn btn-primary btn-block">
+                                <i class="fas fa-plus"></i> Générer un rapport
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="#" class="btn btn-success btn-block" onclick="genererRapportMensuel()">
+                                <i class="fas fa-calendar"></i> Rapport mensuel
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="#" class="btn btn-info btn-block" onclick="genererRapportAnnuel()">
+                                <i class="fas fa-calendar-alt"></i> Rapport annuel
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="#" class="btn btn-warning btn-block" onclick="genererRapportPersonnalise()">
+                                <i class="fas fa-cog"></i> Rapport personnalisé
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des rapports -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-list"></i>
+                        Rapports Générés
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if rapports %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Titre</th>
+                                        <th>Type</th>
+                                        <th>Période</th>
+                                        <th>Date de génération</th>
+                                        <th>Fichiers</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rapport in rapports %}
+                                    <tr>
+                                        <td><strong>{{ rapport.titre }}</strong></td>
+                                        <td>
+                                            {% if rapport.type_rapport == 'mensuel' %}
+                                                <span class="badge bg-primary">Mensuel</span>
+                                            {% elif rapport.type_rapport == 'annuel' %}
+                                                <span class="badge bg-success">Annuel</span>
+                                            {% elif rapport.type_rapport == 'personnalise' %}
+                                                <span class="badge bg-info">Personnalisé</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Autre</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ rapport.periode_debut|date:"d/m/Y" }} - {{ rapport.periode_fin|date:"d/m/Y" }}
+                                        </td>
+                                        <td>{{ rapport.date_generation|date:"d/m/Y H:i" }}</td>
+                                        <td>
+                                            {% if rapport.fichier_pdf %}
+                                                <a href="{{ rapport.fichier_pdf.url }}" target="_blank" class="btn btn-sm btn-danger" title="PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                            {% endif %}
+                                            {% if rapport.fichier_excel %}
+                                                <a href="{{ rapport.fichier_excel.url }}" target="_blank" class="btn btn-sm btn-success" title="Excel">
+                                                    <i class="fas fa-file-excel"></i>
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-info" onclick="voirDetails({{ rapport.id }})">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-warning" onclick="regenererRapport({{ rapport.id }})">
+                                                    <i class="fas fa-sync"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-danger" onclick="supprimerRapport({{ rapport.id }})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <h4>Aucun rapport généré</h4>
+                            <p class="text-muted">Commencez par générer votre premier rapport financier.</p>
+                            <a href="{% url 'generer_rapport_financier' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Générer un rapport
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            {% if rapports %}
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-info"><i class="fas fa-file"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Rapports</span>
+                            <span class="info-box-number">{{ rapports.count }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-danger"><i class="fas fa-file-pdf"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Rapports PDF</span>
+                            <span class="info-box-number">{{ rapports_pdf_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-success"><i class="fas fa-file-excel"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Rapports Excel</span>
+                            <span class="info-box-number">{{ rapports_excel_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-primary"><i class="fas fa-calendar"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Mois en cours</span>
+                            <span class="info-box-number">{{ current_month }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<!-- Modal détails -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails du Rapport</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsContent">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function voirDetails(rapportId) {
+    document.getElementById('detailsContent').innerHTML = `
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+            <p>Chargement des détails...</p>
+        </div>
+    `;
+    
+    var modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+    modal.show();
+    
+    // Simuler le chargement des détails
+    setTimeout(() => {
+        document.getElementById('detailsContent').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Informations générales</h6>
+                    <table class="table table-sm">
+                        <tr><td>Type:</td><td>Rapport mensuel</td></tr>
+                        <tr><td>Période:</td><td>Décembre 2024</td></tr>
+                        <tr><td>Généré le:</td><td>13/12/2024 10:30</td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6>Statistiques</h6>
+                    <table class="table table-sm">
+                        <tr><td>Total dépenses:</td><td class="text-danger">345,000 FCFA</td></tr>
+                        <tr><td>Total revenus:</td><td class="text-success">530,000 FCFA</td></tr>
+                        <tr><td>Solde net:</td><td class="text-success">185,000 FCFA</td></tr>
+                    </table>
+                </div>
+            </div>
+        `;
+    }, 1000);
+}
+
+function genererRapportMensuel() {
+    window.location.href = "{% url 'generer_rapport_financier' %}?type=mensuel";
+}
+
+function genererRapportAnnuel() {
+    window.location.href = "{% url 'generer_rapport_financier' %}?type=annuel";
+}
+
+function genererRapportPersonnalise() {
+    window.location.href = "{% url 'generer_rapport_financier' %}?type=personnalise";
+}
+
+function regenererRapport(rapportId) {
+    if (confirm('Êtes-vous sûr de vouloir régénérer ce rapport ?')) {
+        // En pratique, faire une requête AJAX pour régénérer
+        alert('Rapport régénéré avec succès !');
+        location.reload();
+    }
+}
+
+function supprimerRapport(rapportId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce rapport ? Cette action est irréversible.')) {
+        // En pratique, faire une requête AJAX pour supprimer
+        alert('Rapport supprimé avec succès !');
+        location.reload();
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,877 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nos Services{% endblock %}
+
+{% block extra_head %}
+<!-- AOS CSS -->
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+<!-- FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  body {
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .hero-section {
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('{% static "images/hero-agriculture.jpg" %}') center/cover no-repeat;
+    padding: 150px 0;
+    text-align: center;
+    color: white;
+    background-attachment: fixed;
+    position: relative;
+  }
+
+  .hero-section h1 {
+    font-size: 3.8rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .hero-section p {
+    font-size: 1.4rem;
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .hero-cta {
+    margin-top: 2rem;
+  }
+
+  .hero-cta .btn {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 10px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s;
+  }
+
+  .hero-cta .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  }
+
+  .section-title {
+    text-align: center;
+    margin-top: 70px;
+    margin-bottom: 40px;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--bs-emphasis-color, #1e2a38);
+    position: relative;
+    padding-bottom: 15px;
+  }
+
+  .section-title:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #28a745, #007bff);
+    border-radius: 2px;
+  }
+
+  .section-subtitle {
+    text-align: center;
+    max-width: 800px;
+    margin: -20px auto 50px;
+    font-size: 1.1rem;
+    color: #6c757d;
+  }
+
+  .service-card {
+    border-radius: 20px;
+    background: var(--bs-card-bg);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease-in-out;
+    border: none;
+    overflow: hidden;
+  }
+
+  .service-card:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  }
+
+  .service-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .service-features {
+    text-align: left;
+    margin: 1.5rem 0;
+    padding-left: 1.5rem;
+  }
+
+  .service-features li {
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+
+  .service-features li:before {
+    content: '✓';
+    color: #28a745;
+    font-weight: bold;
+    position: absolute;
+    left: -1.2rem;
+  }
+
+  .service-price {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 1rem 0;
+  }
+
+  .testimonials {
+    background: linear-gradient(120deg, #f8f9fa, #e2e6ea);
+    padding: 80px 0;
+    position: relative;
+  }
+
+  .testimonial-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    position: relative;
+    text-align: left;
+  }
+
+  .testimonial-card:after {
+    content: '"';
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 5rem;
+    font-family: Georgia, serif;
+    color: rgba(40, 167, 69, 0.1);
+    line-height: 0;
+  }
+
+  .testimonial-text {
+    font-style: italic;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .testimonial-author {
+    display: flex;
+    align-items: center;
+  }
+
+  .testimonial-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 15px;
+    object-fit: cover;
+  }
+
+  .testimonial-info {
+    line-height: 1.3;
+  }
+
+  .testimonial-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .testimonial-role {
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+
+  .testimonial-rating {
+    color: #ffc107;
+    margin-top: 5px;
+  }
+
+  .partner-section {
+    padding: 70px 0;
+    background-color: #f8f9fa;
+  }
+
+  .partner-logos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 40px;
+  }
+
+  .partner-logos img {
+    height: 70px;
+    margin: 0 30px 30px;
+    opacity: 0.7;
+    transition: transform 0.3s, opacity 0.3s;
+    filter: grayscale(100%);
+  }
+
+  .partner-logos img:hover {
+    transform: scale(1.1);
+    opacity: 1;
+    filter: grayscale(0%);
+  }
+
+  .faq-section {
+    padding: 80px 0;
+    background-color: #fff;
+  }
+
+  .accordion-item {
+    border: none;
+    margin-bottom: 15px;
+    border-radius: 10px !important;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  }
+
+  .accordion-button {
+    font-weight: 600;
+    padding: 20px 25px;
+  }
+
+  .accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+    color: #28a745;
+  }
+
+  .accordion-body {
+    padding: 20px 25px;
+    background-color: #f8f9fa;
+  }
+
+  .request-service-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  }
+
+  .form-control {
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 1px solid #ced4da;
+    margin-bottom: 20px;
+  }
+
+  .form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+    border-color: #28a745;
+  }
+
+  .form-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .btn-submit {
+    padding: 12px 30px;
+    font-weight: 600;
+    border-radius: 10px;
+  }
+  
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section" data-aos="fade-in">
+  <div class="container">
+    <h1>Des Services Agricoles Innovants</h1>
+    <p class="lead">Nous accompagnons les agriculteurs vers un avenir durable avec des solutions adaptées à leurs besoins spécifiques</p>
+    <div class="hero-cta">
+      <a href="#services" class="btn btn-success" id="cta-services">Découvrir nos services</a>
+      <a href="#demande-service" class="btn btn-outline-light" id="cta-demande" data-service="">Demander un service</a>
+    </div>
+  </div>
+</div>
+
+<div id="services" class="container py-5">
+  <h2 class="section-title">Nos Services Professionnels</h2>
+  <p class="section-subtitle">Des solutions complètes pour optimiser votre exploitation agricole et maximiser vos rendements</p>
+
+  <!-- Filtres (onglets) -->
+  <ul class="nav nav-pills justify-content-center mb-4" id="servicesFilters">
+    <li class="nav-item"><button class="nav-link active" data-filter="all">Tous</button></li>
+    <li class="nav-item"><button class="nav-link" data-filter="conseil">Conseil</button></li>
+    <li class="nav-item"><button class="nav-link" data-filter="location">Location</button></li>
+    <li class="nav-item"><button class="nav-link" data-filter="produit">Produits Bio</button></li>
+    <li class="nav-item"><button class="nav-link" data-filter="formation">Formation</button></li>
+    <li class="nav-item"><button class="nav-link" data-filter="analyse">Analyse de Sol</button></li>
+    <li class="nav-item"><button class="nav-link" data-filter="gestion">Gestion</button></li>
+  </ul>
+
+  <div class="row g-4 mb-5">
+    <div class="col-lg-4 col-md-6 service-item" data-category="conseil" data-aos="zoom-in">
+      <div class="card service-card h-100 p-4">
+        <div class="card-body">
+          <div class="text-center">
+            <i class="fas fa-seedling text-success service-icon"></i>
+            <h5 class="card-title fw-bold">Conseil Agricole</h5>
+          </div>
+          <p class="card-text">Accompagnement personnalisé pour une agriculture moderne, durable et performante.</p>
+          <ul class="service-features">
+            <li>Analyse de votre exploitation</li>
+            <li>Recommandations sur mesure</li>
+            <li>Suivi régulier des cultures</li>
+            <li>Optimisation des rendements</li>
+          </ul>
+          <div class="service-price">À partir de 50 000 FCFA / consultation</div>
+          <div class="d-flex gap-2 justify-content-center mt-4">
+            <button type="button" class="btn btn-outline-secondary btn-service-details"
+                    data-service="conseil"
+                    data-title="Conseil Agricole"
+                    data-description="Accompagnement personnalisé pour une agriculture moderne, durable et performante."
+                    data-features="Analyse exploitation;Recommandations;Suivi cultures;Optimisation rendements">
+              Détails
+            </button>
+            <button type="button" class="btn btn-success btn-demander-service" data-service="conseil">Demander ce service</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 service-item" data-category="location" data-aos="zoom-in" data-aos-delay="100">
+      <div class="card service-card h-100 p-4">
+        <div class="card-body">
+          <div class="text-center">
+            <i class="fas fa-tractor text-primary service-icon"></i>
+            <h5 class="card-title fw-bold">Location de Matériel</h5>
+          </div>
+          <p class="card-text">Matériel agricole moderne disponible à la location selon vos besoins spécifiques.</p>
+          <ul class="service-features">
+            <li>Large gamme d'équipements</li>
+            <li>Tarifs flexibles (journée/semaine)</li>
+            <li>Livraison possible sur site</li>
+            <li>Maintenance assurée</li>
+          </ul>
+          <div class="service-price">À partir de 25 000 FCFA / jour</div>
+          <div class="d-flex gap-2 justify-content-center mt-4">
+            <a href="{% url 'location_materiel' %}" class="btn btn-primary" data-aos="fade-up">Voir les équipements</a>
+            <button type="button" class="btn btn-outline-secondary btn-service-details"
+                    data-service="location" data-title="Location de Matériel"
+                    data-description="Equipements modernes loués selon vos besoins."
+                    data-features="Large gamme;Tarifs flexibles;Livraison;Maintenance">
+              Détails
+            </button>
+            <button type="button" class="btn btn-success btn-demander-service" data-service="location">Demander ce service</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 service-item" data-category="produit" data-aos="zoom-in" data-aos-delay="200">
+      <div class="card service-card h-100 p-4">
+        <div class="card-body">
+          <div class="text-center">
+            <i class="fas fa-leaf text-warning service-icon"></i>
+            <h5 class="card-title fw-bold">Produits Bio</h5>
+          </div>
+          <p class="card-text">Des produits agricoles biologiques certifiés, en provenance directe des fermes locales.</p>
+          <ul class="service-features">
+            <li>Certification biologique</li>
+            <li>Traçabilité complète</li>
+            <li>Livraison à domicile</li>
+            <li>Produits de saison</li>
+          </ul>
+          <div class="service-price">Prix variables selon les produits</div>
+          <div class="d-flex gap-2 justify-content-center mt-4">
+            <a href="{% url 'boutique_bio' %}" class="btn btn-warning" data-aos="fade-up">Voir la boutique</a>
+            <button type="button" class="btn btn-outline-secondary btn-service-details"
+                    data-service="produit" data-title="Produits Bio"
+                    data-description="Produits biologiques certifiés de nos fermes locales."
+                    data-features="Certification;Traçabilité;Livraison;Saisonnalité">
+              Détails
+            </button>
+            <button type="button" class="btn btn-success btn-demander-service" data-service="produit">Demander ce service</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-4 col-md-6 service-item" data-category="formation" data-aos="zoom-in" data-aos-delay="300">
+      <div class="card service-card h-100 p-4">
+        <div class="card-body">
+          <div class="text-center">
+            <i class="fas fa-chalkboard-teacher text-info service-icon"></i>
+            <h5 class="card-title fw-bold">Formation Agricole</h5>
+          </div>
+          <p class="card-text">Formations pratiques et théoriques pour maîtriser les techniques agricoles modernes.</p>
+          <ul class="service-features">
+            <li>Ateliers pratiques sur le terrain</li>
+            <li>Formations en petits groupes</li>
+            <li>Supports pédagogiques fournis</li>
+            <li>Certification à la fin du cursus</li>
+          </ul>
+          <div class="service-price">À partir de 75 000 FCFA / formation</div>
+          <div class="d-flex gap-2 justify-content-center mt-4">
+            <button type="button" class="btn btn-outline-secondary btn-service-details"
+                    data-service="formation" data-title="Formation Agricole"
+                    data-description="Formations pratiques et théoriques modernes."
+                    data-features="Ateliers;Groupes;Supports;Certification">
+              Détails
+            </button>
+            <button type="button" class="btn btn-info text-white btn-demander-service" data-service="formation">S'inscrire</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 service-item" data-category="analyse" data-aos="zoom-in" data-aos-delay="400">
+      <div class="card service-card h-100 p-4">
+        <div class="card-body">
+          <div class="text-center">
+            <i class="fas fa-flask text-danger service-icon"></i>
+            <h5 class="card-title fw-bold">Analyse de Sol</h5>
+          </div>
+          <p class="card-text">Analyses complètes de vos sols pour optimiser vos cultures et amendements.</p>
+          <ul class="service-features">
+            <li>Analyse physico-chimique</li>
+            <li>Rapport détaillé</li>
+            <li>Recommandations personnalisées</li>
+            <li>Suivi des évolutions</li>
+          </ul>
+          <div class="service-price">À partir de 35 000 FCFA / échantillon</div>
+          <div class="d-flex gap-2 justify-content-center mt-4">
+            <button type="button" class="btn btn-outline-secondary btn-service-details"
+                    data-service="analyse" data-title="Analyse de Sol"
+                    data-description="Analyses complètes de vos sols."
+                    data-features="Physico-chimique;Rapport;Recommandations;Suivi">
+              Détails
+            </button>
+            <button type="button" class="btn btn-danger btn-demander-service" data-service="analyse">Commander une analyse</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 service-item" data-category="gestion" data-aos="zoom-in" data-aos-delay="500">
+      <div class="card service-card h-100 p-4">
+        <div class="card-body">
+          <div class="text-center">
+            <i class="fas fa-chart-line text-secondary service-icon"></i>
+            <h5 class="card-title fw-bold">Conseil en Gestion</h5>
+          </div>
+          <p class="card-text">Optimisez la rentabilité de votre exploitation avec nos conseils en gestion financière.</p>
+          <ul class="service-features">
+            <li>Analyse financière</li>
+            <li>Optimisation des coûts</li>
+            <li>Stratégies de commercialisation</li>
+            <li>Accompagnement administratif</li>
+          </ul>
+          <div class="service-price">À partir de 60 000 FCFA / consultation</div>
+          <div class="d-flex gap-2 justify-content-center mt-4">
+            <button type="button" class="btn btn-outline-secondary btn-service-details"
+                    data-service="gestion" data-title="Conseil en Gestion"
+                    data-description="Améliorez votre rentabilité avec nos conseils."
+                    data-features="Analyse financière;Optimisation coûts;Stratégies;Accompagnement">
+              Détails
+            </button>
+            <button type="button" class="btn btn-secondary btn-demander-service" data-service="gestion">Prendre rendez-vous</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="testimonials" data-aos="fade-up">
+  <div class="container">
+    <h2 class="section-title">Ce que disent nos clients</h2>
+    <p class="section-subtitle">Découvrez les expériences de nos clients qui ont bénéficié de nos services</p>
+    
+    <div class="row">
+      <div class="col-lg-4 col-md-6">
+        <div class="testimonial-card">
+          <div class="testimonial-text">
+            "Grâce aux conseils agricoles, j'ai pu tripler ma production de maïs en seulement une saison. L'expertise et le suivi régulier ont fait toute la différence."
+          </div>
+          <div class="testimonial-author">
+            <img src="{% static 'dist/img/avatar1.jpg' %}" alt="Avatar" class="testimonial-avatar">
+            <div class="testimonial-info">
+              <p class="testimonial-name">Amadou Diallo</p>
+              <p class="testimonial-role">Agriculteur à Sikasso</p>
+              <div class="testimonial-rating">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6">
+        <div class="testimonial-card">
+          <div class="testimonial-text">
+            "La location de matériel est simple et efficace. Les équipements sont en excellent état et la livraison est toujours ponctuelle. Je recommande à tous les agriculteurs."
+          </div>
+          <div class="testimonial-author">
+            <img src="{% static 'dist/img/avatar2.jpg' %}" alt="Avatar" class="testimonial-avatar">
+            <div class="testimonial-info">
+              <p class="testimonial-name">Fatoumata Koné</p>
+              <p class="testimonial-role">Agricultrice à Koulikoro</p>
+              <div class="testimonial-rating">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star-half-alt"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-md-6">
+        <div class="testimonial-card">
+          <div class="testimonial-text">
+            "L'analyse de sol a révélé des carences que je n'aurais jamais soupçonnées. Après avoir suivi les recommandations, mes cultures sont plus saines et plus productives."
+          </div>
+          <div class="testimonial-author">
+            <img src="{% static 'dist/img/avatar3.jpg' %}" alt="Avatar" class="testimonial-avatar">
+            <div class="testimonial-info">
+              <p class="testimonial-name">Ibrahim Touré</p>
+              <p class="testimonial-role">Propriétaire de ferme à Ségou</p>
+              <div class="testimonial-rating">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="faq-section" data-aos="fade-up">
+  <div class="container">
+    <h2 class="section-title">Questions Fréquentes</h2>
+    <p class="section-subtitle">Trouvez rapidement des réponses à vos questions sur nos services</p>
+    
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="accordion" id="faqAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                Comment puis-je réserver du matériel agricole ?
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Vous pouvez réserver du matériel agricole en vous connectant à votre compte, en naviguant vers la section "Location de Matériel", puis en sélectionnant l'équipement souhaité et les dates de location. Vous pouvez également nous contacter directement par téléphone pour une réservation assistée.
+              </div>
+            </div>
+          </div>
+          
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                Quels types de conseils agricoles proposez-vous ?
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Nos conseils agricoles couvrent un large éventail de domaines, notamment la sélection des cultures adaptées à votre sol, les techniques d'irrigation optimales, la gestion des ravageurs et des maladies, les stratégies de fertilisation, et l'optimisation des rendements. Nos conseillers sont des experts dans différentes spécialités agricoles.
+              </div>
+            </div>
+          </div>
+          
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingThree">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                Comment se déroule une analyse de sol ?
+              </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                L'analyse de sol se déroule en plusieurs étapes : d'abord, nous prélevons des échantillons de sol à différents endroits et profondeurs de votre terrain. Ces échantillons sont ensuite envoyés à notre laboratoire partenaire pour analyse. Vous recevez un rapport détaillé sous 7 à 10 jours, suivi d'une consultation avec un de nos experts pour interpréter les résultats et vous proposer des recommandations adaptées.
+              </div>
+            </div>
+          </div>
+          
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFour">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                Les formations sont-elles accessibles aux débutants ?
+              </button>
+            </h2>
+            <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Absolument ! Nos formations sont conçues pour tous les niveaux, du débutant à l'agriculteur expérimenté. Nous proposons des modules spécifiques pour les personnes qui débutent en agriculture, avec une approche pédagogique adaptée et un accompagnement personnalisé. N'hésitez pas à préciser votre niveau lors de l'inscription.
+              </div>
+            </div>
+          </div>
+          
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFive">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                Comment sont sélectionnés vos produits bio ?
+              </button>
+            </h2>
+            <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Nos produits bio sont sélectionnés selon des critères stricts. Nous travaillons uniquement avec des producteurs certifiés qui respectent les normes biologiques. Chaque produit est contrôlé pour sa qualité, sa fraîcheur et sa traçabilité. Nous privilégions les circuits courts et les producteurs locaux pour garantir la fraîcheur et réduire l'empreinte carbone.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="demande-service" class="request-service-section" data-aos="fade-up">
+  <div class="container">
+    <h2 class="section-title">Demander un Service</h2>
+    <p class="section-subtitle">Complétez le formulaire ci-dessous pour demander un de nos services professionnels</p>
+    
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <form method="post" action="{% url 'demande_service' %}" class="p-4 bg-white rounded-3 shadow">
+          {% csrf_token %}
+          
+          <div class="mb-3">
+            <label for="service" class="form-label">Service souhaité</label>
+            <select class="form-select" id="service" name="service" required>
+              <option value="" selected disabled>Sélectionnez un service</option>
+              <option value="conseil">Conseil Agricole</option>
+              <option value="location">Location de Matériel</option>
+              <option value="produit">Produits Bio</option>
+              <option value="formation">Formation Agricole</option>
+              <option value="analyse">Analyse de Sol</option>
+              <option value="autre">Autre Service</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label for="date_souhaitee" class="form-label">Date souhaitée</label>
+            <input type="date" class="form-control" id="date_souhaitee" name="date_souhaitee">
+          </div>
+          
+          <div class="mb-3">
+            <label for="message" class="form-label">Votre demande en détail</label>
+            <textarea class="form-control" id="message" name="message" rows="5" placeholder="Décrivez votre besoin en détail..." required></textarea>
+          </div>
+          
+          <div class="text-center">
+            <button type="submit" class="btn btn-success btn-submit px-5 py-3">Envoyer ma demande</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="partner-section" data-aos="fade-up">
+  <div class="container text-center">
+    <h2 class="section-title">Nos Partenaires</h2>
+    <p class="section-subtitle">Nous collaborons avec des organisations de confiance pour vous offrir les meilleurs services</p>
+    
+    <div class="partner-logos">
+      <img src="{% static 'dist/img/23.png' %}" alt="Logo Partenaire 1">
+      <img src="{% static 'dist/img/23.png' %}" alt="Logo Partenaire 2">
+      <img src="{% static 'dist/img/23.png' %}" alt="Logo Partenaire 3">
+      <img src="{% static 'dist/img/23.png' %}" alt="Logo Partenaire 4">
+      <img src="{% static 'dist/img/23.png' %}" alt="Logo Partenaire 5">
+    </div>
+  </div>
+</div>
+<!-- Fixed Contact Banner -->
+<style>
+  .contact-banner {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, #198754, #157347);
+    color: #fff;
+    padding: 12px 0;
+    z-index: 1050;
+    box-shadow: 0 -6px 18px rgba(0,0,0,0.15);
+  }
+  .contact-banner .banner-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .contact-banner .banner-text { font-weight: 600; }
+  .contact-banner .btn { border-radius: 999px; font-weight: 600; }
+  @media (max-width: 576px){
+    .contact-banner .banner-text { display:none; }
+    .contact-banner .btn span { display: none; }
+  }
+  /* avoid overlap with fixed banner */
+  body { padding-bottom: 84px; }
+  footer { margin-bottom: 84px; }
+  .contact-banner .btn-outline-light { color: #fff; border-color: rgba(255,255,255,0.7); }
+  .contact-banner .btn-outline-light:hover { background: rgba(255,255,255,0.15); }
+  .contact-banner .btn-light { color: #157347; }
+  .contact-banner .btn-light:hover { background: #f8f9fa; }
+  .contact-banner .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+
+<div class="contact-banner">
+  <div class="container banner-inner">
+    <div class="banner-text">
+      Besoin d'aide ou d'un devis rapide ? Contactez-nous maintenant.
+    </div>
+    <div class="actions">
+      <a class="btn btn-light" target="_blank" rel="noopener" href="https://wa.me/22370000000?text=Bonjour%20Kayupe%20Agricole%2C%20j'ai%20besoin%20d'informations%20sur%20vos%20services.">
+        <i class="fab fa-whatsapp me-1"></i> <span>WhatsApp</span>
+      </a>
+      <a class="btn btn-outline-light" href="tel:+22370000000">
+        <i class="fa fa-phone me-1"></i> <span>Appeler</span>
+      </a>
+      <a class="btn btn-outline-light" href="mailto:contact@kayupe.com?subject=Demande%20d'information%20services">
+        <i class="fa fa-envelope me-1"></i> <span>Email</span>
+      </a>
+    </div>
+  </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  // Initialize AOS
+  AOS.init({ duration: 800, easing: 'ease-in-out', once: true });
+
+  // Smooth scroll for internal anchors
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      const targetId = this.getAttribute('href').slice(1);
+      const el = document.getElementById(targetId);
+      if (el) {
+        e.preventDefault();
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Filter tabs logic
+  const filterBar = document.getElementById('servicesFilters');
+  if (filterBar) {
+    filterBar.querySelectorAll('[data-filter]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        filterBar.querySelectorAll('.nav-link').forEach(x => x.classList.remove('active'));
+        this.classList.add('active');
+        const cat = this.getAttribute('data-filter');
+        document.querySelectorAll('.service-item').forEach(function(item){
+          const show = (cat === 'all') || (item.getAttribute('data-category') === cat);
+          item.style.display = show ? '' : 'none';
+        });
+      });
+    });
+  }
+
+  // Service details modal (Bootstrap modal structure appended below)
+  function openServiceDetailsModal(data) {
+    const titleEl = document.getElementById('sdm-title');
+    const descEl = document.getElementById('sdm-desc');
+    const listEl = document.getElementById('sdm-features');
+    const askBtn = document.getElementById('sdm-ask');
+    if (titleEl) titleEl.textContent = data.title || '';
+    if (descEl) descEl.textContent = data.description || '';
+    if (listEl) {
+      listEl.innerHTML = '';
+      (data.features || []).forEach(function(f){
+        const li = document.createElement('li'); li.textContent = f; listEl.appendChild(li);
+      });
+    }
+    if (askBtn) {
+      askBtn.setAttribute('data-service', data.service || '');
+    }
+    $('#serviceDetailsModal').modal('show');
+  }
+
+  document.querySelectorAll('.btn-service-details').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const service = this.getAttribute('data-service');
+      const title = this.getAttribute('data-title');
+      const description = this.getAttribute('data-description');
+      const features = (this.getAttribute('data-features') || '').split(';').map(s => s.trim()).filter(Boolean);
+      openServiceDetailsModal({ service, title, description, features });
+    });
+  });
+
+  // Preselect service in request form
+  function preselectService(value){
+    const select = document.getElementById('service');
+    if (select) {
+      select.value = value || '';
+    }
+    const section = document.getElementById('demande-service');
+    section && section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.querySelectorAll('.btn-demander-service').forEach(function(btn){
+    btn.addEventListener('click', function(){ preselectService(this.getAttribute('data-service')); });
+  });
+  const sdmAsk = document.getElementById('sdm-ask');
+  if (sdmAsk) { sdmAsk.addEventListener('click', function(){ preselectService(this.getAttribute('data-service')); }); }
+
+  // SweetAlert2 confirmation on request form submit (AJAX)
+  const form = document.querySelector('#demande-service form');
+  if (form) {
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const formData = new FormData(form);
+      const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+      fetch(form.getAttribute('action'), {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrfInput ? csrfInput.value : '' },
+        body: formData
+      }).then(function(res){
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.text();
+      }).then(function(){
+        Swal.fire({ icon: 'success', title: 'Demande envoyée', text: 'Nous vous contacterons très vite.', timer: 2500, showConfirmButton: false });
+        form.reset();
+      }).catch(function(){
+        Swal.fire({ icon: 'error', title: 'Erreur', text: 'Impossible d\'envoyer votre demande pour le moment.' });
+      });
+    });
+  }
+</script>
+
+<!-- Service Details Modal -->
+<div class="modal fade" id="serviceDetailsModal" tabindex="-1" role="dialog" aria-labelledby="serviceDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="serviceDetailsModalLabel"><span id="sdm-title"></span></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="sdm-desc" class="mb-3"></p>
+        <ul id="sdm-features" class="list-unstyled mb-0"></ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="sdm-ask" class="btn btn-success" data-service="">Demander ce service</button>
+        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

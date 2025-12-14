@@ -1,0 +1,22 @@
+<!-- templates/partials/_navbar.html -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold text-uppercase" href="{% url 'admin_home' %}">🌿 FAMA Agricole</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+            aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link" href="{% url 'liste_clients' %}">Clients</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'agri_home' %}">Agriculteurs</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'manage_produit' %}">Produits</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'liste_commandes' %}">Commandes</a></li>
+            </ul>
+            <span class="navbar-text text-light">
+                Admin - {{ request.user.username }}
+            </span>
+        </div>
+    </div>
+</nav>

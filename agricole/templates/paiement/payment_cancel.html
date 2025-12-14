@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-warning">
+        <h4>Paiement annulé</h4>
+        <p>La procédure de paiement a été annulée. Vous pouvez réessayer à tout moment.</p>
+        <a href="{% url 'initiate_payment' %}" class="btn btn-secondary">Réessayer le paiement</a>
+        <a href="{% url 'home' %}" class="btn btn-primary">Retour à l'accueil</a>
+    </div>
+</div>
+{% endblock %}

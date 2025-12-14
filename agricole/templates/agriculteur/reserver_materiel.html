@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Réserver {{ materiel.nom }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Réserver le matériel : {{ materiel.nom }}</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-6">
+            {% if materiel.photo %}
+            <img src="{{ materiel.photo.url }}" alt="{{ materiel.nom }}" class="img-fluid rounded shadow-sm mb-3">
+            {% endif %}
+            <p><strong>Catégorie :</strong> {{ materiel.categorie }}</p>
+            <p><strong>Description :</strong> {{ materiel.description|default:"Pas de description." }}</p>
+            <p><strong>Prix de location :</strong> {{ materiel.prix_location }} FCFA / jour</p>
+            <p><strong>Disponibilité :</strong>
+                {% if materiel.disponible %}
+                    <span class="badge bg-success">Disponible</span>
+                {% else %}
+                    <span class="badge bg-danger">Indisponible</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="col-md-6">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="id_date_debut" class="form-label">Date de début</label>
+                    <input type="date" name="date_debut" id="id_date_debut" class="form-control" required min="{{ today }}">
+                </div>
+                <div class="mb-3">
+                    <label for="id_date_fin" class="form-label">Date de fin</label>
+                    <input type="date" name="date_fin" id="id_date_fin" class="form-control" required min="{{ today }}">
+                </div>
+                <div class="mb-3">
+                    <label for="id_commentaire" class="form-label">Commentaire (optionnel)</label>
+                    <textarea name="commentaire" id="id_commentaire" rows="3" class="form-control"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Envoyer la demande de réservation</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

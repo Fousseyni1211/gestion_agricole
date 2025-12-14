@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier mon profil{% endblock %}
+
+{% block content %}
+<div class="container py-5 fade-in">
+  <div class="card shadow-lg border-0">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0"><i class="bi bi-person-circle"></i> Modifier mon profil</h4>
+    </div>
+    <div class="card-body">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="first_name" class="form-label">Prénom</label>
+            <input type="text" name="first_name" id="first_name" class="form-control" value="{{ user.first_name }}" required>
+          </div>
+          <div class="col-md-6">
+            <label for="last_name" class="form-label">Nom</label>
+            <input type="text" name="last_name" id="last_name" class="form-control" value="{{ user.last_name }}" required>
+          </div>
+          <div class="col-md-6">
+            <label for="email" class="form-label">Adresse Email</label>
+            <input type="email" name="email" id="email" class="form-control" value="{{ user.email }}" required>
+          </div>
+          <div class="col-md-6">
+            <label for="phone_number" class="form-label">Téléphone</label>
+            <input type="text" name="phone_number" id="phone_number" class="form-control" value="{{ user.phone_number }}">
+          </div>
+        </div>
+
+        <div class="mt-4 text-end">
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-save"></i> Enregistrer les modifications
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

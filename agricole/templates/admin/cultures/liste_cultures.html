@@ -1,0 +1,97 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Gestion des Cultures{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-leaf"></i> Gestion des Cultures
+        </h1>
+        <a href="{% url 'ajouter_culture' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Ajouter une Culture
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des Cultures</h6>
+        </div>
+        <div class="card-body">
+            {% if cultures %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Type</th>
+                                <th>Durée du cycle</th>
+                                <th>Rendement moyen</th>
+                                <th>Période de semis</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for culture in cultures %}
+                            <tr>
+                                <td>
+                                    <strong>{{ culture.nom }}</strong>
+                                    {% if culture.description %}
+                                        <br><small class="text-muted">{{ culture.description|truncatechars:50 }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">{{ culture.get_type_culture_display }}</span>
+                                </td>
+                                <td>{{ culture.duree_cycle }} jours</td>
+                                <td>{{ culture.rendement_moyen }} t/ha</td>
+                                <td>{{ culture.periode_semis_optimale|default:"Non spécifiée" }}</td>
+                                <td>
+                                    {% if culture.est_actif %}
+                                        <span class="badge badge-success">Active</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'modifier_culture' culture.id %}" class="btn btn-sm btn-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'supprimer_culture' culture.id %}" class="btn btn-sm btn-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-seedling fa-3x text-gray-300 mb-3"></i>
+                    <h5 class="text-gray-500">Aucune culture enregistrée</h5>
+                    <p class="text-gray-400">Commencez par ajouter votre première culture.</p>
+                    <a href="{% url 'ajouter_culture' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter une Culture
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

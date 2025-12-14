@@ -1,0 +1,1710 @@
+{% extends 'client/base.html' %}
+{% load static %}
+
+{% block title %}Conseil Agricole - FAMA{% endblock %}
+
+{% block extra_css %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Font Awesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- AOS Animation Library -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<style>
+    :root {
+        /* Enhanced Agricultural Color Palette 2025 */
+        --primary-green: #2E7D32;
+        --primary-green-light: #4CAF50;
+        --primary-green-dark: #1B5E20;
+        --secondary-green: #66BB6A;
+        --accent-gold: #FFB300;
+        --earth-brown: #6D4C41;
+        --sky-blue: #42A5F5;
+        --sun-yellow: #FFCA28;
+        --soil-brown: #5D4037;
+        --leaf-green: #689F38;
+        --harvest-orange: #FF8A65;
+        --wheat-gold: #FDD835;
+        --nature-teal: #26A69A;
+        --forest-green: #2E4E2E;
+        --spring-green: #7CB342;
+        --autumn-orange: #FF6F00;
+        --winter-blue: #1976D2;
+        
+        /* Premium Gradients */
+        --gradient-primary: linear-gradient(135deg, #2E7D32 0%, #4CAF50 50%, #689F38 100%);
+        --gradient-secondary: linear-gradient(135deg, #66BB6A 0%, #7CB342 50%, #8BC34A 100%);
+        --gradient-accent: linear-gradient(135deg, #FFB300 0%, #FFCA28 50%, #FFD54F 100%);
+        --gradient-earth: linear-gradient(135deg, #6D4C41 0%, #5D4037 50%, #4E342E 100%);
+        --gradient-sky: linear-gradient(135deg, #42A5F5 0%, #1976D2 50%, #1565C0 100%);
+        --gradient-sun: linear-gradient(135deg, #FFCA28 0%, #FFB300 50%, #FF8F00 100%);
+        --gradient-harvest: linear-gradient(135deg, #FF8A65 0%, #FF6F00 50%, #FF5722 100%);
+        --gradient-forest: linear-gradient(135deg, #2E4E2E 0%, #1B5E20 50%, #0D47A1 100%);
+        
+        /* Advanced Shadows */
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+        --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
+        --shadow-green: 0 10px 30px rgba(46, 125, 50, 0.3);
+        --shadow-gold: 0 10px 30px rgba(255, 179, 0, 0.3);
+        --shadow-blue: 0 10px 30px rgba(66, 165, 245, 0.3);
+        
+        /* Modern Spacing */
+        --spacing-xs: 0.25rem;
+        --spacing-sm: 0.5rem;
+        --spacing-md: 1rem;
+        --spacing-lg: 1.5rem;
+        --spacing-xl: 2rem;
+        --spacing-2xl: 3rem;
+        --spacing-3xl: 4rem;
+        --spacing-4xl: 5rem;
+        
+        /* Modern Border Radius */
+        --radius-sm: 0.375rem;
+        --radius-md: 0.5rem;
+        --radius-lg: 0.75rem;
+        --radius-xl: 1rem;
+        --radius-2xl: 1.5rem;
+        --radius-3xl: 2rem;
+        --radius-4xl: 3rem;
+        --radius-full: 9999px;
+    }
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: 
+            radial-gradient(circle at 15% 25%, rgba(46, 125, 50, 0.08) 0%, transparent 40%),
+            radial-gradient(circle at 85% 15%, rgba(255, 179, 0, 0.06) 0%, transparent 35%),
+            radial-gradient(circle at 45% 75%, rgba(66, 165, 245, 0.04) 0%, transparent 30%),
+            radial-gradient(circle at 75% 85%, rgba(104, 159, 56, 0.05) 0%, transparent 25%),
+            linear-gradient(135deg, #f8fafc 0%, #f1f8e9 30%, #e8f5e9 60%, #f1f8e9 100%);
+        color: #1a1a1a;
+        line-height: 1.6;
+        font-weight: 400;
+        min-height: 100vh;
+        position: relative;
+    }
+    
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 20%, rgba(46, 125, 50, 0.12) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 179, 0, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 40% 60%, rgba(66, 165, 245, 0.06) 0%, transparent 50%),
+            radial-gradient(circle at 70% 30%, rgba(104, 159, 56, 0.04) 0%, transparent 40%);
+        pointer-events: none;
+        z-index: -1;
+        animation: backgroundPulse 20s ease-in-out infinite;
+    }
+    
+    @keyframes backgroundPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    /* Premium Page Header */
+    .page-header {
+        background: white;
+        border-radius: var(--radius-3xl);
+        padding: var(--spacing-2xl);
+        margin-bottom: var(--spacing-2xl);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid rgba(46, 125, 50, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--gradient-primary);
+        animation: headerGlow 3s ease-in-out infinite;
+    }
+    
+    @keyframes headerGlow {
+        0%, 100% { 
+            background: var(--gradient-primary);
+            box-shadow: 0 0 20px rgba(46, 125, 50, 0.3);
+        }
+        50% { 
+            background: var(--gradient-secondary);
+            box-shadow: 0 0 30px rgba(102, 187, 106, 0.4);
+        }
+    }
+    
+    .page-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--spacing-xl);
+    }
+    
+    .page-title {
+        font-size: 3rem;
+        font-weight: 900;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: var(--spacing-sm);
+        letter-spacing: -0.025em;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-lg);
+        position: relative;
+    }
+    
+    .page-title i {
+        font-size: 2.5rem;
+        background: var(--gradient-accent);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: iconFloat 3s ease-in-out infinite;
+    }
+    
+    @keyframes iconFloat {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-8px) rotate(5deg); }
+    }
+    
+    .page-subtitle {
+        color: #6b7280;
+        font-size: 1.25rem;
+        font-weight: 500;
+        margin-top: var(--spacing-sm);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+    
+    .page-subtitle::before {
+        content: '🌾';
+        font-size: 1.2rem;
+    }
+    
+    .page-badge {
+        background: var(--gradient-accent);
+        color: white;
+        padding: var(--spacing-md) var(--spacing-xl);
+        border-radius: var(--radius-full);
+        font-weight: 700;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        box-shadow: var(--shadow-gold);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-badge::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .page-badge:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(255, 179, 0, 0.4);
+    }
+    
+    .page-badge:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    /* Premium Hero Section */
+    .hero-section {
+        background: white;
+        border-radius: var(--radius-3xl);
+        padding: var(--spacing-3xl);
+        margin-bottom: var(--spacing-2xl);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid rgba(46, 125, 50, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--gradient-sun);
+        animation: heroGlow 4s ease-in-out infinite;
+    }
+    
+    @keyframes heroGlow {
+        0%, 100% { 
+            background: var(--gradient-sun);
+            box-shadow: 0 0 20px rgba(255, 202, 40, 0.3);
+        }
+        50% { 
+            background: var(--gradient-accent);
+            box-shadow: 0 0 30px rgba(255, 179, 0, 0.4);
+        }
+    }
+    
+    .hero-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-3xl);
+        align-items: center;
+    }
+    
+    .hero-text h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: var(--spacing-lg);
+        line-height: 1.3;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+    
+    .hero-text h2::before {
+        content: '🚜';
+        font-size: 2rem;
+        background: none;
+        -webkit-text-fill-color: initial;
+    }
+    
+    .hero-text p {
+        color: #4b5563;
+        font-size: 1.25rem;
+        line-height: 1.8;
+        margin-bottom: var(--spacing-xl);
+        position: relative;
+        padding-left: var(--spacing-lg);
+    }
+    
+    .hero-text p::before {
+        content: '🌱';
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-size: 1.5rem;
+    }
+    
+    .hero-features {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-xl);
+    }
+    
+    .hero-feature {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md);
+        background: rgba(46, 125, 50, 0.05);
+        border-radius: var(--radius-lg);
+        transition: all 0.3s ease;
+    }
+    
+    .hero-feature:hover {
+        background: rgba(46, 125, 50, 0.1);
+        transform: translateX(5px);
+    }
+    
+    .hero-feature i {
+        font-size: 1.2rem;
+        color: var(--primary-green);
+    }
+    
+    .hero-feature span {
+        color: #4b5563;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+    
+    .hero-image {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+    
+    .hero-image-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+        aspect-ratio: 16/12;
+        border-radius: var(--radius-2xl);
+        overflow: hidden;
+        box-shadow: var(--shadow-2xl);
+        background: var(--gradient-primary);
+        padding: 4px;
+    }
+    
+    .hero-image-wrapper::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: var(--gradient-accent);
+        border-radius: var(--radius-2xl);
+        z-index: -1;
+        animation: borderRotate 8s linear infinite;
+    }
+    
+    @keyframes borderRotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .hero-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: var(--radius-xl);
+    }
+    
+    .hero-badges {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .hero-badge {
+        background: var(--gradient-accent);
+        color: white;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 0.8rem;
+        box-shadow: var(--shadow-gold);
+        animation: badgeFloat 3s ease-in-out infinite;
+        animation-delay: 0.5s;
+    }
+    
+    @keyframes badgeFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+    
+    /* Premium Advice Categories */
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: var(--spacing-2xl);
+        margin-bottom: var(--spacing-3xl);
+    }
+    
+    .category-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: var(--spacing-2xl);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid rgba(46, 125, 50, 0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-primary);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+    
+    .category-card:hover {
+        box-shadow: var(--shadow-2xl);
+        transform: translateY(-12px) scale(1.02);
+    }
+    
+    .category-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .category-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-2xl);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: var(--spacing-xl);
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .category-icon::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transform: rotate(45deg);
+        transition: all 0.6s ease;
+        opacity: 0;
+    }
+    
+    .category-card:hover .category-icon::before {
+        animation: iconShine 0.6s ease-in-out;
+    }
+    
+    @keyframes iconShine {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); opacity: 0; }
+    }
+    
+    .category-icon i {
+        font-size: 2rem;
+        color: white;
+        z-index: 1;
+        position: relative;
+    }
+    
+    .category-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: var(--spacing-md);
+        line-height: 1.3;
+    }
+    
+    .category-description {
+        color: #6b7280;
+        font-size: 1rem;
+        line-height: 1.7;
+        margin-bottom: var(--spacing-xl);
+        min-height: 60px;
+    }
+    
+    .category-link {
+        color: var(--primary-green);
+        font-weight: 700;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        transition: all 0.3s ease;
+        position: relative;
+        text-decoration: none;
+    }
+    
+    .category-link::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--gradient-primary);
+        transition: width 0.3s ease;
+    }
+    
+    .category-link:hover {
+        color: var(--primary-green-dark);
+        transform: translateX(8px);
+    }
+    
+    .category-link:hover::after {
+        width: 100%;
+    }
+    
+    .category-stats {
+        display: flex;
+        gap: var(--spacing-lg);
+        margin-top: var(--spacing-lg);
+        padding-top: var(--spacing-lg);
+        border-top: 1px solid rgba(46, 125, 50, 0.1);
+    }
+    
+    .category-stat {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        color: #9ca3af;
+        font-size: 0.875rem;
+    }
+    
+    .category-stat i {
+        color: var(--primary-green);
+        font-size: 1rem;
+    }
+    
+    /* Premium Tips Section */
+    .tips-section {
+        background: white;
+        border-radius: var(--radius-3xl);
+        padding: var(--spacing-3xl);
+        margin-bottom: var(--spacing-2xl);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid rgba(46, 125, 50, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .tips-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-secondary);
+        animation: tipsGlow 5s ease-in-out infinite;
+    }
+    
+    @keyframes tipsGlow {
+        0%, 100% { 
+            background: var(--gradient-secondary);
+            box-shadow: 0 0 20px rgba(102, 187, 106, 0.3);
+        }
+        50% { 
+            background: var(--gradient-primary);
+            box-shadow: 0 0 30px rgba(46, 125, 50, 0.4);
+        }
+    }
+    
+    .section-title {
+        font-size: 2.25rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: var(--spacing-2xl);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-lg);
+    }
+    
+    .section-title i {
+        font-size: 2rem;
+        background: var(--gradient-accent);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: titleIconFloat 3s ease-in-out infinite;
+    }
+    
+    @keyframes titleIconFloat {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-5px) rotate(10deg); }
+    }
+    
+    .tips-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: var(--spacing-xl);
+    }
+    
+    .tip-card {
+        background: linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(104, 159, 56, 0.08) 100%);
+        border-radius: var(--radius-2xl);
+        padding: var(--spacing-xl);
+        border-left: 4px solid var(--gradient-primary);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .tip-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 100%;
+        background: linear-gradient(90deg, rgba(46, 125, 50, 0.1) 0%, transparent 100%);
+        transition: width 0.3s ease;
+    }
+    
+    .tip-card:hover {
+        background: linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(104, 159, 56, 0.15) 100%);
+        transform: translateX(8px) scale(1.02);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .tip-card:hover::before {
+        width: 100%;
+    }
+    
+    .tip-header {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .tip-number {
+        background: var(--gradient-primary);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.125rem;
+        box-shadow: var(--shadow-green);
+        position: relative;
+    }
+    
+    .tip-number::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: var(--gradient-accent);
+        border-radius: 50%;
+        z-index: -1;
+        animation: numberPulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes numberPulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.7; }
+    }
+    
+    .tip-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--gradient-accent);
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-gold);
+    }
+    
+    .tip-icon i {
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .tip-content {
+        flex: 1;
+    }
+    
+    .tip-text {
+        color: #4b5563;
+        font-size: 1rem;
+        line-height: 1.7;
+        font-weight: 500;
+        position: relative;
+        padding-left: var(--spacing-lg);
+    }
+    
+    .tip-text::before {
+        content: '💡';
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-size: 1.2rem;
+    }
+    
+    .tip-text strong {
+        color: var(--primary-green);
+        font-weight: 700;
+    }
+    
+    .tip-category {
+        display: inline-block;
+        background: var(--gradient-secondary);
+        color: white;
+        padding: var(--spacing-xs) var(--spacing-md);
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: var(--spacing-md);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    /* Contact Section */
+    .contact-section {
+        background: var(--gradient-primary);
+        border-radius: var(--radius-2xl);
+        padding: var(--spacing-2xl);
+        margin-bottom: var(--spacing-xl);
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .contact-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    
+    .contact-content {
+        position: relative;
+        text-align: center;
+    }
+    
+    .contact-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .contact-description {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.125rem;
+        line-height: 1.7;
+        margin-bottom: var(--spacing-xl);
+    }
+    
+    .contact-buttons {
+        display: flex;
+        gap: var(--spacing-md);
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-contact {
+        padding: var(--spacing-md) var(--spacing-xl);
+        border-radius: var(--radius-xl);
+        border: none;
+        font-weight: 600;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    
+    .btn-primary {
+        background: white;
+        color: var(--primary-green);
+        box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+        color: var(--primary-green-dark);
+    }
+    
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+    }
+    
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    /* Loading Animation */
+    .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* WhatsApp Community Section */
+    .whatsapp-community {
+        background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+        border-radius: var(--radius-2xl);
+        padding: var(--spacing-2xl);
+        margin-bottom: var(--spacing-xl);
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .whatsapp-community::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    
+    .community-content {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-2xl);
+        align-items: center;
+    }
+    
+    .community-text h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: var(--spacing-md);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+    
+    .community-text h2 i {
+        font-size: 1.8rem;
+        color: white;
+    }
+    
+    .community-description {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.125rem;
+        line-height: 1.7;
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .community-benefits {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-xl);
+    }
+    
+    .benefit-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.95rem;
+    }
+    
+    .benefit-item i {
+        color: white;
+        font-size: 1.1rem;
+    }
+    
+    .community-actions {
+        display: flex;
+        gap: var(--spacing-md);
+        flex-wrap: wrap;
+    }
+    
+    .btn-whatsapp {
+        padding: var(--spacing-md) var(--spacing-xl);
+        border-radius: var(--radius-xl);
+        border: none;
+        font-weight: 600;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    
+    .btn-whatsapp-primary {
+        background: white;
+        color: #25D366;
+        box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+    }
+    
+    .btn-whatsapp-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+        color: #128C7E;
+    }
+    
+    .btn-whatsapp-secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+    }
+    
+    .btn-whatsapp-secondary:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .community-visual {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+    
+    .whatsapp-phone {
+        width: 280px;
+        height: 560px;
+        background: white;
+        border-radius: 40px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+        border: 8px solid #1a1a1a;
+    }
+    
+    .whatsapp-screen {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #ECE5DD 0%, #DCF8C6 100%);
+        padding: var(--spacing-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .whatsapp-header {
+        background: #075E54;
+        color: white;
+        padding: var(--spacing-md);
+        border-radius: var(--radius-lg);
+        text-align: center;
+        font-weight: 600;
+    }
+    
+    .whatsapp-messages {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        overflow: hidden;
+    }
+    
+    .message {
+        background: white;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius-lg);
+        max-width: 80%;
+        animation: messageSlide 2s ease-in-out infinite;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .message.sent {
+        align-self: flex-end;
+        background: #DCF8C6;
+    }
+    
+    .message.received {
+        align-self: flex-start;
+        background: white;
+    }
+    
+    @keyframes messageSlide {
+        0%, 100% { opacity: 0.7; transform: translateY(0); }
+        50% { opacity: 1; transform: translateY(-5px); }
+    }
+    
+    .community-stats {
+        display: flex;
+        gap: var(--spacing-lg);
+        margin-top: var(--spacing-lg);
+        justify-content: center;
+    }
+    
+    .stat-item {
+        text-align: center;
+        color: white;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-xs);
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-header-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .hero-content {
+            grid-template-columns: 1fr;
+            gap: var(--spacing-lg);
+        }
+        
+        .categories-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .tips-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .community-content {
+            grid-template-columns: 1fr;
+            gap: var(--spacing-lg);
+        }
+        
+        .community-benefits {
+            grid-template-columns: 1fr;
+        }
+        
+        .whatsapp-phone {
+            width: 240px;
+            height: 480px;
+        }
+        
+        .contact-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .btn-contact,
+        .btn-whatsapp {
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Premium Page Header -->
+<div class="page-header" data-aos="fade-down">
+    <div class="page-header-content">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-lightbulb"></i>
+                Conseil Agricole
+            </h1>
+            <p class="page-subtitle">Expertise et conseils pour une agriculture moderne et durable</p>
+        </div>
+        <div class="page-badge">
+            <i class="fas fa-graduation-cap"></i>
+            Expert FAMA
+        </div>
+    </div>
+</div>
+
+<!-- Premium Hero Section -->
+<div class="hero-section" data-aos="fade-up" data-aos-delay="100">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h2>Optimisez votre production agricole</h2>
+            <p>
+                Accédez à des conseils d'experts personnalisés pour améliorer vos rendements, 
+                protéger vos cultures et adopter des pratiques durables. Notre équipe d'agronomes 
+                vous accompagne à chaque étape de votre projet agricole.
+            </p>
+            
+            <div class="hero-features">
+                <div class="hero-feature">
+                    <i class="fas fa-chart-line"></i>
+                    <span>+30% de rendement</span>
+                </div>
+                <div class="hero-feature">
+                    <i class="fas fa-leaf"></i>
+                    <span>100% Bio</span>
+                </div>
+                <div class="hero-feature">
+                    <i class="fas fa-users"></i>
+                    <span>500+ agriculteurs</span>
+                </div>
+                <div class="hero-feature">
+                    <i class="fas fa-clock"></i>
+                    <span>Support 24/7</span>
+                </div>
+            </div>
+            
+            <div class="contact-buttons">
+                <button class="btn-contact btn-primary" onclick="requestConsultation()">
+                    <i class="fas fa-calendar-check"></i>
+                    Demander une consultation
+                </button>
+                <button class="btn-contact btn-secondary" onclick="viewResources()">
+                    <i class="fas fa-book-open"></i>
+                    Ressources gratuites
+                </button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="hero-image-wrapper">
+                <img src="{% static 'dist/img/agricultural-advice.jpg' %}" alt="Conseil agricole">
+            </div>
+            <div class="hero-badges">
+                <div class="hero-badge">
+                    <i class="fas fa-award"></i> Expert
+                </div>
+                <div class="hero-badge">
+                    <i class="fas fa-star"></i> 5.0/5
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Premium Advice Categories -->
+<div class="categories-grid" data-aos="fade-up" data-aos-delay="200">
+    <div class="category-card" onclick="openCategory('culture')">
+        <div class="category-icon" style="background: var(--gradient-primary);">
+            <i class="fas fa-seedling"></i>
+        </div>
+        <h3 class="category-title">Culture et Semis</h3>
+        <p class="category-description">
+            Conseils sur le choix des semences, calendriers de plantation, 
+            techniques de semis et gestion des cycles culturaux.
+        </p>
+        <div class="category-stats">
+            <div class="category-stat">
+                <i class="fas fa-book"></i>
+                <span>50+ guides</span>
+            </div>
+            <div class="category-stat">
+                <i class="fas fa-users"></i>
+                <span>200+ experts</span>
+            </div>
+        </div>
+        <a href="#" class="category-link">
+            <i class="fas fa-arrow-right"></i>
+            Explorer les conseils
+        </a>
+    </div>
+    
+    <div class="category-card" onclick="openCategory('protection')">
+        <div class="category-icon" style="background: var(--gradient-accent);">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        <h3 class="category-title">Protection des Cultures</h3>
+        <p class="category-description">
+            Stratégies de lutte contre les maladies et ravageurs, 
+            utilisation raisonnée des pesticides et alternatives biologiques.
+        </p>
+        <div class="category-stats">
+            <div class="category-stat">
+                <i class="fas fa-bug"></i>
+                <span>30+ solutions</span>
+            </div>
+            <div class="category-stat">
+                <i class="fas fa-leaf"></i>
+                <span>100% bio</span>
+            </div>
+        </div>
+        <a href="#" class="category-link">
+            <i class="fas fa-arrow-right"></i>
+            Explorer les conseils
+        </a>
+    </div>
+    
+    <div class="category-card" onclick="openCategory('fertilisation')">
+        <div class="category-icon" style="background: var(--gradient-sun);">
+            <i class="fas fa-flask"></i>
+        </div>
+        <h3 class="category-title">Fertilisation</h3>
+        <p class="category-description">
+            Analyse de sol, programmes de fertilisation, 
+            engrais organiques et minéraux, nutrition végétale optimisée.
+        </p>
+        <div class="category-stats">
+            <div class="category-stat">
+                <i class="fas fa-vial"></i>
+                <span>15+ tests</span>
+            </div>
+            <div class="category-stat">
+                <i class="fas fa-chart-line"></i>
+                <span>+40% rendement</span>
+            </div>
+        </div>
+        <a href="#" class="category-link">
+            <i class="fas fa-arrow-right"></i>
+            Explorer les conseils
+        </a>
+    </div>
+    
+    <div class="category-card" onclick="openCategory('irrigation')">
+        <div class="category-icon" style="background: var(--gradient-sky);">
+            <i class="fas fa-tint"></i>
+        </div>
+        <h3 class="category-title">Irrigation</h3>
+        <p class="category-description">
+            Gestion de l'eau, systèmes d'irrigation, 
+            programmation d'arrosage et économie d'eau en agriculture.
+        </p>
+        <div class="category-stats">
+            <div class="category-stat">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>10+ systèmes</span>
+            </div>
+            <div class="category-stat">
+                <i class="fas fa-droplet"></i>
+                <span>-50% eau</span>
+            </div>
+        </div>
+        <a href="#" class="category-link">
+            <i class="fas fa-arrow-right"></i>
+            Explorer les conseils
+        </a>
+    </div>
+    
+    <div class="category-card" onclick="openCategory('recolte')">
+        <div class="category-icon" style="background: var(--gradient-harvest);">
+            <i class="fas fa-wheat-awn"></i>
+        </div>
+        <h3 class="category-title">Récolte et Stockage</h3>
+        <p class="category-description">
+            Timing optimal de récolte, techniques de stockage, 
+            conservation des grains et gestion post-récolte.
+        </p>
+        <div class="category-stats">
+            <div class="category-stat">
+                <i class="fas fa-warehouse"></i>
+                <span>8+ méthodes</span>
+            </div>
+            <div class="category-stat">
+                <i class="fas fa-percentage"></i>
+                <span>-20% pertes</span>
+            </div>
+        </div>
+        <a href="#" class="category-link">
+            <i class="fas fa-arrow-right"></i>
+            Explorer les conseils
+        </a>
+    </div>
+    
+    <div class="category-card" onclick="openCategory('economie')">
+        <div class="category-icon" style="background: var(--gradient-secondary);">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <h3 class="category-title">Gestion Économique</h3>
+        <p class="category-description">
+            Analyse des coûts, optimisation des marges, 
+            commercialisation et planification financière agricole.
+        </p>
+        <div class="category-stats">
+            <div class="category-stat">
+                <i class="fas fa-calculator"></i>
+                <span>25+ outils</span>
+            </div>
+            <div class="category-stat">
+                <i class="fas fa-coins"></i>
+                <span>+35% profit</span>
+            </div>
+        </div>
+        <a href="#" class="category-link">
+            <i class="fas fa-arrow-right"></i>
+            Explorer les conseils
+        </a>
+    </div>
+</div>
+
+<!-- Premium Tips Section -->
+<div class="tips-section" data-aos="fade-up" data-aos-delay="300">
+    <h2 class="section-title">
+        <i class="fas fa-star"></i>
+        Conseils Rapides du Jour
+    </h2>
+    <div class="tips-grid">
+        <div class="tip-card">
+            <div class="tip-header">
+                <div class="tip-number">1</div>
+                <div class="tip-icon">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <div class="tip-content">
+                    <div class="tip-category">IRRIGATION</div>
+                </div>
+            </div>
+            <p class="tip-text">
+                <strong>Vérifiez l'humidité du sol</strong> avant d'irriguer. 
+                Un simple test avec votre main peut vous indiquer si l'arrosage est nécessaire.
+            </p>
+        </div>
+        
+        <div class="tip-card">
+            <div class="tip-header">
+                <div class="tip-number">2</div>
+                <div class="tip-icon" style="background: var(--gradient-primary);">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="tip-content">
+                    <div class="tip-category">OBSERVATION</div>
+                </div>
+            </div>
+            <p class="tip-text">
+                <strong>Observez vos cultures quotidiennement</strong> pour détecter 
+                rapidement les signes de maladies ou de carences nutritionnelles.
+            </p>
+        </div>
+        
+        <div class="tip-card">
+            <div class="tip-header">
+                <div class="tip-number">3</div>
+                <div class="tip-icon" style="background: var(--gradient-secondary);">
+                    <i class="fas fa-sync-alt"></i>
+                </div>
+                <div class="tip-content">
+                    <div class="tip-category">ROTATION</div>
+                </div>
+            </div>
+            <p class="tip-text">
+                <strong>Planifiez vos rotations culturales</strong> pour améliorer 
+                la santé du sol et réduire les problèmes de maladies et de ravageurs.
+            </p>
+        </div>
+        
+        <div class="tip-card">
+            <div class="tip-header">
+                <div class="tip-number">4</div>
+                <div class="tip-icon" style="background: var(--gradient-accent);">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="tip-content">
+                    <div class="tip-category">SUIVI</div>
+                </div>
+            </div>
+            <p class="tip-text">
+                <strong>Gardez un journal de bord</strong> de vos activités agricoles 
+                pour analyser vos performances et prendre de meilleures décisions.
+            </p>
+        </div>
+        
+        <div class="tip-card">
+            <div class="tip-header">
+                <div class="tip-number">5</div>
+                <div class="tip-icon" style="background: var(--gradient-sky);">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="tip-content">
+                    <div class="tip-category">PROTECTION</div>
+                </div>
+            </div>
+            <p class="tip-text">
+                <strong>Adoptez la lutte intégrée</strong> en combinant différentes 
+                méthodes de protection pour réduire l'utilisation de pesticides.
+            </p>
+        </div>
+        
+        <div class="tip-card">
+            <div class="tip-header">
+                <div class="tip-number">6</div>
+                <div class="tip-icon" style="background: var(--gradient-sun);">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="tip-content">
+                    <div class="tip-category">FORMATION</div>
+                </div>
+            </div>
+            <p class="tip-text">
+                <strong>Formez-vous continuellement</strong> sur les nouvelles 
+                techniques agricoles et les innovations du secteur.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- WhatsApp Community Section -->
+<div class="whatsapp-community" data-aos="fade-up" data-aos-delay="350">
+    <div class="community-content">
+        <div class="community-text">
+            <h2>
+                <i class="fab fa-whatsapp"></i>
+                Rejoignez Notre Communauté WhatsApp
+            </h2>
+            <p class="community-description">
+                Connectez-vous avec des centaines d'agriculteurs maliens, partagez vos expériences, 
+                obtenez des conseils en temps réel et restez informé des dernières nouvelles agricoles.
+            </p>
+            
+            <div class="community-benefits">
+                <div class="benefit-item">
+                    <i class="fas fa-users"></i>
+                    <span>Échange avec 500+ agriculteurs</span>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-bolt"></i>
+                    <span>Conseils en temps réel</span>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-seedling"></i>
+                    <span>Astuces pratiques quotidiennes</span>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Suivi des prix du marché</span>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Formations gratuites</span>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-handshake"></i>
+                    <span>Réseau de partenariats</span>
+                </div>
+            </div>
+            
+            <div class="community-actions">
+                <button class="btn-whatsapp btn-whatsapp-primary" onclick="joinWhatsAppGroup()">
+                    <i class="fab fa-whatsapp"></i>
+                    Rejoindre le groupe
+                </button>
+                <button class="btn-whatsapp btn-whatsapp-secondary" onclick="shareCommunity()">
+                    <i class="fas fa-share-alt"></i>
+                    Partager
+                </button>
+            </div>
+        </div>
+        
+        <div class="community-visual">
+            <div class="whatsapp-phone">
+                <div class="whatsapp-screen">
+                    <div class="whatsapp-header">
+                        🌾 FAMA Communauté Agricole
+                    </div>
+                    <div class="whatsapp-messages">
+                        <div class="message received">
+                            👋 Bonjour à tous ! Qui a des conseils pour la culture de mil cette saison ?
+                        </div>
+                        <div class="message sent">
+                            🌱 Salut ! Utilisez des semences adaptées et espacez bien vos rangs
+                        </div>
+                        <div class="message received">
+                            📊 Les prix du mil sont bons cette semaine au marché de Bamako
+                        </div>
+                        <div class="message sent">
+                            💡 N'oubliez pas de faire vos tests de sol avant la fertilisation
+                        </div>
+                        <div class="message received">
+                            🚀 Nouvelle technique d'irrigation goutte-à-goutte disponible !
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="community-stats">
+                <div class="stat-item">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Membres actifs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Messages/jour</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Support</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Section -->
+<div class="contact-section" data-aos="fade-up" data-aos-delay="400">
+    <div class="contact-content">
+        <h2 class="contact-title">
+            <i class="fas fa-comments"></i>
+            Besoin d'un Conseil Personnalisé ?
+        </h2>
+        <p class="contact-description">
+            Nos experts agronomes sont disponibles pour vous accompagner dans vos projets. 
+            Contactez-nous pour une consultation personnalisée adaptée à vos besoins spécifiques.
+        </p>
+        <div class="contact-buttons">
+            <button class="btn-contact btn-primary" onclick="contactExpert()">
+                <i class="fas fa-phone"></i>
+                Contacter un expert
+            </button>
+            <button class="btn-contact btn-secondary" onclick="joinCommunity()">
+                <i class="fas fa-users"></i>
+                Rejoindre la communauté
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- AOS Animation Library -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    // Initialize AOS
+    AOS.init({
+        duration: 800,
+        easing: 'ease-in-out',
+        once: true,
+        offset: 100
+    });
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Category interactions
+        window.openCategory = function(category) {
+            showNotification(`Conseils sur ${category} bientôt disponibles!`, 'info');
+        };
+        
+        // Contact functions
+        window.requestConsultation = function() {
+            showNotification('Formulaire de consultation bientôt disponible!', 'success');
+        };
+        
+        window.viewResources = function() {
+            showNotification('Ressources gratuites en cours de préparation!', 'info');
+        };
+        
+        window.contactExpert = function() {
+            showNotification('Contactez-nous au +223 XX XX XX XX!', 'success');
+        };
+        
+        window.joinCommunity = function() {
+            showNotification('Rejoignez notre communauté WhatsApp!', 'success');
+        };
+        
+        // WhatsApp Community functions
+        window.joinWhatsAppGroup = function() {
+            // Remplacer avec le vrai lien WhatsApp quand disponible
+            const whatsappLink = 'https://chat.whatsapp.com/FAMA_COMMUNAUTE_AGRICOLE';
+            window.open(whatsappLink, '_blank');
+            showNotification('Redirection vers le groupe WhatsApp...', 'success');
+        };
+        
+        window.shareCommunity = function() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'FAMA Communauté Agricole',
+                    text: 'Rejoignez notre communauté WhatsApp pour des conseils agricoles et échanger avec d\'autres agriculteurs!',
+                    url: window.location.href
+                }).then(() => {
+                    showNotification('Communauté partagée avec succès!', 'success');
+                }).catch(() => {
+                    copyToClipboard();
+                });
+            } else {
+                copyToClipboard();
+            }
+        };
+        
+        function copyToClipboard() {
+            const text = 'Rejoignez la communauté WhatsApp FAMA pour des conseils agricoles: ' + window.location.href;
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Lien copié dans le presse-papiers!', 'success');
+            });
+        }
+        
+        // Notification system
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} alert-dismissible fade show`;
+            notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas 
+                    ${type === 'success' ? 'fa-check-circle' : 
+                      type === 'error' ? 'fa-times-circle' : 
+                      'fa-info-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+        
+        // Add hover effects for cards
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-12px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + K for quick search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                showNotification('Recherche rapide en cours de développement!', 'info');
+            }
+        });
+        
+        console.log('🌾 Conseil Agricole 2025 - Chargé avec succès!');
+    });
+</script>
+{% endblock %}

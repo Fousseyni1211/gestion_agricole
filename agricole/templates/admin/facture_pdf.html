@@ -1,0 +1,228 @@
+{% load form_filters %}
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Facture Commande #{{ commande.id }}</title>
+    <style>
+        /* Note: CSS compatible xhtml2pdf: pas de @import, ni variables CSS, ni position fixed, ni flex */
+        body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 28px; color: #1F2937; background: #FFFFFF; line-height: 1.5; font-size: 12px; }
+
+        /* Palette & helpers */
+        .brand { color: #1B5E20; }
+        .muted { color: #616161; }
+        .dim { color: #424242; }
+        .sep { border-top: 2px solid #2E7D32; height: 0; margin: 6px 0 0 0; }
+
+        /* En-tête */
+        .header-table { width: 100%; border-bottom: 3px solid #2E7D32; margin-bottom: 18px; }
+        .header-table td { vertical-align: top; }
+        .logo-box { width: 180px; height: 64px; border: 1px solid #E0E0E0; text-align: center; background-color: #FFFFFF; }
+        .logo-img { max-width: 170px; max-height: 60px; }
+        .brand-name { color: #1B5E20; font-weight: bold; font-size: 18px; letter-spacing: 0.5px; }
+        .company-info { text-align: right; font-size: 12px; }
+        .company-info p { margin: 3px 0; }
+        .company-info strong { font-size: 13px; color: #1B5E20; }
+
+        /* Titre document */
+        .document-title { text-align: center; margin: 14px 0 12px 0; }
+        .document-title h1 { color: #2E7D32; margin: 0; font-size: 22px; letter-spacing: 1px; }
+        .document-title .facture-num { font-size: 13px; color: #616161; margin-top: 4px; }
+        .document-title .date { font-size: 12px; margin-top: 2px; color: #424242; }
+
+        /* Boxes d'information */
+        .info-section { width: 100%; margin-bottom: 16px; }
+        .info-table { width: 100%; border-collapse: collapse; }
+        .info-cell { width: 50%; padding: 0; vertical-align: top; }
+        .info-box { padding: 10px; border: 1px solid #E0E0E0; background-color: #FAFAFA; }
+        .info-box h3 { margin: 0 0 6px 0; padding-bottom: 6px; border-bottom: 2px solid #558B2F; color: #1B5E20; font-size: 14px; }
+        .info-box p { margin: 6px 0; }
+        .label { color: #757575; }
+
+        /* Métadonnées facture */
+        .meta-table { width: 100%; border: 1px solid #E0E0E0; border-collapse: collapse; }
+        .meta-table th, .meta-table td { border: 1px solid #E0E0E0; padding: 6px; text-align: left; }
+        .meta-title { background-color: #E8F5E9; color: #1B5E20; font-weight: bold; }
+        .meta-table th { width: 45%; }
+
+        /* Tableau produits */
+        .products-section h3 { color: #1B5E20; font-size: 14px; margin: 0 0 8px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        table, th, td { border: 1px solid #E0E0E0; }
+        thead th { background-color: #2E7D32; color: #FFFFFF; padding: 8px; text-align: left; font-size: 12px; }
+        tbody td { padding: 7px 8px; text-align: left; }
+        .td-right { text-align: right; }
+        .td-center { text-align: center; }
+        .row-alt { background-color: #FAFAFA; }
+        .row-sep td { border-top: 1px solid #EEEEEE; }
+
+        /* Totaux */
+        .totals-wrap { width: 100%; margin-top: 10px; }
+        .totals-table { width: 42%; float: right; border-collapse: collapse; }
+        .totals-table th, .totals-table td { border: 1px solid #E0E0E0; padding: 8px; text-align: right; }
+        .totals-table th { background-color: #E8F5E9; color: #1B5E20; text-align: left; }
+        .totals-table .grand-total { background-color: #1B5E20; color: #FFFFFF; font-weight: bold; }
+
+        /* Conditions, signatures, pied */
+        .payment-terms { margin: 18px 0; padding: 10px; border: 1px dashed #C8E6C9; background-color: #F1F8E9; }
+        .payment-terms h3 { color: #1B5E20; margin: 0 0 6px 0; font-size: 13px; }
+        .payment-terms ul { margin: 6px 0 0 18px; }
+        .payment-terms li { margin: 3px 0; }
+        .signatures { width: 100%; margin-top: 20px; }
+        .sign-cell { width: 50%; text-align: center; }
+        .signature-box { height: 60px; border-bottom: 1px solid #E0E0E0; margin: 0 20px; }
+        .note { font-size: 11px; color: #616161; margin-top: 8px; text-align: center; }
+        .footer { margin-top: 20px; text-align: center; font-size: 11px; color: #757575; border-top: 1px solid #E0E0E0; padding-top: 10px; }
+        .contact span { margin: 0 8px; }
+    </style>
+</head>
+<body>
+    <!-- En-tête FAMA -->
+    <table class="header-table">
+        <tr>
+            <td style="width: 50%;">
+                <div class="logo-box">
+                    {% if logo_path %}
+                        <img class="logo-img" src="{{ logo_path }}" alt="FAMA Logo" />
+                    {% else %}
+                        <div class="brand-name" style="line-height:60px;">FAMA</div>
+                    {% endif %}
+                </div>
+                <div class="brand-name" style="margin-top:6px;">FAMA</div>
+            </td>
+            <td style="width: 50%;">
+                <div class="company-info">
+                    <p><strong>FAMA SA</strong></p>
+                    <p>Immeuble FAMA, Avenue de l'Entreprise</p>
+                    <p>Bamako, Mali</p>
+                    <p>Tel: +223 XX XX XX XX</p>
+                    <p>Email: contact@fama.ml</p>
+                    <p>RCCM: ML-BKO-XXXX-B-XXXX | NIF: 123456789</p>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Titre du document -->
+    <div class="document-title">
+        <h1>FACTURE</h1>
+        <div class="facture-num">N° {{ commande.id }}/{{ commande.date_commande|date:"Y" }}</div>
+        <div class="date">Date d'émission : {{ commande.date_commande|date:"d/m/Y" }}</div>
+    </div>
+
+    <!-- Informations client et commande -->
+    <div class="info-section">
+        <table class="info-table">
+            <tr>
+                <td class="info-cell">
+                    <div class="info-box">
+                        <h3>Client</h3>
+                        <p><span class="label">Nom:</span> {{ commande.client.last_name|default:"" }}</p>
+                        <p><span class="label">Prénom:</span> {{ commande.client.first_name|default:"" }}</p>
+                        <p><span class="label">Email:</span> {{ commande.client.email|default:"" }}</p>
+                        <p><span class="label">Téléphone:</span> {{ commande.client.telephone|default:"Non spécifié" }}</p>
+                        <p><span class="label">Adresse:</span> {{ commande.client.address|default:"Non spécifiée" }}</p>
+                    </div>
+                </td>
+                <td class="info-cell">
+                    <table class="meta-table">
+                        <tr><th class="meta-title" colspan="2">Détails de la facture</th></tr>
+                        <tr><th>N° Facture</th><td>{{ commande.id }}</td></tr>
+                        <tr><th>Date</th><td>{{ commande.date_commande|date:"d/m/Y H:i" }}</td></tr>
+                        <tr><th>Statut</th><td>{{ commande.get_statut_display|default:commande.statut }}</td></tr>
+                        <tr><th>Mode de paiement</th><td>À la livraison</td></tr>
+                        <tr><th>Délai de livraison</th><td>3-5 jours ouvrables</td></tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Tableau des produits -->
+    <div class="products-section">
+        <h3>Détails des produits</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Référence</th>
+                    <th>Produit</th>
+                    <th class="th-right">Quantité</th>
+                    <th class="th-right">Prix Unitaire</th>
+                    <th class="th-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in commande.details.all %}
+                <tr class="{% cycle '' 'row-alt' %}">
+                    <td>REF-{{ detail.produit.id }}</td>
+                    <td>{{ detail.produit.nom_produit }}</td>
+                    <td class="td-right">{{ detail.quantite }}</td>
+                    <td class="td-right">{{ detail.prix_unitaire|floatformat:0|intcomma }} FCFA</td>
+                    <td class="td-right">{{ detail.sous_total|floatformat:0|intcomma }} FCFA</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="td-center muted">Aucun produit dans cette commande.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="totals-wrap">
+            <table class="totals-table">
+                <tr>
+                    <th style="width:60%">Sous-total</th>
+                    <td style="width:40%">{{ commande.total|floatformat:0|intcomma }} FCFA</td>
+                </tr>
+                <tr>
+                    <th>TVA (18%)</th>
+                    <td>{% widthratio commande.total 100 18 as tva_tmp %}{{ tva_tmp|floatformat:0|intcomma }} FCFA</td>
+                </tr>
+                <tr>
+                    <th class="grand-total">Total TTC</th>
+                    <td class="grand-total">{% widthratio commande.total 100 18 as tva_amount %}{{ commande.total|add:tva_amount|floatformat:0|intcomma }} FCFA</td>
+                </tr>
+            </table>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+
+    <!-- Conditions de paiement -->
+    <div class="payment-terms">
+        <h3>Conditions de paiement</h3>
+        <ul>
+            <li>Paiement à la livraison en espèces, par mobile money ou par carte bancaire.</li>
+            <li>Toute commande non payée dans un délai de 7 jours sera automatiquement annulée.</li>
+            <li>Les produits restent la propriété de FAMA jusqu'au paiement complet.</li>
+            <li>Pour toute réclamation, veuillez nous contacter dans les 48h suivant la livraison.</li>
+        </ul>
+    </div>
+
+    <!-- Signatures -->
+    <table class="signatures">
+        <tr>
+            <td class="sign-cell">
+                <div class="signature-box"></div>
+                <div>Signature et cachet FAMA</div>
+            </td>
+            <td class="sign-cell">
+                <div class="signature-box"></div>
+                <div>Signature du client</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Pied de page -->
+    <div class="note">Merci pour votre confiance.</div>
+    <div class="footer">
+        <div class="contact">
+            <span>Tel: +223 XX XX XX XX</span>
+            <span>Email: contact@fama.ml</span>
+            <span>Web: www.fama.ml</span>
+        </div>
+        <p class="note">Cette facture est émise par voie électronique et ne nécessite pas de signature manuscrite.</p>
+        <p class="legal">FAMA SA - Capital: 10 000 000 FCFA - RCCM: ML-BKO-XXXX-B-XXXX - NIF: 123456789<br>Banque: BDM-SA - IBAN: ML00 0000 0000 0000 0000 00</p>
+        <p>2025 FAMA - Tous droits réservés</p>
+    </div>
+</body>
+</html>

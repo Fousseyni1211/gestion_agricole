@@ -1,0 +1,303 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Tableau de Bord - Ventes & Statistiques{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- KPI Cards -->
+    <div class="row">
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ total_commandes }}</h3>
+                    <p>Total Commandes</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>{{ total_revenu|floatformat:0 }} FCFA</h3>
+                    <p>Revenu Total</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>{{ commandes_en_attente }}</h3>
+                    <p>En Attente</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-primary">
+                <div class="inner">
+                    <h3>{{ commandes_livrees }}</h3>
+                    <p>Livrées</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Statistics -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i> Performance Mensuelle
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="description-block border-right">
+                                <span class="description-percentage text-success">
+                                    <i class="fas fa-caret-up"></i> {{ croissance_revenu|floatformat:1 }}%
+                                </span>
+                                <h5 class="description-header">{{ revenu_mois|floatformat:0 }} FCFA</h5>
+                                <span class="description-text">Revenu ce mois</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="description-block">
+                                <span class="description-percentage text-success">
+                                    <i class="fas fa-caret-up"></i> {{ croissance_commandes|floatformat:1 }}%
+                                </span>
+                                <h5 class="description-header">{{ nb_commandes_mois }}</h5>
+                                <span class="description-text">Commandes ce mois</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <div class="description-block border-right">
+                                <h5 class="description-header">{{ revenu_mois_precedent|floatformat:0 }} FCFA</h5>
+                                <span class="description-text">Revenu mois dernier</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="description-block">
+                                <h5 class="description-header">{{ nb_commandes_mois_precedent }}</h5>
+                                <span class="description-text">Commandes mois dernier</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-credit-card"></i> Statistiques Paiement
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% for stat in stats_paiement %}
+                    <div class="row mb-2">
+                        <div class="col-8">
+                            <span class="badge badge-{{ stat.payment_method|default:'secondary' }}">
+                                {% if stat.payment_method == 'orange_money' %}
+                                    <i class="fab fa-orange"></i> Orange Money
+                                {% elif stat.payment_method == 'wave' %}
+                                    <i class="fas fa-wave-square"></i> Wave
+                                {% else %}
+                                    <i class="fas fa-hand-holding-usd"></i> À la livraison
+                                {% endif %}
+                            </span>
+                            <span class="badge badge-{{ stat.payment_status|default:'secondary' }} ml-1">
+                                {% if stat.payment_status == 'Pending' %}En attente
+                                {% elif stat.payment_status == 'Validated' %}Validé
+                                {% elif stat.payment_status == 'Rejected' %}Rejeté
+                                {% elif stat.payment_status == 'Refunded' %}Remboursé
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="col-4 text-right">
+                            <strong>{{ stat.count }}</strong> ({{ stat.total|floatformat:0 }} FCFA)
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">Aucune statistique de paiement disponible</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Products and Clients -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-box"></i> Top Produits Vendus
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Revenu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for produit in top_produits %}
+                                <tr>
+                                    <td>{{ produit.produit__nom_produit }}</td>
+                                    <td>{{ produit.total_vendu }}</td>
+                                    <td>{{ produit.total_revenu|floatformat:0 }} FCFA</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Aucune vente</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-users"></i> Top Clients
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Commandes</th>
+                                    <th>Dépenses</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client in top_clients %}
+                                <tr>
+                                    <td>
+                                        {{ client.client__first_name }} {{ client.client__last_name }}
+                                        <small class="text-muted">(@{{ client.client__username }})</small>
+                                    </td>
+                                    <td>{{ client.nb_commandes }}</td>
+                                    <td>{{ client.total_depense|floatformat:0 }} FCFA</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Aucun client</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Evolution Chart -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-area"></i> Évolution des Ventes (30 derniers jours)
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Chart.js configuration
+const ctx = document.getElementById('salesChart').getContext('2d');
+const salesChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [{% for vente in ventes_journalieres %}'{{ vente.date }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Revenu (FCFA)',
+            data: [{% for vente in ventes_journalières %}{{ vente.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            yAxisID: 'y',
+            tension: 0.1
+        }, {
+            label: 'Nombre de commandes',
+            data: [{% for vente in ventes_journalières %}{{ vente.nb_commandes }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            yAxisID: 'y1',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        stacked: false,
+        plugins: {
+            title: {
+                display: true,
+                text: 'Évolution des ventes'
+            }
+        },
+        scales: {
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                    display: true,
+                    text: 'Revenu (FCFA)'
+                }
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Nombre de commandes'
+                },
+                grid: {
+                    drawOnChartArea: false,
+                },
+            },
+        }
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

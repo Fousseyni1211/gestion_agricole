@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="auto">
+<head>
+    <meta charset="UTF-8">
+    <title>Résumé Financier</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            padding: 2rem;
+        }
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
+</head>
+<body class="bg-body text-body">
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-bar-chart-fill"></i> Résumé financier mensuel</h2>
+        <a href="{% url 'ajouter_mouvement' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Ajouter un mouvement
+        </a>
+    </div>
+
+    <!-- Dropdown mois -->
+    <form method="get" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <select name="mois" class="form-select" onchange="this.form.submit()">
+                    {% for mois_num, mois_nom in mois_list %}
+                        <option value="{{ mois_num }}" {% if mois_num == mois_selectionne %}selected{% endif %}>
+                            {{ mois_nom }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col">
+                <a href="{% url 'export_mouvements_pdf' %}?mois={{ mois_selectionne }}" class="btn btn-outline-danger">
+                    <i class="bi bi-file-earmark-pdf"></i> Export PDF
+                </a>
+                <a href="{% url 'export_mouvements_excel' %}?mois={{ mois_selectionne }}" class="btn btn-outline-primary">
+                    <i class="bi bi-file-earmark-excel"></i> Export Excel
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Tableau des mouvements -->
+    <div class="card p-3 mb-4">
+        <h5 class="card-title">Mouvements de {{ mois_nom_selectionne }}</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th class="text-end">Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mvt in mouvements %}
+                        <tr>
+                            <td>{{ mvt.date|date:"d/m/Y" }}</td>
+                            <td>{{ mvt.description }}</td>
+                            <td>
+                                <span class="badge {% if mvt.type == 'revenu' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ mvt.type|capfirst }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                {{ mvt.montant|floatformat:2 }} F CFA
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="4" class="text-center">Aucun mouvement ce mois.</td></tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="3" class="text-end">Total Revenus</th>
+                        <th class="text-end text-success">{{ total_revenus|floatformat:2 }} F</th>
+                    </tr>
+                    <tr>
+                        <th colspan="3" class="text-end">Total Dépenses</th>
+                        <th class="text-end text-danger">{{ total_depenses|floatformat:2 }} F</th>
+                    </tr>
+                    <tr>
+                        <th colspan="3" class="text-end">Solde</th>
+                        <th class="text-end fw-bold">
+                            {{ solde|floatformat:2 }} F
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Graphique -->
+    <div class="card p-4">
+        <h5 class="card-title"><i class="bi bi-graph-up-arrow"></i> Graphique Dépenses vs Revenus</h5>
+        <div class="chart-container">
+            <canvas id="graphique"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ctx = document.getElementById('graphique').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Revenus', 'Dépenses'],
+            datasets: [{
+                label: '{{ mois_nom_selectionne }}',
+                data: [{{ total_revenus }}, {{ total_depenses }}],
+                backgroundColor: ['#198754', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.raw.toLocaleString('fr-FR') + ' F CFA';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: value => value.toLocaleString('fr-FR') + ' F'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

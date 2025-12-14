@@ -1,0 +1,36 @@
+{% extends 'admin/base_template.html' %}
+
+{% block page_title %}
+    Confirmer la Suppression du Produit: {{ product.nom_produit }}
+{% endblock page_title %}
+
+{% block main_content %}
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title">Supprimer le Produit: {{ product.nom_produit }}</h3>
+                    </div>
+
+                    <!-- Formulaire de confirmation -->
+                    <form role="form" method="POST" action="{% url 'delete_product' product.id %}">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <p>Êtes-vous sûr de vouloir supprimer le produit "{{ product.nom_produit }}" ? Cette action est irréversible.</p>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-danger">Supprimer</button>
+                            <a href="{% url 'manage_produit' %}" class="btn btn-secondary">Annuler</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock main_content %}

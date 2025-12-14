@@ -1,0 +1,337 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+
+{% block custom_css %}
+<style>
+  :root {
+    --primary-green: #10b981;
+    --primary-dark: #059669;
+    --secondary-green: #34d399;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --accent-orange: #f59e0b;
+    --accent-red: #ef4444;
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+    --text-white: #ffffff;
+    --bg-light: #f9fafb;
+    --bg-white: #ffffff;
+    --border-color: #e5e7eb;
+  }
+
+  .notifications-dashboard {
+    background: var(--bg-light);
+    min-height: 100vh;
+    padding: 2rem 0;
+  }
+
+  .dashboard-header {
+    background: var(--bg-white);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border-color);
+  }
+
+  .header-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  .header-description {
+    color: var(--text-light);
+    margin-bottom: 0;
+  }
+
+  .notification-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border-left: 4px solid var(--accent-blue);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .notification-card.unread {
+    border-left-color: var(--primary-green);
+    background-color: #f0fdf4;
+  }
+
+  .notification-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .notification-icon {
+    font-size: 1.25rem;
+    margin-right: 1rem;
+    color: var(--accent-blue);
+  }
+
+  .notification-content {
+    flex: 1;
+  }
+
+  .notification-message {
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+
+  .notification-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: var(--text-light);
+  }
+
+  .notification-time {
+    font-size: 0.8rem;
+    color: var(--text-light);
+  }
+
+  .notification-type {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .type-info { background-color: #dbeafe; color: #1e40af; }
+  .type-success { background-color: #dcfce7; color: #166534; }
+  .type-warning { background-color: #fef3c7; color: #9a3412; }
+  .type-error { background-color: #fee2e2; color: #991b1b; }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .empty-icon {
+    font-size: 3.5rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+  }
+
+  .empty-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-description {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-mark-all {
+    background-color: var(--primary-green);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .btn-mark-all:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+  }
+
+  .btn-delete-all {
+    background-color: var(--accent-red);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .btn-delete-all:hover {
+    background-color: #c53030;
+    transform: translateY(-1px);
+  }
+</style>
+{% endblock %}
+
+{% block main_content %}
+<div class="notifications-dashboard">
+  <div class="container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="header-title">Notifications</h1>
+          <p class="header-description">Consultez toutes vos notifications en un seul endroit</p>
+        </div>
+        <div class="d-flex gap-2">
+          <button id="mark-all-read" class="btn btn-mark-all">
+            <i class="fas fa-check-double me-2"></i>
+            Tout marquer comme lu
+          </button>
+          <button id="delete-all-notifications" class="btn btn-delete-all">
+            <i class="fas fa-trash me-2"></i>
+            Tout supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="notifications-list">
+      {% if notifications %}
+        {% for notification in notifications %}
+          <div class="notification-card {% if not notification.is_read %}unread{% endif %}" 
+               data-notification-id="{{ notification.id }}">
+            <div class="d-flex align-items-start">
+              <div class="notification-icon">
+                <i class="fas {% if notification.type == 'success' %}fa-check-circle{% elif notification.type == 'warning' %}fa-exclamation-triangle{% elif notification.type == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+              </div>
+              <div class="notification-content">
+                <div class="notification-message">
+                  {{ notification.message|safe }}
+                </div>
+                <div class="notification-meta">
+                  <span class="notification-time">
+                    <i class="far fa-clock me-1"></i>
+                    {{ notification.created_at|timesince }} ago
+                  </span>
+                  <span class="notification-type type-{{ notification.type }}">
+                    {{ notification.get_type_display }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">
+            <i class="far fa-bell-slash"></i>
+          </div>
+          <h3 class="empty-title">Aucune notification</h3>
+          <p class="empty-description">Vous n'avez pas encore de notifications.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+  $(document).ready(function() {
+    // Marquer une notification comme lue
+    $('.notification-card').click(function() {
+      const notificationId = $(this).data('notification-id');
+      const $card = $(this);
+      
+      if ($card.hasClass('unread')) {
+        $.ajax({
+          url: `/notifications/mark-as-read/${notificationId}/`,
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          success: function(response) {
+            if (response.status === 'success') {
+              $card.removeClass('unread');
+              updateUnreadCount(-1);
+            }
+          }
+        });
+      }
+    });
+
+    // Marquer toutes les notifications comme lues
+    $('#mark-all-read').click(function(e) {
+      e.stopPropagation();
+      
+      $.ajax({
+        url: '/notifications/mark-all-read/',
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        success: function(response) {
+          if (response.status === 'success') {
+            $('.notification-card').removeClass('unread');
+            updateUnreadCount(-$('.notification-card.unread').length);
+            showToast('Toutes les notifications ont été marquées comme lues', 'success');
+          }
+        }
+      });
+    });
+
+    // Supprimer toutes les notifications
+    $('#delete-all-notifications').click(function(e) {
+      e.stopPropagation();
+      
+      if (confirm('Êtes-vous sûr de vouloir supprimer toutes les notifications ? Cette action est irréversible.')) {
+        $.ajax({
+          url: '/notifications/delete-all/',
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          success: function(response) {
+            if (response.status === 'success') {
+              $('.notification-card').fadeOut(300, function() {
+                $(this).remove();
+                $('.notifications-list').html(`
+                  <div class="empty-state">
+                    <div class="empty-icon">
+                      <i class="far fa-bell-slash"></i>
+                    </div>
+                    <h3 class="empty-title">Aucune notification</h3>
+                    <p class="empty-description">Vous n'avez pas encore de notifications.</p>
+                  </div>
+                `);
+              });
+              updateUnreadCount(-$('.notification-card.unread').length);
+              showToast('Toutes les notifications ont été supprimées', 'success');
+            }
+          }
+        });
+      }
+    });
+
+    // Mettre à jour le compteur de notifications non lues
+    function updateUnreadCount(change) {
+      const $badge = $('.notification-badge');
+      let count = parseInt($badge.text()) || 0;
+      count += change;
+      
+      if (count > 0) {
+        $badge.text(count).show();
+      } else {
+        $badge.hide();
+      }
+    }
+
+    // Afficher une notification toast
+    function showToast(message, type = 'info') {
+      // Implémentez votre propre système de notifications toast ici
+      console.log(`${type.toUpperCase()}: ${message}`);
+    }
+  });
+</script>
+{% endblock %}

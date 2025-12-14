@@ -1,0 +1,10 @@
+Bonjour {{ utilisateur.username }},
+
+Bienvenue sur FAMA !
+
+Veuillez cliquer sur le lien ci-dessous pour activer votre compte (valable 24h) :
+
+{{ lien_activation }}
+
+Merci,
+L’équipe FAMA

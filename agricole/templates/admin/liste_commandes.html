@@ -1,0 +1,1501 @@
+{% extends "admin/base_template.html" %}
+{% load static %}
+{% block custom_css %}
+<style>
+  :root {
+    --primary-green: #10b981;
+    --primary-dark: #059669;
+    --secondary-green: #34d399;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --accent-orange: #f59e0b;
+    --accent-red: #ef4444;
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+    --text-white: #ffffff;
+    --bg-light: #f9fafb;
+    --bg-white: #ffffff;
+    --border-color: #e5e7eb;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --gradient-primary: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --gradient-secondary: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    --gradient-accent: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    --gradient-bg: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #d1fae5 100%);
+  }
+
+  .orders-dashboard {
+    background: var(--bg-light);
+    min-height: 100vh;
+    padding: 2rem 0;
+  }
+
+  /* Dashboard Header */
+  .dashboard-header {
+    background: var(--bg-white);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+  }
+
+  .header-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .header-subtitle {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--bg-white);
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient-primary);
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .stat-icon.orders {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.1));
+    color: var(--primary-green);
+  }
+
+  .stat-icon.pending {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.1));
+    color: var(--accent-orange);
+  }
+
+  .stat-icon.completed {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(96, 165, 250, 0.1));
+    color: var(--accent-blue);
+  }
+
+  .stat-icon.revenue {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(167, 139, 250, 0.1));
+    color: var(--accent-purple);
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .stat-change {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+  }
+
+  .stat-change.positive {
+    color: var(--primary-green);
+  }
+
+  .stat-change.negative {
+    color: var(--accent-red);
+  }
+
+  /* Main Content Card */
+  .main-card {
+    background: var(--bg-white);
+    border-radius: 20px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+  }
+
+  .card-header-custom {
+    background: linear-gradient(135deg, var(--primary-green), var(--primary-dark));
+    color: var(--text-white);
+    padding: 2rem;
+    border: none;
+  }
+
+  .card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .card-subtitle {
+    opacity: 0.9;
+    font-size: 1rem;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .btn-new-order {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: var(--text-white);
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+
+  .btn-new-order:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+    color: var(--text-white);
+    text-decoration: none;
+  }
+
+  /* Filters and Search */
+  .filters-section {
+    padding: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-light);
+  }
+  
+  .search-container {
+    position: relative;
+    max-width: 400px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: var(--bg-white);
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+    font-size: 1.1rem;
+  }
+
+  .filter-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .filter-select {
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-white);
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    min-width: 150px;
+  }
+
+  .filter-select:focus {
+    outline: none;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+
+  .btn-filter {
+    background: var(--gradient-secondary);
+    color: var(--text-white);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    color: var(--text-white);
+  }
+
+  /* Orders Table */
+  .table-container {
+    padding: 2rem;
+  }
+
+  .orders-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .orders-table th {
+    background: var(--bg-light);
+    color: var(--text-dark);
+    font-weight: 600;
+    padding: 1.5rem 1rem;
+    text-align: left;
+    border-bottom: 2px solid var(--border-color);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .orders-table td {
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+
+  .orders-table tbody tr {
+    transition: all 0.3s ease;
+    background: var(--bg-white);
+  }
+
+  .orders-table tbody tr:hover {
+    background: var(--bg-light);
+    transform: scale(1.01);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .order-id {
+    font-weight: 700;
+    color: var(--primary-green);
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+
+  .client-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .client-name {
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .client-email {
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+  
+  .order-date {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .date-main {
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .date-time {
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  .status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 120px;
+    justify-content: center;
+  }
+
+  .status-pending {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    border: 1px solid #fbbf24;
+  }
+
+  .status-completed {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+    border: 1px solid #34d399;
+  }
+
+  .status-cancelled {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    border: 1px solid #f87171;
+  }
+  
+  .order-total {
+    font-weight: 700;
+    color: var(--primary-green);
+    font-size: 1.1rem;
+  }
+
+  .actions-column {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: nowrap; /* keep all buttons on one line */
+    align-items: center;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: var(--shadow-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-white);
+    transition: all 0.25s ease;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap; /* prevent button text from wrapping */
+  }
+
+  .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* More dropdown (mobile) */
+  .actions-more { position: relative; display: none; }
+  .btn-more { background: linear-gradient(135deg, #6b7280, #4b5563); }
+  .more-menu {
+    position: absolute;
+    right: 0;
+    top: 110%;
+    min-width: 140px;
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    display: none;
+    z-index: 10;
+    overflow: hidden;
+  }
+  .more-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.8rem;
+    color: var(--text-dark);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .more-item:hover { background: var(--bg-light); }
+
+  .btn-validate { background: var(--gradient-primary); }
+  .btn-pdf { background: var(--gradient-accent); }
+  .btn-view { background: var(--gradient-secondary); }
+  .btn-edit { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+  .btn-delete { background: linear-gradient(135deg, var(--accent-red), #dc2626); }
+
+  .action-icon { font-size: 1rem; line-height: 1; }
+  .action-label { font-size: 0.85rem; }
+
+  /* Compact labels on small screens */
+  @media (max-width: 992px) {
+    .action-label { display: none; }
+    .action-btn { padding: 0.5rem; }
+  }
+
+  /* Empty State */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+  }
+  
+  .empty-icon {
+    font-size: 4rem;
+    color: var(--border-color);
+    margin-bottom: 1.5rem;
+  }
+
+  .empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+  }
+  
+  .empty-description {
+    color: var(--text-light);
+    margin-bottom: 2rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .filter-group {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    /* Keep action buttons on one line with smaller spacing */
+    .actions-column {
+      gap: 0.35rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      justify-content: flex-start; /* allow scroll if too many buttons */
+    }
+    .action-btn {
+      padding: 0.45rem 0.8rem;
+      font-size: 0.85rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-header,
+    .filters-section,
+    .table-container {
+      padding: 1.5rem;
+    }
+    
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .header-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .orders-table {
+      font-size: 0.9rem;
+    }
+    
+    .orders-table th,
+    .orders-table td {
+      padding: 1rem 0.5rem;
+    }
+
+    /* Further tighten actions on small screens */
+    .actions-column {
+      gap: 0.3rem;
+    }
+    .action-btn {
+      padding: 0.4rem 0.7rem;
+      font-size: 0.8rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .dashboard-header,
+    .filters-section,
+    .table-container {
+      padding: 1rem;
+    }
+    
+    .header-title {
+      font-size: 1.5rem;
+    }
+    
+    .search-container {
+      max-width: 100%;
+    }
+
+    /* Compact actions for very small screens */
+    .actions-column {
+      gap: 0.25rem;
+    }
+    .action-label { display: none; }
+    .action-btn {
+      padding: 0.38rem 0.6rem;
+      font-size: 0.8rem;
+    }
+    /* Hide less important buttons and show More menu */
+    .action-btn.btn-edit,
+    .action-btn.btn-delete { display: none; }
+    .actions-more { display: inline-flex; }
+  }
+</style>
+{% endblock %}
+
+{% block main_content %}
+<div class="orders-dashboard">
+<div class="container-fluid">
+    <!-- Dashboard Header with Stats -->
+    <div class="dashboard-header">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <h1 class="header-title">
+            <i class="bi bi-cart-check"></i>
+            Gestion des Commandes
+          </h1>
+          <p class="header-subtitle">
+            Surveillez et gérez toutes les commandes de votre plateforme agricole
+          </p>
+        </div>
+        <div class="col-lg-4 text-end">
+          <div class="header-actions">
+            <button type="button" class="btn-new-order" onclick="exportOrdersCSV()" title="Exporter en CSV">
+              <i class="bi bi-download me-2"></i>
+              Exporter CSV
+            </button>
+            <a href="{% url 'export_commandes_pdf' %}?statut={{ statut_filtre }}&client={{ client_filtre }}&date_debut={{ date_debut }}&date_fin={{ date_fin }}&q={{ q }}" class="btn-new-order" title="Exporter en PDF">
+              <i class="bi bi-filetype-pdf me-2"></i>
+              Exporter PDF
+            </a>
+            <a href="{% url 'export_commandes_excel' %}?statut={{ statut_filtre }}&client={{ client_filtre }}&date_debut={{ date_debut }}&date_fin={{ date_fin }}&q={{ q }}" class="btn-new-order" title="Exporter en Excel">
+              <i class="bi bi-filetype-xls me-2"></i>
+              Exporter Excel
+            </a>
+            <a href="{% url 'ajouter_commande' %}" class="btn-new-order">
+              <i class="bi bi-plus-lg me-2"></i>
+              Nouvelle Commande
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Grid -->
+      <div class="stats-grid">
+        <!-- Carte Commandes Total -->
+        <div class="stat-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="stat-icon" style="background-color: rgba(16, 185, 129, 0.1); color: #10b981; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+              <i class="bi bi-cart-check"></i>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-success bg-opacity-10 text-success">Total</span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-end">
+            <div>
+              <h3 class="mb-0">{{ total_commandes }}</h3>
+              <p class="text-muted mb-0">Commandes</p>
+            </div>
+            <div class="text-success">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carte Commandes en Attente -->
+        <div class="stat-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="stat-icon" style="background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+              <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-warning bg-opacity-10 text-warning">En attente</span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-end">
+            <div>
+              <h3 class="mb-0">{{ commandes_en_attente }}</h3>
+              <p class="text-muted mb-0">À traiter</p>
+            </div>
+            <div class="text-warning">
+              <i class="bi bi-clock-history"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carte Commandes Terminées -->
+        <div class="stat-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="stat-icon" style="background-color: rgba(16, 185, 129, 0.1); color: #10b981; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+              <i class="bi bi-check2-circle"></i>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-success bg-opacity-10 text-success">Terminées</span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-end">
+            <div>
+              <h3 class="mb-0">{{ commandes_terminees }}</h3>
+              <p class="text-muted mb-0">Livraisons effectuées</p>
+            </div>
+            <div class="text-success">
+              <i class="bi bi-truck"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carte Revenus -->
+        <div class="stat-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="stat-icon" style="background-color: rgba(99, 102, 241, 0.1); color: #6366f1; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+              <i class="bi bi-cash-stack"></i>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-primary bg-opacity-10 text-primary">Revenus</span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-end">
+            <div>
+              <h3 class="mb-0">{{ revenus_totaux|floatformat:0 }} <small class="fs-6">FCFA</small></h3>
+              <p class="text-muted mb-0">Chiffre d'affaires</p>
+            </div>
+            <div class="text-primary">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Orders Card -->
+    <div class="main-card">
+      <div class="card-header-custom">
+        <div class="row align-items-center">
+          <div class="col-lg-8">
+            <!-- <h2 class="card-title">
+              <i class="bi bi-list-ul"></i>
+              Liste des Commandes
+            </h2> -->
+            <p class="card-subtitle">
+              Gérez et suivez toutes les commandes de vos clients
+            </p>
+      </div>
+          <div class="col-lg-4 text-end">
+            <div class="header-actions">
+              <div class="btn-group" role="group">
+                <a href="{% url 'gerant_tableau_de_bord' %}" class="btn btn-outline-primary btn-sm me-2" title="Tableau de bord">
+                  <i class="bi bi-graph-up me-1"></i> Tableau de bord
+                </a>
+                <a href="{% url 'gerant_paiements' %}" class="btn btn-outline-success btn-sm me-2" title="Gestion des paiements">
+                  <i class="bi bi-credit-card me-1"></i> Paiements
+                </a>
+                <a href="{% url 'ajouter_commande' %}" class="btn-new-order">
+                  <i class="bi bi-plus-lg me-2"></i>
+                  Ajouter
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+    
+      <!-- Filters Section -->
+      <div class="filters-section">
+        <form method="get" class="row g-3 align-items-end">
+          <div class="col-lg-3">
+            <label class="form-label">Statut</label>
+            <select name="statut" class="form-select">
+              <option value="">Tous les statuts</option>
+              <option value="en_attente" {% if statut_filtre == 'en_attente' %}selected{% endif %}>En attente</option>
+              <option value="validee" {% if statut_filtre == 'validee' %}selected{% endif %}>Validée</option>
+              <option value="terminee" {% if statut_filtre == 'terminee' %}selected{% endif %}>Terminée</option>
+              <option value="annulee" {% if statut_filtre == 'annulee' %}selected{% endif %}>Annulée</option>
+            </select>
+          </div>
+          <div class="col-lg-3">
+            <label class="form-label">Client</label>
+            <select name="client" class="form-select">
+              <option value="">Tous les clients</option>
+              {% for c in clients %}
+                <option value="{{ c.id }}" {% if client_filtre|default:'' == c.id|stringformat:'s' %}selected{% endif %}>
+                  {% if c.get_full_name %}{{ c.get_full_name }}{% else %}{{ c.username }}{% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-lg-2">
+            <label class="form-label">Date début</label>
+            <input type="date" name="date_debut" class="form-control" value="{{ date_debut }}">
+          </div>
+          <div class="col-lg-2">
+            <label class="form-label">Date fin</label>
+            <input type="date" name="date_fin" class="form-control" value="{{ date_fin }}">
+          </div>
+          <div class="col-lg-2">
+            <label class="form-label">Recherche</label>
+            <input type="text" name="q" class="form-control" placeholder="Commande, client..." value="{{ q }}">
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn-filter">
+              <i class="bi bi-funnel me-2"></i> Filtrer
+            </button>
+            <a href="{% url 'liste_commandes' %}" class="btn btn-outline-secondary ms-2">Réinitialiser</a>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Orders Table -->
+      <div class="table-container">
+      <div class="table-responsive">
+          <table class="orders-table" id="ordersTable">
+          <thead>
+            <tr>
+                <th><i class="bi bi-hash me-2"></i>ID Commande</th>
+                <th><i class="bi bi-person me-2"></i>Client</th>
+                <th><i class="bi bi-calendar me-2"></i>Date & Heure</th>
+                <th><i class="bi bi-tag me-2"></i>Statut</th>
+                <th><i class="bi bi-currency-dollar me-2"></i>Total</th>
+                <th><i class="bi bi-box-seam me-2"></i>Produits commandés</th>
+                <th class="text-center"><i class="bi bi-gear me-2"></i>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for commande in commandes %}
+                <tr data-status="{{ commande.statut }}" data-date="{{ commande.date_commande|date:'Y-m-d' }}" data-total="{{ commande.total }}"
+                    data-id="{{ commande.id }}" data-client-name="{{ commande.client.get_full_name }}" data-client-email="{{ commande.client.email }}"
+                    data-datetime="{{ commande.date_commande|date:'d/m/Y H:i' }}" data-products="{% if commande.produits_details %}{{ commande.produits_details|join:', ' }}{% endif %}">
+                  <td>
+                    <span class="order-id">#{{ commande.id }}</span>
+                  </td>
+                  <td>
+                    <div class="client-info">
+                      <span class="client-name">{{ commande.client.get_full_name }}</span>
+                      <span class="client-email">{{ commande.client.email }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="order-date">
+                      <span class="date-main">{{ commande.date_commande|date:"d/m/Y" }}</span>
+                      <span class="date-time">{{ commande.date_commande|date:"H:i" }}</span>
+                    </div>
+                </td>
+                <td>
+                  <form method="POST" action="/admin/commandes/{{ commande.id }}/update_status/" class="status-form">
+                      {% csrf_token %}
+                      <select name="statut" class="form-select form-select-sm" onchange="this.form.submit()">
+                          {% for status_code, status_name in commande.STATUTS %}
+                              <option value="{{ status_code }}" {% if commande.statut == status_code %}selected{% endif %}>{{ status_name }}</option>
+                          {% endfor %}
+                      </select>
+                  </form>
+                </td>
+<td>
+                    <span class="order-total">{{ commande.total }} FCFA</span>
+                  </td>
+                  <td>
+                    <div class="produits-commandes">
+                      {% for produit in commande.produits_details %}
+                        <span class="badge bg-light text-dark mb-1">{{ produit }}</span>
+                      {% empty %}
+                        <span class="text-muted">Aucun produit</span>
+                      {% endfor %}
+                    </div>
+                  </td>
+                  <td>
+                    <div class="actions-column">
+                      <!-- Validation button for pending orders -->
+                      {% if commande.statut == 'en_attente' %}
+                      <form method="POST" action="{% url 'gerant_valider_commande' commande.id %}" class="validate-form" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="action-btn btn-validate" title="Valider la commande" aria-label="Valider la commande">
+                          <i class="bi bi-check-lg action-icon"></i>
+                          <span class="action-label">Valider</span>
+                        </button>
+                      </form>
+                      {% endif %}
+                      
+                      <!-- Status update dropdown -->
+                      <div class="dropdown d-inline-block">
+                        <button class="action-btn btn-status dropdown-toggle" type="button" data-toggle="dropdown" title="Modifier le statut">
+                          <i class="bi bi-arrow-left-right action-icon"></i>
+                          <span class="action-label">Statut</span>
+                        </button>
+                        <div class="dropdown-menu">
+                          {% for status_code, status_name in commande.STATUTS %}
+                          {% if commande.statut != status_code %}
+                          <form method="POST" action="{% url 'gerant_update_order_status' commande.id %}" class="status-update-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="statut" value="{{ status_code }}">
+                            <button type="submit" class="dropdown-item">
+                              <i class="bi bi-circle-fill text-{{ status_code }} me-2"></i>{{ status_name }}
+                            </button>
+                          </form>
+                          {% endif %}
+                          {% endfor %}
+                        </div>
+                      </div>
+                      
+                      <!-- PDF Invoice generation -->
+                      <a href="{% url 'generer_facture_pdf' commande.id %}" class="action-btn btn-pdf" title="Générer facture PDF" aria-label="Générer facture PDF">
+                        <i class="bi bi-file-pdf action-icon"></i>
+                        <span class="action-label">Facture</span>
+                      </a>
+                      
+                      <!-- Payment management -->
+                      {% if commande.statut == 'en_attente_paiement' %}
+                      <div class="dropdown d-inline-block">
+                        <button class="action-btn btn-payment dropdown-toggle" type="button" data-toggle="dropdown" title="Gérer le paiement">
+                          <i class="bi bi-credit-card action-icon"></i>
+                          <span class="action-label">Paiement</span>
+                        </button>
+                        <div class="dropdown-menu">
+                          <a class="dropdown-item" href="{% url 'paiement' commande.id %}">
+                            <i class="bi bi-eye me-2"></i>Voir les détails
+                          </a>
+                          {% if commande.paiements.last %}
+                          {% if commande.paiements.last.payment_status == 'Pending' %}
+                          <form method="POST" action="{% url 'gerant_valider_paiement' commande.paiements.last.id %}" class="payment-validate-form">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-success">
+                              <i class="bi bi-check-circle me-2"></i>Valider le paiement
+                            </button>
+                          </form>
+                          <form method="POST" action="{% url 'gerant_rejeter_paiement' commande.paiements.last.id %}" class="payment-reject-form">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger">
+                              <i class="bi bi-x-circle me-2"></i>Rejeter le paiement
+                            </button>
+                          </form>
+                          {% endif %}
+                          {% endif %}
+                        </div>
+                      </div>
+                      {% endif %}
+                      
+                      <!-- Order details -->
+                      <a href="{% url 'detail_commande' commande.id %}" class="action-btn btn-view" title="Voir détails" aria-label="Voir détails">
+                        <i class="bi bi-eye action-icon"></i>
+                        <span class="action-label">Détails</span>
+                      </a>
+                      
+                      <!-- Delete order -->
+                      {% if commande.statut in 'en_attente,annulee' %}
+                      <form method="POST" action="{% url 'gerant_supprimer_commande' commande.id %}" class="delete-form" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="action-btn btn-delete" title="Supprimer la commande" aria-label="Supprimer la commande"
+                                onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')">
+                          <i class="bi bi-trash action-icon"></i>
+                          <span class="action-label">Supprimer</span>
+                        </button>
+                      </form>
+                      {% endif %}
+
+                      <!-- More dropdown for mobile -->
+                      <div class="actions-more">
+                        <button type="button" class="action-btn btn-more" title="Plus" aria-label="Plus" onclick="toggleMoreMenu(this)">
+                          <i class="bi bi-three-dots action-icon"></i>
+                        </button>
+                        <div class="more-menu">
+                          <a href="{% url 'detail_commande' commande.id %}" class="more-item more-view">
+                            <i class="bi bi-eye"></i> Voir détails
+                          </a>
+                          <a href="{% url 'generer_facture_pdf' commande.id %}" class="more-item more-pdf">
+                            <i class="bi bi-file-pdf"></i> Générer facture
+                          </a>
+                          {% if commande.statut == 'en_attente_paiement' %}
+                          <a href="{% url 'paiement' commande.id %}" class="more-item more-payment">
+                            <i class="bi bi-credit-card"></i> Gérer paiement
+                          </a>
+                          {% endif %}
+                          <div class="dropdown-divider"></div>
+                          {% if commande.statut in 'en_attente,annulee' %}
+                          <form method="POST" action="{% url 'gerant_supprimer_commande' commande.id %}" class="more-delete-form">
+                            {% csrf_token %}
+                            <button type="submit" class="more-item more-delete text-danger">
+                              <i class="bi bi-trash"></i> Supprimer
+                            </button>
+                          </form>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6">
+                  <div class="empty-state">
+                      <div class="empty-icon">
+                        <i class="bi bi-cart-x"></i>
+                    </div>
+                      <h3 class="empty-title">Aucune commande disponible</h3>
+                      <p class="empty-description">
+                        Commencez par créer votre première commande pour gérer votre activité agricole.
+                      </p>
+                      <a href="{% url 'ajouter_commande' %}" class="btn-new-order">
+                        <i class="bi bi-plus-lg me-2"></i>
+                        Créer une commande
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+  // Search functionality
+  document.getElementById('orderSearch').addEventListener('keyup', function() {
+    const searchValue = this.value.toLowerCase();
+    const table = document.getElementById('ordersTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const cells = row.getElementsByTagName('td');
+      
+      if (cells.length > 0) {
+        let found = false;
+        
+        for (let j = 0; j < cells.length; j++) {
+          const cellText = cells[j].textContent.toLowerCase();
+          
+          if (cellText.indexOf(searchValue) > -1) {
+            found = true;
+            break;
+          }
+        }
+        
+        if (found) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      }
+    }
+  });
+
+  // Bind delete buttons (admin)
+  document.querySelectorAll('.btn-delete[data-delete-url]').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      if (!confirm('Confirmer la suppression de cette commande ?')) return;
+      const url = this.getAttribute('data-delete-url');
+      fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP '+r.status)))
+      .then(data => {
+        if (data && data.success) {
+          window.location.href = window.location.pathname;
+        } else {
+          alert((data && data.error) || 'Suppression impossible.');
+        }
+      })
+      .catch(() => window.location.href = window.location.pathname);
+    });
+  });
+
+  // Toggle 'More' menu for actions on mobile
+  window.toggleMoreMenu = function(btn) {
+    const menu = btn.nextElementSibling;
+    // Close others first
+    document.querySelectorAll('.more-menu').forEach(m => { if (m !== menu) m.style.display = 'none'; });
+    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+  };
+
+  // Close menus on outside click
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.actions-more')) {
+      document.querySelectorAll('.more-menu').forEach(m => m.style.display = 'none');
+    }
+  });
+
+  // Sync More menu links with existing edit/delete and add confirmation
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('tr').forEach(row => {
+      const editBtn = row.querySelector('.action-btn.btn-edit');
+      const deleteBtn = row.querySelector('.action-btn.btn-delete');
+      const moreEdit = row.querySelector('.more-item.more-edit');
+      const moreDelete = row.querySelector('.more-item.more-delete');
+
+      if (editBtn && moreEdit) {
+        const href = editBtn.getAttribute('href');
+        if (href) moreEdit.setAttribute('href', href);
+      }
+      if (deleteBtn && moreDelete) {
+        const href = deleteBtn.getAttribute('href');
+        if (href) moreDelete.setAttribute('href', href);
+        // Confirm delete for dropdown
+        moreDelete.addEventListener('click', function(e) {
+          const ok = confirm('Confirmer la suppression de cette commande ?');
+          if (!ok) e.preventDefault();
+        });
+      }
+    });
+  });
+
+  // Filter functionality
+  function applyFilters() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const sortFilter = document.getElementById('sortFilter').value;
+    const table = document.getElementById('ordersTable');
+    const rows = Array.from(table.getElementsByTagName('tbody')[0].getElementsByTagName('tr'));
+    
+    // Filter by status
+    rows.forEach(row => {
+      if (row.cells.length > 0) {
+        const status = row.getAttribute('data-status');
+        let shouldShow = false;
+        if (statusFilter === 'all') {
+          shouldShow = true;
+        } else if (statusFilter === 'terminee') {
+          // Treat both 'terminee' and 'validee' as completed
+          shouldShow = (status === 'terminee' || status === 'validee');
+        } else {
+          shouldShow = status === statusFilter;
+        }
+        row.style.display = shouldShow ? '' : 'none';
+      }
+    });
+    
+    // Sort rows
+    if (sortFilter !== 'newest') {
+      const tbody = table.getElementsByTagName('tbody')[0];
+      const sortedRows = Array.from(rows).sort((a, b) => {
+        if (sortFilter === 'oldest') {
+          return new Date(a.getAttribute('data-date')) - new Date(b.getAttribute('data-date'));
+        } else if (sortFilter === 'highest') {
+          return parseFloat(b.getAttribute('data-total')) - parseFloat(a.getAttribute('data-total'));
+        } else if (sortFilter === 'lowest') {
+          return parseFloat(a.getAttribute('data-total')) - parseFloat(b.getAttribute('data-total'));
+        }
+        return 0;
+      });
+      
+      sortedRows.forEach(row => tbody.appendChild(row));
+    }
+  }
+
+  // Real-time updates simulation
+  setInterval(() => {
+    // Update stats every 30 seconds
+    const statNumbers = document.querySelectorAll('.stat-number');
+    statNumbers.forEach(stat => {
+      if (stat.textContent.includes('FCFA')) {
+        // Animate revenue changes
+        stat.style.transform = 'scale(1.1)';
+        setTimeout(() => {
+          stat.style.transform = 'scale(1)';
+        }, 200);
+      }
+    });
+  }, 30000);
+
+  // Add smooth animations
+  document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach((row, index) => {
+      row.style.opacity = '0';
+      row.style.transform = 'translateY(20px)';
+      
+      setTimeout(() => {
+        row.style.transition = 'all 0.5s ease';
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+      }, index * 100);
+    });
+
+    // Prevent multiple submits on validate
+    document.querySelectorAll('.validate-form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn && btn.disabled) {
+          e.preventDefault();
+          return false;
+        }
+        if (btn) {
+          btn.disabled = true;
+          btn.style.opacity = '0.7';
+          const label = btn.querySelector('.action-label');
+          if (label) label.textContent = 'Validation...';
+        }
+      });
+    });
+
+    // Confirm delete
+    document.querySelectorAll('.btn-delete').forEach(link => {
+      link.addEventListener('click', function(e) {
+        const ok = confirm('Confirmer la suppression de cette commande ?');
+        if (!ok) {
+          e.preventDefault();
+        }
+      });
+    });
+  });
+
+  // Export orders to CSV
+  function exportOrdersCSV() {
+    const table = document.getElementById('ordersTable');
+    const rows = table.querySelectorAll('tr');
+    const csv = [];
+    rows.forEach((row, idx) => {
+      const cells = row.querySelectorAll(idx === 0 ? 'th' : 'td');
+      const rowData = [];
+      cells.forEach((cell, ci) => {
+        if (idx > 0 && ci === cells.length - 1) return; // skip actions col
+        let text = cell.textContent.trim().replace(/\s+/g, ' ');
+        text = '"' + text.replace(/"/g, '""') + '"';
+        rowData.push(text);
+      });
+      if (rowData.length) csv.push(rowData.join(','));
+    });
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'commandes_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  // Order details modal
+  function openOrderDetails(row){
+    var id = row.dataset.id || '';
+    var client = row.dataset.clientName || '';
+    var email = row.dataset.clientEmail || '';
+    var datetime = row.dataset.datetime || '';
+    var total = row.dataset.total || '';
+    var status = row.dataset.status || '';
+    var products = row.dataset.products || '';
+    document.getElementById('od-id').textContent = '#' + id;
+    document.getElementById('od-client').textContent = client;
+    document.getElementById('od-email').textContent = email;
+    document.getElementById('od-datetime').textContent = datetime;
+    document.getElementById('od-total').textContent = total + ' FCFA';
+    var statusLabel = status;
+    if (status === 'en_attente') statusLabel = 'En attente';
+    if (status === 'validee') statusLabel = 'Validée';
+    if (status === 'terminee') statusLabel = 'Terminée';
+    if (status === 'annulee') statusLabel = 'Annulée';
+    document.getElementById('od-status').textContent = statusLabel;
+    // Set badge style according to status
+    var badge = document.getElementById('od-status-badge');
+    if (badge) {
+      var base = 'status-badge ';
+      var cls = '';
+      if (status === 'en_attente') cls = 'status-pending';
+      else if (status === 'validee' || status === 'terminee') cls = 'status-completed';
+      else if (status === 'annulee') cls = 'status-cancelled';
+      badge.className = base + cls;
+      badge.textContent = statusLabel;
+    }
+    var productsEl = document.getElementById('od-products');
+    productsEl.innerHTML = '';
+    if (products) {
+      products.split(',').forEach(function(p){
+        var span = document.createElement('span');
+        span.className = 'badge bg-light text-dark me-1 mb-1';
+        span.textContent = p.trim();
+        productsEl.appendChild(span);
+      });
+    } else {
+      productsEl.innerHTML = '<span class="text-muted">Aucun produit</span>';
+    }
+    // action links
+    var linkDetail = document.getElementById('od-link-detail');
+    if (linkDetail) linkDetail.href = '{% url 'detail_commande' 0 %}'.replace('/0', '/' + id);
+    var linkPdf = document.getElementById('od-link-pdf');
+    if (linkPdf) linkPdf.href = '{% url 'generer_facture_pdf' 0 %}'.replace('/0', '/' + id);
+    var linkPay = document.getElementById('od-link-pay');
+    if (linkPay) linkPay.href = '{% url 'initiate_payment' %}?commande_id=' + id;
+    var btnPayInline = document.getElementById('od-btn-pay-inline');
+    if (btnPayInline) {
+      btnPayInline.onclick = function(){
+        var totalNum = parseFloat(total || '0');
+        openInlinePaymentModal(id, totalNum);
+      };
+    }
+    $('#orderDetailsModal').modal('show');
+  }
+
+  // Bind view buttons
+  document.querySelectorAll('.btn-view-order').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      var row = this.closest('tr');
+      if (row) openOrderDetails(row);
+    });
+  });
+
+  // Also open details when clicking on the order ID
+  document.querySelectorAll('.order-id').forEach(function(el){
+    el.addEventListener('click', function(){
+      var row = this.closest('tr');
+      if (row) openOrderDetails(row);
+    });
+  });
+</script>
+
+<!-- Modal: Paiement (inline) -->
+<div class="modal fade" id="payModalOrders" tabindex="-1" role="dialog" aria-labelledby="payModalOrdersLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="payModalOrdersLabel">Paiement de la commande #<span id="pm-id"></span></h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-5">
+            <div class="mb-2 text-muted">Montant total : <strong id="pm-total"></strong> FCFA</div>
+            <div class="mb-3">
+              <label class="form-label">Montant à encaisser</label>
+              <input type="number" min="0" step="0.01" id="pm-amount" class="form-control" placeholder="Montant (paiement partiel accepté)">
+              <div class="form-text">Reste dû : <span id="pm-remaining">0</span> FCFA</div>
+            </div>
+            <div class="mb-2 text-muted">Méthode</div>
+            <div class="d-grid gap-2">
+              <button class="btn btn-sm btn-outline-primary pm-method" data-method="orange">Orange Money</button>
+              <button class="btn btn-sm btn-outline-primary pm-method" data-method="wave">Wave</button>
+              <button class="btn btn-sm btn-outline-primary pm-method" data-method="mtn">MTN MoMo</button>
+              <button class="btn btn-sm btn-outline-primary pm-method" data-method="card">Carte</button>
+              <button class="btn btn-sm btn-outline-primary pm-method" data-method="bank">Virement</button>
+              <button class="btn btn-sm btn-outline-primary pm-method" data-method="paypal">PayPal</button>
+              <button class="btn btn-sm btn-outline-success pm-method" data-method="cash">Espèces</button>
+              <button class="btn btn-sm btn-outline-secondary pm-method" data-method="qr">QR Code</button>
+            </div>
+          </div>
+          <div class="col-md-7">
+            <div id="pm-forms">
+              <div id="pm-form-cash" class="pm-form" style="display:none;">
+                <div class="row g-2">
+                  <div class="col-6"><label class="form-label">Montant reçu</label><input type="number" class="form-control" id="pm-cash-received" min="0" step="0.01"></div>
+                  <div class="col-6"><label class="form-label">Monnaie à rendre</label><input type="text" class="form-control" id="pm-cash-change" disabled></div>
+                </div>
+              </div>
+              <div id="pm-form-orange" class="pm-form" style="display:none;"><label class="form-label">N° Orange Money</label><input type="tel" class="form-control" id="pm-om"></div>
+              <div id="pm-form-wave" class="pm-form" style="display:none;"><label class="form-label">N° Wave</label><input type="tel" class="form-control" id="pm-wave"></div>
+              <div id="pm-form-mtn" class="pm-form" style="display:none;"><label class="form-label">N° MTN MoMo</label><input type="tel" class="form-control" id="pm-mtn"></div>
+              <div id="pm-form-card" class="pm-form" style="display:none;">
+                <div class="row g-2">
+                  <div class="col-12"><label class="form-label">Numéro de carte</label><input type="text" class="form-control" id="pm-card-number"></div>
+                  <div class="col-6"><label class="form-label">Expiration</label><input type="text" class="form-control" id="pm-card-exp" placeholder="MM/AA"></div>
+                  <div class="col-6"><label class="form-label">CVC</label><input type="password" class="form-control" id="pm-card-cvc"></div>
+                </div>
+              </div>
+              <div id="pm-form-bank" class="pm-form" style="display:none;"><label class="form-label">Référence virement</label><input type="text" class="form-control" id="pm-bank-ref"></div>
+              <div id="pm-form-paypal" class="pm-form" style="display:none;"><label class="form-label">Email PayPal</label><input type="email" class="form-control" id="pm-paypal"></div>
+              <div id="pm-form-qr" class="pm-form" style="display:none;"><div class="alert alert-secondary">Scannez / générez un QR Code.</div></div>
+            </div>
+            <div class="mt-3 d-grid">
+              <button id="pm-submit" class="btn btn-success" disabled>
+                <span id="pm-loading" class="spinner-border spinner-border-sm me-2" style="display:none" role="status"></span>
+                Valider le paiement
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let PM_ENTITY_ID = null;
+  let PM_TOTAL = 0;
+  let PM_METHOD = null;
+
+  function openInlinePaymentModal(id, total){
+    PM_ENTITY_ID = id;
+    PM_TOTAL = parseFloat(total || 0);
+    PM_METHOD = null;
+    document.getElementById('pm-id').textContent = id;
+    document.getElementById('pm-total').textContent = PM_TOTAL.toLocaleString('fr-FR');
+    const amt = document.getElementById('pm-amount');
+    amt.value = PM_TOTAL.toFixed(2);
+    document.getElementById('pm-remaining').textContent = '0';
+    document.querySelectorAll('#pm-forms .pm-form').forEach(el=>el.style.display='none');
+    document.getElementById('pm-submit').disabled = true;
+    document.querySelectorAll('.pm-method').forEach(b=>b.classList.remove('active'));
+    $('#payModalOrders').modal('show');
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    // amount change
+    document.getElementById('pm-amount').addEventListener('input', function(){
+      let v = parseFloat(this.value || 0);
+      if (v > PM_TOTAL) v = PM_TOTAL;
+      if (v < 0) v = 0;
+      this.value = v.toFixed(2);
+      document.getElementById('pm-remaining').textContent = (PM_TOTAL - v).toFixed(2);
+      if (PM_METHOD === 'cash'){
+        const rec = parseFloat(document.getElementById('pm-cash-received').value || 0);
+        document.getElementById('pm-cash-change').value = (rec - v).toFixed(2);
+      }
+    });
+    // method select
+    document.querySelectorAll('.pm-method').forEach(btn=>{
+      btn.addEventListener('click', function(){
+        PM_METHOD = this.dataset.method;
+        document.querySelectorAll('.pm-method').forEach(b=>b.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('#pm-forms .pm-form').forEach(el=>el.style.display='none');
+        const target = document.getElementById('pm-form-' + PM_METHOD);
+        if (target) target.style.display = 'block';
+        document.getElementById('pm-submit').disabled = false;
+      });
+    });
+    // cash calc
+    document.getElementById('pm-cash-received').addEventListener('input', function(){
+      const pay = parseFloat(document.getElementById('pm-amount').value || 0);
+      const rec = parseFloat(this.value || 0);
+      document.getElementById('pm-cash-change').value = (rec - pay).toFixed(2);
+    });
+    // submit
+    document.getElementById('pm-submit').addEventListener('click', function(){
+      if (!PM_ENTITY_ID || !PM_METHOD) return;
+      const btn = this;
+      btn.disabled = true;
+      document.getElementById('pm-loading').style.display = 'inline-block';
+      const amount = parseFloat(document.getElementById('pm-amount').value || 0);
+      const url = PM_METHOD === 'cash' ? `/paiements/confirmer-espèces/${PM_ENTITY_ID}/` : `/paiements/creer/commande/${PM_ENTITY_ID}/`;
+      const payload = { amount: amount, method: PM_METHOD };
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP '+r.status)))
+      .then(data => {
+        if (data.success){
+          alert(data.message || 'Paiement enregistré');
+          $('#payModalOrders').modal('hide');
+          window.location.reload();
+        } else {
+          throw new Error(data.message || 'Erreur de paiement');
+        }
+      })
+      .catch(err => { alert(err.message); })
+      .finally(()=>{ btn.disabled = false; document.getElementById('pm-loading').style.display = 'none'; });
+    });
+  });
+</script>
+
+<!-- Modal: Détails Commande -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" role="dialog" aria-labelledby="orderDetailsLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="orderDetailsLabel">Détails de la commande <span id="od-id"></span></h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <h6 class="fw-bold mb-2"><i class="bi bi-person me-2"></i>Client</h6>
+            <table class="table table-sm">
+              <tr><th>Nom</th><td id="od-client">-</td></tr>
+              <tr><th>Email</th><td id="od-email">-</td></tr>
+              <tr><th>Date & heure</th><td id="od-datetime">-</td></tr>
+            </table>
+          </div>
+          <div class="col-md-6 mb-3">
+            <h6 class="fw-bold mb-2"><i class="bi bi-receipt me-2"></i>Commande</h6>
+            <table class="table table-sm">
+              <tr><th>Total</th><td id="od-total">-</td></tr>
+              <tr>
+                <th>Statut</th>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <span id="od-status">-</span>
+                    <span id="od-status-badge" class="status-badge">-</span>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="mt-2">
+          <h6 class="fw-bold mb-2"><i class="bi bi-box-seam me-2"></i>Produits</h6>
+          <div id="od-products"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="od-btn-pay-inline" class="btn btn-success">
+          <i class="bi bi-credit-card"></i> Payer maintenant
+        </button>
+        <a id="od-link-pay" href="#" class="btn btn-success"><i class="bi bi-credit-card"></i> Enregistrer paiement</a>
+        <a id="od-link-detail" href="#" class="btn btn-secondary"><i class="bi bi-eye"></i> Voir la fiche</a>
+        <a id="od-link-pdf" href="#" class="btn btn-primary"><i class="bi bi-file-pdf"></i> PDF</a>
+        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

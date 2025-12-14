@@ -1,0 +1,285 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Matériels Agricoles</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item active">Matériels Agricoles</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Statistics Cards -->
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>{{ total_materiels }}</h3>
+                            <p>Total matériels</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-tractor"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>{{ materiels_disponibles }}</h3>
+                            <p>Disponibles</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3>{{ materiels_indisponibles }}</h3>
+                            <p>Indisponibles</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-primary">
+                        <div class="inner">
+                            <h3>{{ reservations_en_cours }}</h3>
+                            <p>Réservations actives</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipment by Category -->
+            {% for categorie, materiels_list in categories.items %}
+            <div class="card card-outline card-secondary">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-th-large mr-2"></i>
+                        {{ categorie }}
+                        <small class="text-muted">- {{ materiels_list|length }} équipement(s)</small>
+                    </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for materiel in materiels_list %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="text-center mb-3">
+                                        {% if materiel.photo %}
+                                            <img src="{{ materiel.photo.url }}" alt="{{ materiel.nom }}" class="img-fluid rounded" style="max-height: 150px; object-fit: cover;">
+                                        {% else %}
+                                            <img src="{% static 'dist/img/default-equipment.png' %}" alt="Default" class="img-fluid rounded" style="max-height: 150px; object-fit: cover;">
+                                        {% endif %}
+                                    </div>
+                                    <h5 class="card-title text-center">{{ materiel.nom }}</h5>
+                                    <p class="card-text text-muted small text-center">{{ categorie }}</p>
+                                    
+                                    {% if materiel.description %}
+                                    <p class="card-text">{{ materiel.description|truncatewords:20 }}</p>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge badge-{% if materiel.disponible %}success{% else %}danger{% endif %}">
+                                            {% if materiel.disponible %}Disponible{% else %}Indisponible{% endif %}
+                                        </span>
+                                        <strong>{{ materiel.prix_location|floatformat:0 }} FCFA/jour</strong>
+                                    </div>
+                                    
+                                    <div class="btn-group w-100">
+                                        <button type="button" class="btn btn-sm btn-info" data-equipment-id="{{ materiel.id }}" data-action="details">
+                                            <i class="fas fa-eye"></i> Détails
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-warning" data-equipment-id="{{ materiel.id }}" data-action="reservations">
+                                            <i class="fas fa-calendar"></i> Réservations
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Aucun matériel agricole trouvé dans le système.
+            </div>
+            {% endfor %}
+
+            <!-- All Equipment Table -->
+            <div class="card card-outline card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-list mr-2"></i>
+                        Liste complète des matériels
+                    </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="materielsTable">
+                            <thead>
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Nom</th>
+                                    <th>Catégorie</th>
+                                    <th>Description</th>
+                                    <th>Prix location</th>
+                                    <th>Statut</th>
+                                    <th>Réservations</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for materiel in materiels %}
+                                <tr>
+                                    <td class="text-center">
+                                        {% if materiel.photo %}
+                                            <img src="{{ materiel.photo.url }}" alt="{{ materiel.nom }}" class="img-thumbnail" style="max-width: 50px; max-height: 50px;">
+                                        {% else %}
+                                            <img src="{% static 'dist/img/default-equipment.png' %}" alt="Default" class="img-thumbnail" style="max-width: 50px; max-height: 50px;">
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ materiel.nom }}</td>
+                                    <td>{{ materiel.categorie|default:'Non catégorisé' }}</td>
+                                    <td>{{ materiel.description|default:'-'|truncatechars:50 }}</td>
+                                    <td>{{ materiel.prix_location|floatformat:0 }} FCFA</td>
+                                    <td>
+                                        <span class="badge badge-{% if materiel.disponible %}success{% else %}danger{% endif %}">
+                                            {% if materiel.disponible %}Disponible{% else %}Indisponible{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="#" data-equipment-id="{{ materiel.id }}" data-action="reservations" class="btn btn-sm btn-info action-btn">
+                                            <i class="fas fa-calendar"></i> Voir
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-primary" data-equipment-id="{{ materiel.id }}" data-action="edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-success" data-equipment-id="{{ materiel.id }}" data-action="toggle">
+                                                <i class="fas fa-{% if materiel.disponible %}ban{% else %}check{% endif %}"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Modal for Equipment Details -->
+<div class="modal fade" id="equipmentModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails du matériel</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="equipmentModalBody">
+                <!-- Content will be loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#materielsTable').DataTable({
+        'responsive': true,
+        'lengthChange': false,
+        'autoWidth': false,
+        'ordering': true,
+        'info': true,
+        'paging': true
+    });
+});
+
+function showEquipmentDetails(materielId) {
+    // This would typically make an AJAX call to get detailed information
+    // For now, we'll show a simple message
+    $('#equipmentModalBody').html(`
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin fa-3x mb-3"></i>
+            <p>Chargement des détails...</p>
+        </div>
+    `);
+    $('#equipmentModal').modal('show');
+    
+    // Simulate loading (replace with actual AJAX call)
+    setTimeout(() => {
+        $('#equipmentModalBody').html(`
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle mr-2"></i>
+                Fonctionnalité de détails en cours de développement.
+            </div>
+        `);
+    }, 1000);
+}
+
+function showReservations(materielId) {
+    // This would show reservations for the specific equipment
+    alert('Fonctionnalité de réservations en cours de développement.');
+}
+
+function editEquipment(materielId) {
+    // This would open an edit form
+    alert('Fonctionnalité d\'édition en cours de développement.');
+}
+
+function toggleAvailability(materielId) {
+    // This would toggle the availability status
+    if (confirm('Êtes-vous sûr de vouloir changer la disponibilité de ce matériel?')) {
+        // Make AJAX call to update status
+        alert('Fonctionnalité de mise à jour en cours de développement.');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Ajouter une Facture{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-plus-circle"></i>
+                        Ajouter une Facture
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'tableau_bord_financier' %}">Finances</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'liste_factures' %}">Factures</a></li>
+                        <li class="breadcrumb-item active">Ajouter</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-edit"></i>
+                                Informations de la Facture
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.numero_facture.label_tag }}
+                                            {{ form.numero_facture }}
+                                            {% if form.numero_facture.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.numero_facture.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.client.label_tag }}
+                                            {{ form.client }}
+                                            {% if form.client.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.client.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            {{ form.date_emission.label_tag }}
+                                            {{ form.date_emission }}
+                                            {% if form.date_emission.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.date_emission.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            {{ form.date_echeance.label_tag }}
+                                            {{ form.date_echeance }}
+                                            {% if form.date_echeance.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.date_echeance.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            {{ form.montant_total.label_tag }}
+                                            {{ form.montant_total }}
+                                            {% if form.montant_total.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.montant_total.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    {{ form.description.label_tag }}
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <div class="text-danger">
+                                            {{ form.description.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Enregistrer la facture
+                                    </button>
+                                    <a href="{% url 'liste_factures' %}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Annuler
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i>
+                                Aide
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <h6>Conseils pour les factures</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Numéro unique par facture</li>
+                                <li><i class="fas fa-check text-success"></i> Date d'émission = date de création</li>
+                                <li><i class="fas fa-check text-success"></i> Échéance = date limite de paiement</li>
+                                <li><i class="fas fa-check text-success"></i> Description détaillée des services</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Statuts automatiques</h6>
+                            <ul class="list-unstyled">
+                                <li><span class="badge bg-info">En attente</span> - Facture créée</li>
+                                <li><span class="badge bg-warning">Partiellement payée</span> - Paiement partiel</li>
+                                <li><span class="badge bg-success">Payée</span> - Paiement complet</li>
+                                <li><span class="badge bg-danger">En retard</span> - Échéance dépassée</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

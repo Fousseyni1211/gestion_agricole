@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: "DejaVu Sans", sans-serif;
+            font-size: 12px;
+            color: #333;
+            margin: 40px;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #555;
+            padding-bottom: 10px;
+        }
+        .logo {
+            height: 60px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: #2e8b57;
+        }
+        .summary-table {
+            width: 100%;
+            margin-top: 40px;
+            border-collapse: collapse;
+        }
+        .summary-table th, .summary-table td {
+            border: 1px solid #ccc;
+            padding: 12px;
+            text-align: right;
+        }
+        .summary-table th {
+            background-color: #f0f0f0;
+            text-align: left;
+        }
+        .footer {
+            position: fixed;
+            bottom: 30px;
+            left: 40px;
+            right: 40px;
+            font-size: 10px;
+            color: #888;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ logo_url }}" alt="Logo" class="logo">
+        <h1>Rapport Financier – {{ mois_nom }} {{ annee }}</h1>
+    </div>
+
+    <p><strong>Date de génération :</strong> {{ date_now }}</p>
+
+    <table class="summary-table">
+        <tr>
+            <th>Total des Revenus</th>
+            <td>{{ total_revenus|floatformat:2 }} F CFA</td>
+        </tr>
+        <tr>
+            <th>Total des Dépenses</th>
+            <td>{{ total_depenses|floatformat:2 }} F CFA</td>
+        </tr>
+        <tr>
+            <th>Solde</th>
+            <td><strong>{{ solde|floatformat:2 }} F CFA</strong></td>
+        </tr>
+    </table>
+
+    <div class="footer">
+        Rapport généré automatiquement depuis la plateforme de gestion agricole.
+    </div>
+</body>
+</html>

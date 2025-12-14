@@ -1,0 +1,251 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Tableau de Bord - Technicien Agronome{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-user-tie"></i> Tableau de Bord - Technicien Agronome
+        </h1>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Statistiques principales -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Arrosages en attente
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ arrosages_en_attente }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tint fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Traitements en attente
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ traitements_en_attente }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-spray-can fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Fertilisations en attente
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ fertilisations_en_attente }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-seedling fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Photos à vérifier
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ photos_en_attente }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-camera fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row">
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-tasks"></i> Actions Rapides
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'validation_arrosages' %}" class="btn btn-warning btn-block">
+                                <i class="fas fa-tint"></i> Valider Arrosages
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'validation_traitements' %}" class="btn btn-danger btn-block">
+                                <i class="fas fa-spray-can"></i> Valider Traitements
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'validation_fertilisations' %}" class="btn btn-success btn-block">
+                                <i class="fas fa-seedling"></i> Valider Fertilisations
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'verification_photos' %}" class="btn btn-info btn-block">
+                                <i class="fas fa-camera"></i> Vérifier Photos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-tools"></i> Outils d'Expertise
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'suivi_sante_cultures' %}" class="btn btn-primary btn-block">
+                                <i class="fas fa-heartbeat"></i> Suivi Santé Cultures
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'liste_fiches_conseils' %}" class="btn btn-secondary btn-block">
+                                <i class="fas fa-book"></i> Fiches-Conseils
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'creer_fiche_conseil' %}" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-plus"></i> Créer Fiche-Conseil
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activités récentes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-clock"></i> Activités Récentes en Attente de Validation
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if activites_recentes %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Agriculteur</th>
+                                        <th>Parcelle</th>
+                                        <th>Culture</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for activite in activites_recentes %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ activite.date_activite|date:"d/m/Y" }}</strong>
+                                            <br><small class="text-muted">{{ activite.date_activite|time:"H:i" }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-warning">{{ activite.get_type_activite_display }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ activite.agriculteur.farm_name }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if activite.parcelle %}
+                                                {{ activite.parcelle.nom }}
+                                            {% else %}
+                                                <span class="text-muted">Non spécifiée</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if activite.culture %}
+                                                <span class="badge badge-success">{{ activite.culture.nom }}</span>
+                                            {% else %}
+                                                <span class="text-muted">Non spécifiée</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'valider_action' activite.id %}" class="btn btn-sm btn-success" title="Valider">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                <a href="{% url 'refuser_action' activite.id %}" class="btn btn-sm btn-danger" title="Refuser">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-gray-500">Aucune activité en attente</h5>
+                            <p class="text-gray-400">Toutes les actions ont été traitées.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

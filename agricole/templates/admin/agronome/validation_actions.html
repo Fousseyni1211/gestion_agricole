@@ -1,0 +1,231 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-check-circle"></i> {{ titre }}
+        </h1>
+        <div class="btn-group">
+            {% if type_action == 'arrosage' %}
+                <a href="{% url 'validation_traitements' %}" class="btn btn-danger">
+                    <i class="fas fa-spray-can"></i> Traitements
+                </a>
+                <a href="{% url 'validation_fertilisations' %}" class="btn btn-success">
+                    <i class="fas fa-seedling"></i> Fertilisations
+                </a>
+            {% elif type_action == 'traitement' %}
+                <a href="{% url 'validation_arrosages' %}" class="btn btn-warning">
+                    <i class="fas fa-tint"></i> Arrosages
+                </a>
+                <a href="{% url 'validation_fertilisations' %}" class="btn btn-success">
+                    <i class="fas fa-seedling"></i> Fertilisations
+                </a>
+            {% else %}
+                <a href="{% url 'validation_arrosages' %}" class="btn btn-warning">
+                    <i class="fas fa-tint"></i> Arrosages
+                </a>
+                <a href="{% url 'validation_traitements' %}" class="btn btn-danger">
+                    <i class="fas fa-spray-can"></i> Traitements
+                </a>
+            {% endif %}
+            <a href="{% url 'tableau_de_bord_agronome' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Actions en Attente de Validation</h6>
+        </div>
+        <div class="card-body">
+            {% if actions %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Agriculteur</th>
+                                <th>Parcelle</th>
+                                <th>Culture</th>
+                                <th>Description</th>
+                                <th>Photos</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for action in actions %}
+                            <tr>
+                                <td>
+                                    <strong>{{ action.date_activite|date:"d/m/Y" }}</strong>
+                                    <br><small class="text-muted">{{ action.date_activite|time:"H:i" }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ action.agriculteur.farm_name }}</strong>
+                                    <br><small class="text-muted">{{ action.agriculteur.user.get_full_name|default:action.agriculteur.user.username }}</small>
+                                </td>
+                                <td>
+                                    {% if action.parcelle %}
+                                        <strong>{{ action.parcelle.nom }}</strong>
+                                        <br><small class="text-muted">{{ action.parcelle.superficie }} ha</small>
+                                    {% else %}
+                                        <span class="text-muted">Non spécifiée</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if action.culture %}
+                                        <span class="badge badge-success">{{ action.culture.nom }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Non spécifiée</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ action.get_type_activite_display }}</strong>
+                                    {% if action.description %}
+                                        <br><small class="text-muted">{{ action.description|truncatechars:80 }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if action.photos.exists %}
+                                        <span class="badge badge-info">{{ action.photos.count }} photo(s)</span>
+                                        <br>
+                                        <button type="button" class="btn btn-sm btn-outline-info mt-1" 
+                                                onclick="showPhotos({{ action.id }})">
+                                            <i class="fas fa-eye"></i> Voir
+                                        </button>
+                                    {% else %}
+                                        <span class="text-muted">Aucune</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'valider_action' action.id %}" class="btn btn-sm btn-success" title="Valider">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                        <a href="{% url 'refuser_action' action.id %}" class="btn btn-sm btn-danger" title="Refuser">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info" title="Détails" 
+                                                onclick="showDetails({{ action.id }})">
+                                            <i class="fas fa-info-circle"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="text-gray-500">Aucune action en attente</h5>
+                    <p class="text-gray-400">Toutes les actions de ce type ont été validées.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal Photos -->
+<div class="modal fade" id="photosModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Photos de l'Action</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="photosContent">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Détails -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails de l'Action</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="detailsContent">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function showPhotos(actionId) {
+    // Simuler le chargement des photos
+    const photosHtml = `
+        <div class="row">
+            <div class="col-12">
+                <h6>Photos de l'action #${actionId}</h6>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <img src="/static/images/placeholder-photo.jpg" class="img-fluid rounded" alt="Photo 1">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <img src="/static/images/placeholder-photo.jpg" class="img-fluid rounded" alt="Photo 2">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('photosContent').innerHTML = photosHtml;
+    $('#photosModal').modal('show');
+}
+
+function showDetails(actionId) {
+    // Simuler le chargement des détails
+    const detailsHtml = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Informations générales</h6>
+                <p><strong>ID Action:</strong> ${actionId}</p>
+                <p><strong>Type:</strong> {{ type_action|title }}</p>
+                <p><strong>Date:</strong> Date de l'action</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Informations sur le terrain</h6>
+                <p><strong>Parcelle:</strong> Nom de la parcelle</p>
+                <p><strong>Culture:</strong> Type de culture</p>
+                <p><strong>Agriculteur:</strong> Nom de l'agriculteur</p>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6>Description complète</h6>
+                <p>Description détaillée de l'action agricole effectuée...</p>
+            </div>
+        </div>
+    `;
+    document.getElementById('detailsContent').innerHTML = detailsHtml;
+    $('#detailsModal').modal('show');
+}
+</script>
+{% endblock %}
+{% endblock %}

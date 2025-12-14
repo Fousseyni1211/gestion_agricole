@@ -1,0 +1,206 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Tableau de Bord Financier{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-chart-line"></i>
+                        Tableau de Bord Financier
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item active">Finances</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Cartes statistiques -->
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>{{ depenses_mois|floatformat:0 }} FCFA</h3>
+                            <p>Dépenses {{ current_month }}/{{ current_year }}</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <a href="{% url 'liste_depenses' %}" class="small-box-footer">
+                            Voir détails <i class="fas fa-arrow-circle-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>{{ revenus_mois|floatformat:0 }} FCFA</h3>
+                            <p>Revenus {{ current_month }}/{{ current_year }}</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <a href="{% url 'liste_revenus' %}" class="small-box-footer">
+                            Voir détails <i class="fas fa-arrow-circle-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box {% if solde_mois >= 0 %}bg-primary{% else %}bg-danger{% endif %}">
+                        <div class="inner">
+                            <h3>{{ solde_mois|floatformat:0 }} FCFA</h3>
+                            <p>Solde du mois</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <a href="{% url 'soldes_mensuels' %}" class="small-box-footer">
+                            Voir détails <i class="fas fa-arrow-circle-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box {% if factures_en_retard > 0 %}bg-warning{% else %}bg-secondary{% endif %}">
+                        <div class="inner">
+                            <h3>{{ factures_en_retard }}</h3>
+                            <p>Factures en retard</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <a href="{% url 'liste_factures' %}" class="small-box-footer">
+                            Voir détails <i class="fas fa-arrow-circle-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dernières transactions -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-arrow-down text-danger"></i>
+                                Dernières Dépenses
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            {% if dernieres_depenses %}
+                                <ul class="list-group">
+                                    {% for depense in dernieres_depenses %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ depense.titre }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ depense.date_depense|date:"d/m/Y" }} - {{ depense.categorie.nom|default:"Non catégorisée" }}</small>
+                                        </div>
+                                        <span class="badge bg-danger">{{ depense.montant|floatformat:0 }} FCFA</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted">Aucune dépense enregistrée ce mois-ci</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <a href="{% url 'ajouter_depense' %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus"></i> Ajouter une dépense
+                            </a>
+                            <a href="{% url 'liste_depenses' %}" class="btn btn-sm btn-outline-secondary">
+                                Voir tout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-arrow-up text-success"></i>
+                                Derniers Revenus
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            {% if derniers_revenus %}
+                                <ul class="list-group">
+                                    {% for revenu in derniers_revenus %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ revenu.titre }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ revenu.date_revenu|date:"d/m/Y" }} - {{ revenu.categorie.nom|default:"Non catégorisée" }}</small>
+                                        </div>
+                                        <span class="badge bg-success">{{ revenu.montant|floatformat:0 }} FCFA</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted">Aucun revenu enregistré ce mois-ci</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <a href="{% url 'ajouter_revenu' %}" class="btn btn-sm btn-success">
+                                <i class="fas fa-plus"></i> Ajouter un revenu
+                            </a>
+                            <a href="{% url 'liste_revenus' %}" class="btn btn-sm btn-outline-secondary">
+                                Voir tout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-bolt"></i>
+                                Actions Rapides
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-2">
+                                    <a href="{% url 'ajouter_depense' %}" class="btn btn-danger btn-block">
+                                        <i class="fas fa-minus-circle"></i> Nouvelle Dépense
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <a href="{% url 'ajouter_revenu' %}" class="btn btn-success btn-block">
+                                        <i class="fas fa-plus-circle"></i> Nouveau Revenu
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <a href="{% url 'ajouter_facture' %}" class="btn btn-primary btn-block">
+                                        <i class="fas fa-file-invoice"></i> Nouvelle Facture
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <a href="{% url 'generer_rapport_financier' %}" class="btn btn-info btn-block">
+                                        <i class="fas fa-chart-bar"></i> Générer Rapport
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,204 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Ajouter un Paiement Client{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-plus-circle"></i>
+                        Ajouter un Paiement
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'tableau_bord_financier' %}">Finances</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'liste_factures' %}">Factures</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'detail_facture' facture.pk %}">Détails</a></li>
+                        <li class="breadcrumb-item active">Paiement</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Informations de la facture -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i>
+                                Facture {{ facture.numero_facture }}
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Client:</strong> {{ facture.client }}</p>
+                                    <p><strong>Date d'émission:</strong> {{ facture.date_emission|date:"d/m/Y" }}</p>
+                                    <p><strong>Date d'échéance:</strong> {{ facture.date_echeance|date:"d/m/Y" }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Montant total:</strong> {{ facture.montant_total|floatformat:0 }} FCFA</p>
+                                    <p><strong>Déjà payé:</strong> {{ facture.montant_regle|floatformat:0 }} FCFA</p>
+                                    <p><strong>Reste à payer:</strong> <span class="{% if facture.montant_restant > 0 %}text-danger{% else %}text-success{% endif %}">{{ facture.montant_restant|floatformat:0 }} FCFA</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulaire de paiement -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-edit"></i>
+                                Informations du Paiement
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.montant.label_tag }}
+                                            {{ form.montant }}
+                                            {% if form.montant.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.montant.errors }}
+                                                </div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">
+                                                Maximum: {{ facture.montant_restant|floatformat:0 }} FCFA
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.date_paiement.label_tag }}
+                                            {{ form.date_paiement }}
+                                            {% if form.date_paiement.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.date_paiement.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.methode_paiement.label_tag }}
+                                            {{ form.methode_paiement }}
+                                            {% if form.methode_paiement.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.methode_paiement.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.reference_paiement.label_tag }}
+                                            {{ form.reference_paiement }}
+                                            {% if form.reference_paiement.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.reference_paiement.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ form.statut.label_tag }}
+                                            {{ form.statut }}
+                                            {% if form.statut.errors %}
+                                                <div class="text-danger">
+                                                    {{ form.statut.errors }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    {{ form.notes.label_tag }}
+                                    {{ form.notes }}
+                                    {% if form.notes.errors %}
+                                        <div class="text-danger">
+                                            {{ form.notes.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save"></i> Enregistrer le paiement
+                                    </button>
+                                    <a href="{% url 'detail_facture' facture.pk %}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Annuler
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i>
+                                Aide
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <h6>Méthodes de paiement</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-mobile-alt text-primary"></i> Orange Money</li>
+                                <li><i class="fas fa-mobile-alt text-info"></i> Wave</li>
+                                <li><i class="fas fa-mobile-alt text-success"></i> MTN MoMo</li>
+                                <li><i class="fas fa-credit-card text-warning"></i> Carte bancaire</li>
+                                <li><i class="fas fa-money-bill text-secondary"></i> Espèces</li>
+                                <li><i class="fas fa-university text-dark"></i> Virement bancaire</li>
+                                <li><i class="fas fa-exchange-alt text-muted"></i> Autre</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Statuts du paiement</h6>
+                            <ul class="list-unstyled">
+                                <li><span class="badge bg-warning">En attente</span> - Paiement à confirmer</li>
+                                <li><span class="badge bg-success">Validé</span> - Paiement confirmé</li>
+                                <li><span class="badge bg-danger">Rejeté</span> - Paiement refusé</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Conseils</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Vérifiez le montant maximum</li>
+                                <li><i class="fas fa-check text-success"></i> Gardez les preuves de paiement</li>
+                                <li><i class="fas fa-check text-success"></i> Notez les références de transaction</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

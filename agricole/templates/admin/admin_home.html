@@ -1,0 +1,1071 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+{% block custom_css %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- AOS Animation -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<!-- Custom CSS -->
+<style>
+  :root {
+    --primary-color: #2d5a27;
+    --secondary-color: #4a7c59;
+    --accent-color: #7cb342;
+    --success-color: #28a745;
+    --info-color: #17a2b8;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --dark-color: #343a40;
+    --light-color: #f8f9fa;
+    --white-color: #ffffff;
+    --border-radius: 16px;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 16px 48px rgba(0, 0, 0, 0.15);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  }
+
+  /* Dashboard Header */
+  .dashboard-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .dashboard-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="%23ffffff" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="%23ffffff" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.1;
+    animation: float 20s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+  }
+
+  .welcome-text {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--white-color);
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .date-text {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    position: relative;
+    z-index: 2;
+  }
+
+  .quick-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .btn-quick {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--white-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-quick:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    color: var(--white-color);
+    text-decoration: none;
+  }
+
+  /* Header Actions */
+  .header-actions {
+    position: relative;
+    z-index: 3;
+  }
+
+  .weather-widget {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.75rem 1rem;
+    border-radius: 50px;
+    color: var(--white-color);
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .weather-widget i {
+    margin-right: 0.5rem;
+    color: #ffc107;
+  }
+
+  .admin-profile {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 1rem;
+    border-radius: 50px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .admin-name {
+    color: var(--white-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .admin-role {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Logout Button */
+  .btn-logout {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: var(--white-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-logout::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-logout:hover::before {
+    left: 100%;
+  }
+
+  .btn-logout:hover {
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+    color: var(--white-color);
+    text-decoration: none;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .btn-logout i {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+  }
+
+  .btn-logout:hover i {
+    transform: translateX(3px);
+  }
+
+  .btn-logout span {
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .header-actions {
+      flex-direction: column;
+      gap: 1rem !important;
+      align-items: stretch !important;
+    }
+
+    .weather-widget,
+    .admin-profile {
+      text-align: center;
+    }
+
+    .profile-info {
+      align-items: center !important;
+    }
+
+    .btn-logout {
+      justify-content: center;
+      width: 100%;
+    }
+
+    .btn-logout span {
+      display: inline;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .header-actions {
+      gap: 0.75rem !important;
+    }
+
+    .weather-widget,
+    .admin-profile,
+    .btn-logout {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .btn-logout span {
+      font-size: 0.8rem;
+    }
+
+    .admin-name {
+      font-size: 0.8rem;
+    }
+
+    .admin-role {
+      font-size: 0.7rem;
+    }
+  }
+
+  /* Stats Cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--white-color);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    border: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-color);
+  }
+
+  .stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .stat-card.success::before { background: var(--success-color); }
+  .stat-card.info::before { background: var(--info-color); }
+  .stat-card.warning::before { background: var(--warning-color); }
+  .stat-card.danger::before { background: var(--danger-color); }
+
+  .stat-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .stat-info h3 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--dark-color);
+  }
+
+  .stat-info p {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 0;
+    font-weight: 500;
+  }
+
+  .stat-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: var(--white-color);
+  }
+
+  .stat-card.success .stat-icon { background: var(--success-color); }
+  .stat-card.info .stat-icon { background: var(--info-color); }
+  .stat-card.warning .stat-icon { background: var(--warning-color); }
+  .stat-card.danger .stat-icon { background: var(--danger-color); }
+
+  .stat-trend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .trend-up { color: var(--success-color); }
+  .trend-down { color: var(--danger-color); }
+
+  /* Charts Section */
+  .charts-section {
+    margin-bottom: 2rem;
+  }
+
+  .chart-card {
+    background: var(--white-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border: none;
+    overflow: hidden;
+    transition: var(--transition);
+  }
+
+  .chart-card:hover {
+    box-shadow: var(--shadow-hover);
+  }
+
+  .chart-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: var(--white-color);
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .chart-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .chart-controls {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-chart {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--white-color);
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    transition: var(--transition);
+  }
+
+  .btn-chart:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: var(--white-color);
+  }
+
+  .chart-body {
+    padding: 1.5rem;
+  }
+
+  /* Activity Feed */
+  .activity-feed {
+    background: var(--white-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .activity-header {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--secondary-color) 100%);
+    color: var(--white-color);
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .activity-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .activity-list {
+    padding: 1.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f1f3f4;
+    transition: var(--transition);
+  }
+
+  .activity-item:hover {
+    background: rgba(0, 0, 0, 0.02);
+    margin: 0 -1.5rem;
+    padding: 1rem 1.5rem;
+  }
+
+  .activity-item:last-child {
+    border-bottom: none;
+  }
+
+  .activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white-color);
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .activity-icon.order { background: var(--info-color); }
+  .activity-icon.user { background: var(--success-color); }
+  .activity-icon.payment { background: var(--warning-color); }
+  .activity-icon.stock { background: var(--danger-color); }
+
+  .activity-content {
+    flex: 1;
+  }
+
+  .activity-title-text {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.25rem;
+  }
+
+  .activity-description {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .activity-time {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .dashboard-header {
+      padding: 1.5rem;
+    }
+
+    .welcome-text {
+      font-size: 2rem;
+    }
+
+    .quick-actions {
+      flex-direction: column;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+      padding: 1.5rem;
+    }
+
+    .stat-info h3 {
+      font-size: 2rem;
+    }
+
+    .chart-header {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+  }
+
+  /* Scrollbar Customization */
+  .activity-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .activity-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  .activity-list::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 3px;
+  }
+
+  .activity-list::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+  }
+
+  /* Animations */
+  .fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .counter-animation {
+    animation: countUp 2s ease-out forwards;
+  }
+
+  @keyframes countUp {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+</style>
+{% endblock %}
+
+{% block main_content %}
+<div class="content">
+  <div class="container-fluid">
+    
+    <!-- Dashboard Header -->
+    <div class="dashboard-header" data-aos="fade-down">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <h1 class="welcome-text">
+            <i class="bi bi-speedometer2"></i>
+            Tableau de bord
+          </h1>
+          <p class="date-text">
+            <i class="bi bi-calendar3"></i>
+            <span id="current-date">Aujourd'hui</span>
+          </p>
+          <div class="quick-actions">
+            <a href="#" class="btn-quick">
+              <i class="bi bi-plus-circle"></i>
+              Nouveau produit
+            </a>  
+            <a href="{% url 'gerant_reports' %}" class="btn-quick">
+              <i class="bi bi-graph-up"></i>
+              Rapports
+            </a>
+            <a href="{% url 'gerant_settings' %}" class="btn-quick">
+              <i class="bi bi-gear"></i>
+              Paramètres
+            </a>
+          </div>
+        </div>
+        <div class="col-lg-4 text-end">
+          <div class="header-actions d-flex align-items-center justify-content-end gap-3">
+            <div class="weather-widget">
+              <i class="bi bi-sun"></i>
+              <span>24°C</span>
+            </div>
+            <div class="admin-profile">
+              <div class="profile-info">
+                <span class="admin-name">{{ user.get_full_name|default:user.username }}</span>
+                <small class="admin-role">Gerant</small>
+              </div>
+            </div>
+            <div class="logout-section">
+              <a href="{% url 'logout_user' %}" class="btn-logout" onclick="return confirmLogout()">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Déconnexion</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <div class="stat-card success" data-aos="fade-up" data-aos-delay="100">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3 class="counter-animation" data-count="{{ total_clients }}">{{ total_clients }}</h3>
+            <p>Total Clients</p>
+            <div class="stat-trend">
+              <i class="bi bi-arrow-up trend-up"></i>
+              <span>+12% ce mois</span>
+            </div>
+          </div>
+          <div class="stat-icon">
+            <i class="bi bi-people"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card warning" data-aos="fade-up" data-aos-delay="200">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3 class="counter-animation" data-count="{{ total_agriculteurs }}">{{ total_agriculteurs }}</h3>
+            <p>Total Agriculteurs</p>
+            <div class="stat-trend">
+              <i class="bi bi-arrow-up trend-up"></i>
+              <span>+15% ce mois</span>
+            </div>
+          </div>
+          <div class="stat-icon">
+            <i class="bi bi-leaf"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card success" data-aos="fade-up" data-aos-delay="300">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3 class="counter-animation" data-count="{{ total_produits }}">{{ total_produits }}</h3>
+            <p>Total Produits</p>
+            <div class="stat-trend">
+              <i class="bi bi-arrow-up trend-up"></i>
+              <span>+20% ce mois</span>
+            </div>
+          </div>
+          <div class="stat-icon">
+            <i class="bi bi-seedling"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card info" data-aos="fade-up" data-aos-delay="500">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3 class="counter-animation" data-count="{{ total_commandes }}">{{ total_commandes }}</h3>
+            <p>Total Commandes</p>
+            <div class="stat-trend">
+              <i class="bi bi-arrow-up trend-up"></i>
+              <span>+25% ce mois</span>
+            </div>
+          </div>
+          <div class="stat-icon">
+            <i class="bi bi-cart-check"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card danger" data-aos="fade-up" data-aos-delay="600">
+        <div class="stat-content">
+          <div class="stat-info">
+            <h3 class="counter-animation" data-count="{{ total_paiements_valides }}">{{ total_paiements_valides }}</h3>
+            <p>Paiements Validés</p>
+            <div class="stat-trend">
+              <i class="bi bi-arrow-up trend-up"></i>
+              <span>+18% ce mois</span>
+            </div>
+          </div>
+          <div class="stat-icon">
+            <i class="bi bi-credit-card"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+      <div class="row">
+        <div class="col-12">
+          <div class="chart-card" data-aos="fade-up" data-aos-delay="700">
+            <div class="chart-header">
+              <h3 class="chart-title">
+                <i class="bi bi-graph-up"></i>
+                Statistiques générales
+              </h3>
+              <div class="chart-controls">
+                <button class="btn-chart" onclick="changeChartView('overview')">Vue d'ensemble</button>
+                <button class="btn-chart" onclick="changeChartView('detailed')">Détail</button>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="mainChart" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Charts removed -->
+
+    <!-- Charts Row -->
+    <div class="row mt-4">
+      <!-- Trend Chart -->
+      <div class="col-lg-7 mb-4 mb-lg-0">
+        <div class="chart-card h-100" data-aos="fade-up" data-aos-delay="800">
+          <div class="chart-header">
+            <h3 class="chart-title">
+              <i class="bi bi-activity"></i>
+              Tendances sur 30 jours
+            </h3>
+          </div>
+          <div class="chart-body">
+            <canvas id="trendChart" height="280"></canvas>
+          </div>
+        </div>
+      </div>
+      <!-- User Distribution Chart -->
+      <div class="col-lg-5">
+        <div class="chart-card h-100" data-aos="fade-up" data-aos-delay="900">
+          <div class="chart-header">
+            <h3 class="chart-title">
+              <i class="bi bi-people-fill"></i>
+              Répartition des utilisateurs
+            </h3>
+          </div>
+          <div class="chart-body">
+            <canvas id="userDistributionChart" height="280"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="activity-feed" data-aos="fade-up" data-aos-delay="1000">
+                <div class="activity-header">
+                    <h3 class="activity-title mb-0">
+                        <i class="bi bi-clock-history"></i>
+                        Activités récentes
+                    </h3>
+                </div>
+                <div class="activity-list">
+                    {% if recent_activities and recent_activities|length > 0 %}
+                        {% for item in recent_activities %}
+                        <div class="activity-item">
+                            <div class="activity-icon {{ item.type }}">
+                                {% if item.type == 'order' %}<i class="bi bi-cart-check"></i>{% endif %}
+                                {% if item.type == 'user' %}<i class="bi bi-person-plus"></i>{% endif %}
+                                {% if item.type == 'payment' %}<i class="bi bi-credit-card"></i>{% endif %}
+                                {% if item.type == 'stock' %}<i class="bi bi-box-seam"></i>{% endif %}
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title-text">{{ item.title }}</div>
+                                <div class="activity-description">{{ item.description }}</div>
+                                <div class="activity-time">
+                                    <i class="bi bi-clock"></i> {{ item.time }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="p-3 text-muted">Aucune activité récente.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- JavaScript -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes au scroll
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true
+    });
+
+    // Mise à jour de la date et heure
+    function updateDateTime() {
+      const now = new Date();
+      const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      document.getElementById('current-date').textContent = now.toLocaleDateString('fr-FR', options);
+    }
+
+    updateDateTime();
+    setInterval(updateDateTime, 60000); // Mise à jour chaque minute
+
+    // Counter animation
+    const counters = document.querySelectorAll('.counter-animation');
+    counters.forEach(counter => {
+      const target = parseInt(counter.getAttribute('data-count'));
+      const increment = target / 100;
+      let current = 0;
+
+      const updateCounter = () => {
+        if (current < target) {
+          current += increment;
+          counter.textContent = Math.ceil(current);
+          setTimeout(updateCounter, 20);
+        } else {
+          counter.textContent = target;
+        }
+      };
+      updateCounter();
+    });
+
+    // Chart data - Django template variables will be replaced server-side
+    const statsData = [
+      parseInt('{{ total_clients|default:0 }}') || 0,
+      parseInt('{{ total_agriculteurs|default:0 }}') || 0,
+      parseInt('{{ total_produits|default:0 }}') || 0,
+      parseInt('{{ total_commandes|default:0 }}') || 0,
+      parseInt('{{ total_paiements_valides|default:0 }}') || 0
+    ];
+    
+    const chartData = {
+      labels: ['Clients', 'Agriculteurs', 'Produits', 'Commandes', 'Paiements'],
+      datasets: [{
+        label: 'Statistiques',
+        data: statsData,
+        backgroundColor: [
+          'rgba(40, 167, 69, 0.8)',
+          'rgba(255, 193, 7, 0.8)',
+          'rgba(40, 167, 69, 0.8)',
+          'rgba(23, 162, 184, 0.8)',
+          'rgba(220, 53, 69, 0.8)'
+        ],
+        borderColor: [
+          'rgba(40, 167, 69, 1)',
+          'rgba(255, 193, 7, 1)',
+          'rgba(40, 167, 69, 1)',
+          'rgba(23, 162, 184, 1)',
+          'rgba(220, 53, 69, 1)'
+        ],
+        borderWidth: 2,
+        borderRadius: 8,
+        maxBarThickness: 60
+      }]
+    };
+
+    // Main Chart with gradient bars
+    const mainCtx = document.getElementById('mainChart').getContext('2d');
+    const mainGradient = mainCtx.createLinearGradient(0, 0, 0, 300);
+    mainGradient.addColorStop(0, 'rgba(107, 142, 35, 0.8)'); // Vert olive
+    mainGradient.addColorStop(1, 'rgba(205, 133, 63, 0.6)'); // Terre de sienne
+
+    const mainChart = new Chart(mainCtx, {
+      type: 'bar',
+      data: {
+        labels: chartData.labels,
+        datasets: [{
+          label: 'Statistiques',
+          data: chartData.datasets[0].data,
+          backgroundColor: mainGradient,
+          borderColor: 'rgba(107, 142, 35, 1)', // Vert olive solide
+          borderWidth: 2,
+          borderRadius: 10,
+          maxBarThickness: 60
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            padding: 12,
+            titleFont: { size: 14, weight: 'bold' },
+            bodyFont: { size: 13 }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { drawBorder: false, color: 'rgba(0, 0, 0, 0.05)' }
+          },
+          x: { grid: { display: false } }
+        },
+        animation: { duration: 1800, easing: 'easeOutQuart' }
+      }
+    });
+
+    // User Distribution Donut Chart
+    const userCtx = document.getElementById('userDistributionChart').getContext('2d');
+    new Chart(userCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Clients', 'Agriculteurs'],
+        datasets: [{
+          label: 'Répartition des utilisateurs',
+          data: [
+            parseInt('{{ total_clients|default:0 }}'),
+            parseInt('{{ total_agriculteurs|default:0 }}')
+          ],
+          backgroundColor: [
+            'rgba(107, 142, 35, 0.8)', // Vert olive
+            'rgba(210, 105, 30, 0.8)'  // Orange brulé
+          ],
+          borderColor: [
+            'rgba(107, 142, 35, 1)',
+            'rgba(210, 105, 30, 1)'
+          ],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 20,
+              font: { size: 14 }
+            }
+          }
+        }
+      }
+    });
+
+    // Trend line chart (30 days)
+    const trendLabels = {{ trend_labels|default:'[]'|safe }};
+    const trendCommandes = {{ trend_commandes|default:'[]'|safe }};
+    const trendPaiements = {{ trend_paiements|default:'[]'|safe }};
+
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    const gradientOrange = trendCtx.createLinearGradient(0, 0, 0, 260);
+    gradientOrange.addColorStop(0, 'rgba(210, 105, 30, 0.7)'); // Orange brulé
+    gradientOrange.addColorStop(1, 'rgba(210, 105, 30, 0.1)');
+    const gradientGreen = trendCtx.createLinearGradient(0, 0, 0, 260);
+    gradientGreen.addColorStop(0, 'rgba(85, 107, 47, 0.7)'); // Vert foncé
+    gradientGreen.addColorStop(1, 'rgba(85, 107, 47, 0.1)');
+
+    new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: trendLabels,
+        datasets: [
+          {
+            label: 'Commandes',
+            data: trendCommandes,
+            borderColor: 'rgba(210, 105, 30, 1)',
+            backgroundColor: gradientOrange,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 0,
+            borderWidth: 2
+          },
+          {
+            label: 'Paiements validés',
+            data: trendPaiements,
+            borderColor: 'rgba(85, 107, 47, 1)',
+            backgroundColor: gradientGreen,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 0,
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: 'top' },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            padding: 10,
+            bodyFont: { size: 12 },
+            callbacks: {
+              label: function(ctx) {
+                return `${ctx.dataset.label}: ${ctx.parsed.y}`;
+              }
+            }
+          }
+        },
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { drawBorder: false, color: 'rgba(0, 0, 0, 0.05)' }
+          },
+          x: { grid: { display: false } }
+        },
+        animation: { duration: 1500, easing: 'easeOutQuart' }
+      }
+    });
+
+    // Chart control functions
+    window.changeChartView = function(view) {
+      console.log('Changing chart view to:', view);
+      // Add logic to change chart view
+    };
+
+    // changeTimeRange and changeChartType removed with charts
+  });
+
+  // Fonction de confirmation de déconnexion (globale)
+  function confirmLogout() {
+    return confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
+  }
+</script>
+
+<!-- AdminLTE & Plugins -->
+<script src="{% static 'dist/js/adminlte.min.js' %}"></script>
+<script src="{% static 'plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js' %}"></script>
+
+<!-- Dark Mode Toggle -->
+<script>
+  document.getElementById('toggle-dark').addEventListener('change', function() {
+    document.body.classList.toggle('dark-mode');
+  });
+</script>
+{% endblock %}

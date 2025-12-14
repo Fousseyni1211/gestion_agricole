@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contactez-nous{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="min-height: 90vh;">
+    <h2 class="text-center mb-4">Contactez-Nous</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-6">
+            <label for="id_name" class="form-label">Nom</label>
+            <input type="text" name="name" class="form-control" id="id_name" required>
+        </div>
+        <div class="col-md-6">
+            <label for="id_email" class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" id="id_email" required>
+        </div>
+        <div class="col-12">
+            <label for="id_subject" class="form-label">Sujet</label>
+            <input type="text" name="subject" class="form-control" id="id_subject" required>
+        </div>
+        <div class="col-12">
+            <label for="id_message" class="form-label">Message</label>
+            <textarea name="message" class="form-control" id="id_message" rows="6" required></textarea>
+        </div>
+        <div class="col-12 text-center">
+            <button type="submit" class="btn btn-success px-5">Envoyer</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

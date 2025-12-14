@@ -1,0 +1,12 @@
+{% extends "agriculteur/base_template.html" %}
+{% block title %}Ajouter dépense/vente{% endblock %}
+{% block content %}
+<h2>Ajouter une dépense ou une vente</h2>
+
+<form method="post" class="w-50">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-success">Enregistrer</button>
+  <a href="{% url 'liste_finances' %}" class="btn btn-secondary ms-2">Annuler</a>
+</form>
+{% endblock %}

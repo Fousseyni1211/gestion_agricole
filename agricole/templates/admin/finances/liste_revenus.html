@@ -1,0 +1,274 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Liste des Revenus{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-coins"></i>
+                        Liste des Revenus
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'tableau_bord_financier' %}">Finances</a></li>
+                        <li class="breadcrumb-item active">Revenus</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Filtres -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-filter"></i>
+                        Filtres
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row">
+                        <div class="col-md-3">
+                            {{ search_form.categorie.label_tag }}
+                            {{ search_form.categorie }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ search_form.date_debut.label_tag }}
+                            {{ search_form.date_debut }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ search_form.date_fin.label_tag }}
+                            {{ search_form.date_fin }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ search_form.statut.label_tag }}
+                            {{ search_form.statut }}
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label><br>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Filtrer
+                            </button>
+                            <a href="{% url 'liste_revenus' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Réinitialiser
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tableau des revenus -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-list"></i>
+                        Revenus 
+                        {% if page_obj %}
+                            ({{ page_obj.paginator.count }} résultats)
+                        {% endif %}
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'ajouter_revenu' %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus"></i> Ajouter un revenu
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if page_obj %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Titre</th>
+                                        <th>Catégorie</th>
+                                        <th>Client/Source</th>
+                                        <th>Montant</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for revenu in page_obj %}
+                                    <tr>
+                                        <td>{{ revenu.date_revenu|date:"d/m/Y" }}</td>
+                                        <td>
+                                            <strong>{{ revenu.titre }}</strong>
+                                            {% if revenu.description %}
+                                                <br><small class="text-muted">{{ revenu.description|truncatechars:50 }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if revenu.categorie %}
+                                                <span class="badge" style="background-color: {{ revenu.categorie.couleur }}">
+                                                    {{ revenu.categorie.nom }}
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Non catégorisée</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ revenu.client|default:"-" }}</td>
+                                        <td class="text-end">
+                                            <strong class="text-success">{{ revenu.montant|floatformat:0 }} FCFA</strong>
+                                        </td>
+                                        <td>
+                                            {% if revenu.statut == 'validee' %}
+                                                <span class="badge bg-success">Validé</span>
+                                            {% elif revenu.statut == 'en_attente' %}
+                                                <span class="badge bg-warning">En attente</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Annulé</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detailRevenu{{ revenu.id }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'modifier_revenu' revenu.id %}" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'supprimer_revenu' revenu.id %}" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Modal détails -->
+                                    <div class="modal fade" id="detailRevenu{{ revenu.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Détails du revenu</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <strong>Titre:</strong> {{ revenu.titre }}<br>
+                                                            <strong>Date:</strong> {{ revenu.date_revenu|date:"d/m/Y" }}<br>
+                                                            <strong>Montant:</strong> {{ revenu.montant|floatformat:0 }} FCFA<br>
+                                                            <strong>Client/Source:</strong> {{ revenu.client|default:"Non spécifié" }}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <strong>Catégorie:</strong> 
+                                                            {% if revenu.categorie %}
+                                                                <span class="badge" style="background-color: {{ revenu.categorie.couleur }}">
+                                                                    {{ revenu.categorie.nom }}
+                                                                </span>
+                                                            {% else %}
+                                                                <span class="badge bg-secondary">Non catégorisée</span>
+                                                            {% endif %}<br>
+                                                            <strong>Référence:</strong> {{ revenu.reference|default:"Non spécifiée" }}<br>
+                                                            <strong>Statut:</strong> 
+                                                            {% if revenu.statut == 'validee' %}
+                                                                <span class="badge bg-success">Validé</span>
+                                                            {% elif revenu.statut == 'en_attente' %}
+                                                                <span class="badge bg-warning">En attente</span>
+                                                            {% else %}
+                                                                <span class="badge bg-danger">Annulé</span>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    {% if revenu.description %}
+                                                        <hr>
+                                                        <strong>Description:</strong><br>
+                                                        {{ revenu.description }}
+                                                    {% endif %}
+                                                    {% if revenu.piece_jointe %}
+                                                        <hr>
+                                                        <strong>Pièce jointe:</strong><br>
+                                                        <a href="{{ revenu.piece_jointe.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-file"></i> Voir le fichier
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                                    <a href="{% url 'modifier_revenu' revenu.id %}" class="btn btn-warning">
+                                                        <i class="fas fa-edit"></i> Modifier
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if page_obj.has_other_pages %}
+                            <div class="row">
+                                <div class="col-sm-12 col-md-7">
+                                    <div class="dataTables_paginate paging_simple_numbers">
+                                        <ul class="pagination">
+                                            {% if page_obj.has_previous %}
+                                                <li class="paginate_button page-item previous">
+                                                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="page-link">Précédent</a>
+                                                </li>
+                                            {% endif %}
+                                            
+                                            {% for num in page_obj.paginator.page_range %}
+                                                {% if page_obj.number == num %}
+                                                    <li class="paginate_button page-item active">
+                                                        <span class="page-link">{{ num }}</span>
+                                                    </li>
+                                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                                    <li class="paginate_button page-item">
+                                                        <a href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="page-link">{{ num }}</a>
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                            
+                                            {% if page_obj.has_next %}
+                                                <li class="paginate_button page-item next">
+                                                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="page-link">Suivant</a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-md-5">
+                                    <div class="dataTables_info">
+                                        Affichage de {{ page_obj.start_index }} à {{ page_obj.end_index }} de {{ page_obj.paginator.count }} entrées
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Total -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="alert alert-success">
+                                    <strong>Total des revenus filtrés:</strong> 
+                                    <span class="float-right">{{ total_revenus|floatformat:0 }} FCFA</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center">
+                            <i class="fas fa-coins fa-3x text-muted mb-3"></i>
+                            <h4>Aucun revenu trouvé</h4>
+                            <p class="text-muted">Commencez par ajouter votre premier revenu.</p>
+                            <a href="{% url 'ajouter_revenu' %}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Ajouter un revenu
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

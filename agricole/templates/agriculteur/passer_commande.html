@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container py-4">
+  <h3>Passer une commande</h3>
+  <form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <table class="table">
+      <thead><tr><th>Produit</th><th>Quantité</th></tr></thead>
+      <tbody>
+        {% for form in formset %}
+          <tr>
+            <td>{{ form.produit }}</td>
+            <td>{{ form.quantite }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button class="btn btn-success">Valider</button>
+  </form>
+</div>
+{% endblock %}

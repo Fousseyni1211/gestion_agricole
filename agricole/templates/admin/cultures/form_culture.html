@@ -1,0 +1,178 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-leaf"></i> {{ titre }}
+        </h1>
+        <a href="{% url 'liste_cultures' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">{{ titre }}</h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.nom.id_for_label }}">{{ form.nom.label }} *</label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.nom.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.type_culture.id_for_label }}">{{ form.type_culture.label }} *</label>
+                            {{ form.type_culture }}
+                            {% if form.type_culture.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.type_culture.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="text-danger">
+                            {% for error in form.description.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.duree_cycle.id_for_label }}">{{ form.duree_cycle.label }} *</label>
+                            {{ form.duree_cycle }}
+                            {% if form.duree_cycle.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.duree_cycle.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.rendement_moyen.id_for_label }}">{{ form.rendement_moyen.label }}</label>
+                            {{ form.rendement_moyen }}
+                            {% if form.rendement_moyen.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.rendement_moyen.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.periode_semis_optimale.id_for_label }}">{{ form.periode_semis_optimale.label }}</label>
+                            {{ form.periode_semis_optimale }}
+                            {% if form.periode_semis_optimale.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.periode_semis_optimale.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.besoins_eau.id_for_label }}">{{ form.besoins_eau.label }}</label>
+                    {{ form.besoins_eau }}
+                    {% if form.besoins_eau.errors %}
+                        <div class="text-danger">
+                            {% for error in form.besoins_eau.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.besoins_nutriments.id_for_label }}">{{ form.besoins_nutriments.label }}</label>
+                    {{ form.besoins_nutriments }}
+                    {% if form.besoins_nutriments.errors %}
+                        <div class="text-danger">
+                            {% for error in form.besoins_nutriments.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <div class="custom-control custom-checkbox">
+                        {{ form.est_actif }}
+                        <label class="custom-control-label" for="{{ form.est_actif.id_for_label }}">
+                            {{ form.est_actif.label }}
+                        </label>
+                    </div>
+                    {% if form.est_actif.errors %}
+                        <div class="text-danger">
+                            {% for error in form.est_actif.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> {{ action }}
+                    </button>
+                    <a href="{% url 'liste_cultures' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Activer les tooltips Bootstrap si nécessaire
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock %}

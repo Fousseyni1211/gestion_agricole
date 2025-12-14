@@ -1,0 +1,233 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Planning des Locations{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-calendar-alt"></i> Planning des Locations
+                    </h3>
+                    <div class="card-tools">
+                        <div class="btn-group">
+                            <a href="{% url 'gerant_reservations_materiel' %}" class="btn btn-info btn-sm">
+                                <i class="fas fa-list"></i> Réservations
+                            </a>
+                            <a href="{% url 'gerant_statistiques_locations' %}" class="btn btn-success btn-sm">
+                                <i class="fas fa-chart-bar"></i> Statistiques
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Navigation du calendrier -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="btn-group">
+                                <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-chevron-left"></i> Mois précédent
+                                </a>
+                                <button class="btn btn-outline-secondary" disabled>
+                                    {{ month_name }} {{ year }}
+                                </button>
+                                <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-outline-secondary">
+                                    Mois suivant <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="btn-group">
+                                <a href="?year={{ current_year }}&month={{ current_month }}" class="btn btn-primary">
+                                    <i class="fas fa-calendar-day"></i> Aujourd'hui
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-right">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fas fa-filter"></i> Filtrer par matériel
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a href="?year={{ year }}&month={{ month }}" class="dropdown-item">Tous les matériels</a>
+                                    {% for materiel in materiels %}
+                                        <a href="?year={{ year }}&month={{ month }}&materiel={{ materiel.id }}" class="dropdown-item">
+                                            {{ materiel.nom }}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calendrier -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered calendar-table">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th class="text-center">Dim</th>
+                                    <th class="text-center">Lun</th>
+                                    <th class="text-center">Mar</th>
+                                    <th class="text-center">Mer</th>
+                                    <th class="text-center">Jeu</th>
+                                    <th class="text-center">Ven</th>
+                                    <th class="text-center">Sam</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for week in calendar %}
+                                <tr>
+                                    {% for day in week %}
+                                        {% if day == 0 %}
+                                            <td class="calendar-empty"></td>
+                                        {% else %}
+                                            <td class="calendar-day {% if day == today.day and today.month == month and today.year == year %}calendar-today{% endif %}">
+                                                <div class="calendar-day-header">
+                                                    <span class="calendar-day-number">{{ day }}</span>
+                                                </div>
+                                                {% for day_key, day_reservations in reservations_by_day.items %}
+                                                    {% if day_key == day %}
+                                                        <div class="calendar-reservations">
+                                                            {% for reservation in day_reservations %}
+                                                                <div class="calendar-reservation" 
+                                                                     data-materiel="{{ reservation.materiel.nom }}"
+                                                                     data-client="{{ reservation.client.get_full_name|default:reservation.client.username }}"
+                                                                     data-id="{{ reservation.id }}"
+                                                                     onclick="showReservationInfo(this.dataset.id)">
+                                                                    <small>{{ reservation.materiel.nom|truncatechars:15 }}</small>
+                                                                </div>
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Légende -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Légende</h6>
+                            <div class="row">
+                                {% for materiel in materiels %}
+                                    <div class="col-md-3 col-sm-6 mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="calendar-legend-color" 
+                                                 style="background-color: {{ materiel.couleur|default:'#007bff' }}; width: 20px; height: 20px; margin-right: 10px;">
+                                            </div>
+                                            <small>{{ materiel.nom }}</small>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal détails réservation -->
+<div class="modal fade" id="reservationInfoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Informations de réservation</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="reservationInfoContent">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+.calendar-table {
+    font-size: 14px;
+}
+.calendar-empty {
+    background-color: #f8f9fa;
+}
+.calendar-day {
+    vertical-align: top;
+    height: 120px;
+    width: 14.28%;
+}
+.calendar-day-header {
+    padding: 5px;
+    border-bottom: 1px solid #dee2e6;
+}
+.calendar-day-number {
+    font-weight: bold;
+    color: #495057;
+}
+.calendar-today {
+    background-color: #e3f2fd !important;
+}
+.calendar-today .calendar-day-number {
+    color: #1976d2;
+}
+.calendar-reservations {
+    padding: 2px;
+    max-height: 80px;
+    overflow-y: auto;
+}
+.calendar-reservation {
+    margin-bottom: 2px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    line-height: 1.2;
+}
+.calendar-reservation:hover {
+    opacity: 0.8;
+}
+.calendar-legend-color {
+    border-radius: 3px;
+    border: 1px solid #dee2e6;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showReservationInfo(reservationId) {
+    // Charger les informations depuis les data attributes
+    const element = document.querySelector(`[data-id="${reservationId}"]`);
+    if (element) {
+        const materielNom = element.dataset.materiel;
+        const clientNom = element.dataset.client;
+        
+        const infoHtml = `
+            <div class="row">
+                <div class="col-12">
+                    <h6>Matériel: ${materielNom}</h6>
+                    <p><strong>Client:</strong> ${clientNom}</p>
+                    <p><strong>ID Réservation:</strong> ${reservationId}</p>
+                </div>
+            </div>
+        `;
+        document.getElementById('reservationInfoContent').innerHTML = infoHtml;
+        $('#reservationInfoModal').modal('show');
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

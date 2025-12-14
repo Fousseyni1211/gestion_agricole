@@ -1,0 +1,247 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Tableau de bord du Stock{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-warehouse"></i>
+                        Tableau de bord du Stock
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item active">Stock</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Statistiques principales -->
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>{{ total_produits }}</h3>
+                            <p>Produits référencés</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>{{ total_stock }}</h3>
+                            <p>Unités en stock</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-cubes"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box {% if stocks_alerte.count > 0 %}bg-warning{% else %}bg-secondary{% endif %}">
+                        <div class="inner">
+                            <h3>{{ stocks_alerte.count }}</h3>
+                            <p>Stocks en alerte</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box {% if stocks_rupture.count > 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                        <div class="inner">
+                            <h3>{{ stocks_rupture.count }}</h3>
+                            <p>Ruptures de stock</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alertes et valeur du stock -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Alertes de Stock
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            {% if stocks_alerte or stocks_rupture %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Produit</th>
+                                                <th>Quantité</th>
+                                                <th>Seuil</th>
+                                                <th>Statut</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for stock in stocks_rupture %}
+                                            <tr class="text-danger">
+                                                <td>{{ stock.produit.nom_produit }}</td>
+                                                <td>{{ stock.quantite }}</td>
+                                                <td>{{ stock.produit.seuil_alerte }}</td>
+                                                <td><span class="badge bg-danger">Rupture</span></td>
+                                            </tr>
+                                            {% endfor %}
+                                            {% for stock in stocks_alerte %}
+                                            <tr class="text-warning">
+                                                <td>{{ stock.produit.nom_produit }}</td>
+                                                <td>{{ stock.quantite }}</td>
+                                                <td>{{ stock.produit.seuil_alerte }}</td>
+                                                <td><span class="badge bg-warning">Alerte</span></td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-check-circle fa-3x mb-3"></i>
+                                    <h5>Aucune alerte de stock</h5>
+                                    <p>Tous les produits ont des niveaux de stock normaux</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-line"></i>
+                                Valeur du Stock
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center">
+                                <h2 class="text-primary">{{ valeur_stock|floatformat:0 }} FCFA</h2>
+                                <p class="text-muted">Valeur totale du stock actuel</p>
+                            </div>
+                            <div class="progress mt-3">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 100%">
+                                    Stock évalué
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mouvements récents -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-history"></i>
+                                Mouvements Récents
+                            </h3>
+                            <div class="card-tools">
+                                <a href="{% url 'mouvements_stock_ameliore' %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-list"></i> Voir tout
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if mouvements_recents %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Produit</th>
+                                                <th>Type</th>
+                                                <th>Quantité</th>
+                                                <th>Utilisateur</th>
+                                                <th>Commentaire</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for mouvement in mouvements_recents %}
+                                            <tr>
+                                                <td>{{ mouvement.date|date:"d/m/Y H:i" }}</td>
+                                                <td>{{ mouvement.produit.nom_produit }}</td>
+                                                <td>
+                                                    {% if mouvement.type_mouvement == 'ENTREE' %}
+                                                        <span class="badge bg-success">Entrée</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger">Sortie</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ mouvement.quantite }}</td>
+                                                <td>{{ mouvement.utilisateur.username|default:"-" }}</td>
+                                                <td>{{ mouvement.commentaire|default:"-"|truncatechars:30 }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-history fa-2x mb-3"></i>
+                                    <p>Aucun mouvement récent</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-2">
+                                    <a href="{% url 'liste_stock_ameliore' %}" class="btn btn-primary btn-block">
+                                        <i class="fas fa-list"></i> Gérer le stock
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <a href="{% url 'ajouter_entree_stock' %}" class="btn btn-success btn-block">
+                                        <i class="fas fa-plus"></i> Ajouter une entrée
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <a href="{% url 'mouvements_stock_ameliore' %}" class="btn btn-info btn-block">
+                                        <i class="fas fa-history"></i> Historique
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <a href="{% url 'exporter_stock_ameliore_excel' %}" class="btn btn-warning btn-block">
+                                        <i class="fas fa-file-excel"></i> Exporter Excel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

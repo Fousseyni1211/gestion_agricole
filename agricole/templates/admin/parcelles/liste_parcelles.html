@@ -1,0 +1,170 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Gestion des Parcelles{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-map"></i> Gestion des Parcelles
+        </h1>
+        <a href="{% url 'ajouter_parcelle' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Ajouter une Parcelle
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des Parcelles</h6>
+        </div>
+        <div class="card-body">
+            {% if parcelles %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Nom / Code</th>
+                                <th>Superficie</th>
+                                <th>Localisation</th>
+                                <th>Type de sol</th>
+                                <th>Agriculteur</th>
+                                <th>Culture actuelle</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for parcelle in parcelles %}
+                            <tr>
+                                <td>
+                                    <strong>{{ parcelle.nom }}</strong>
+                                    <br><small class="text-muted">{{ parcelle.code_unique }}</small>
+                                </td>
+                                <td>{{ parcelle.superficie }} ha</td>
+                                <td>
+                                    {{ parcelle.localisation }}
+                                    {% if parcelle.coordonnees_gps %}
+                                        <br><small class="text-muted">{{ parcelle.coordonnees_gps }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">{{ parcelle.get_type_sol_display }}</span>
+                                    {% if parcelle.ph_sol %}
+                                        <br><small class="text-muted">pH: {{ parcelle.ph_sol }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if parcelle.agriculteur %}
+                                        <a href="#" class="text-decoration-none">
+                                            <i class="fas fa-user"></i> {{ parcelle.agriculteur.farm_name }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Non assignée</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if parcelle.culture_actuelle %}
+                                        <span class="badge badge-success">{{ parcelle.culture_actuelle.nom }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Aucune</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if parcelle.statut == 'disponible' %}
+                                        <span class="badge badge-success">Disponible</span>
+                                    {% elif parcelle.statut == 'occupee' %}
+                                        <span class="badge badge-primary">Occupée</span>
+                                    {% elif parcelle.statut == 'en_preparation' %}
+                                        <span class="badge badge-warning">En préparation</span>
+                                    {% elif parcelle.statut == 'en_repos' %}
+                                        <span class="badge badge-secondary">En repos</span>
+                                    {% elif parcelle.statut == 'maintenance' %}
+                                        <span class="badge badge-danger">Maintenance</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'modifier_parcelle' parcelle.id %}" class="btn btn-sm btn-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'assigner_parcelle' parcelle.id %}" class="btn btn-sm btn-info" title="Assigner">
+                                            <i class="fas fa-user-plus"></i>
+                                        </a>
+                                        <a href="{% url 'supprimer_parcelle' parcelle.id %}" class="btn btn-sm btn-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-map fa-3x text-gray-300 mb-3"></i>
+                    <h5 class="text-gray-500">Aucune parcelle enregistrée</h5>
+                    <p class="text-gray-400">Commencez par ajouter votre première parcelle.</p>
+                    <a href="{% url 'ajouter_parcelle' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter une Parcelle
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Disponibles</h5>
+                    <p class="card-text display-4">
+                        {{ parcelles_disponibles }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Occupées</h5>
+                    <p class="card-text display-4">
+                        {{ parcelles_occupees }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white shadow">
+                <div class="card-body">
+                    <h5 class="card-title">En Maintenance</h5>
+                    <p class="card-text display-4">
+                        {{ parcelles_en_maintenance }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Total</h5>
+                    <p class="card-text display-4">{{ parcelles|length }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

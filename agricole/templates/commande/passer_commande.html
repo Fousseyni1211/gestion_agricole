@@ -1,0 +1,189 @@
+{% extends 'client/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Passer une commande{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-white"><i class="bi bi-cart-plus"></i> Passer une commande</h2>
+            <p class="text-muted">Sélectionnez les produits que vous souhaitez commander</p>
+        </div>
+    </div>
+
+    <div class="card bg-dark text-white shadow-sm mb-4">
+        <div class="card-body">
+            <form method="post" id="commande-form">
+                {% csrf_token %}
+                
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle"></i> Vous passez commande en tant que <strong>{{ user.username }}</strong>
+                </div>
+
+                <h5 class="mb-3 border-bottom pb-2">Produits disponibles</h5>
+                
+                <div id="produits-container">
+                    <div class="produit-ligne row g-3 mb-3 align-items-end">
+                        <div class="col-md-6">
+                            <label class="form-label">Produit</label>
+                            <select name="produits[]" class="form-control bg-dark text-white border-secondary produit-select" required>
+                                <option value="">Sélectionnez un produit</option>
+                                {% for produit in produits %}
+                                    <option value="{{ produit.id }}">{{ produit.nom_produit }} - {{ produit.prix_unitaire }} € (Stock: {{ produit.quantite }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Quantité</label>
+                            <input type="number" name="quantite[]" class="form-control bg-dark text-white border-secondary" min="1" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-success" id="add-produit">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Valider la commande
+                    </button>
+                    <a href="{% url 'client_home' %}" class="btn btn-outline-secondary">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('produits-container');
+        const addButton = document.getElementById('add-produit');
+        const form = document.getElementById('commande-form');
+        
+        // Ajouter une nouvelle ligne de produit
+        addButton.addEventListener('click', function() {
+            const newLine = document.createElement('div');
+            newLine.className = 'produit-ligne row g-3 mb-3 align-items-end';
+            
+            newLine.innerHTML = `
+                <div class="col-md-6">
+                    <label class="form-label">Produit</label>
+                    <select name="produits[]" class="form-control bg-dark text-white border-secondary produit-select" required>
+                        <option value="">Sélectionnez un produit</option>
+                        {% for produit in produits %}
+                            <option value="{{ produit.id }}">{{ produit.nom_produit }} - {{ produit.prix_unitaire }} € (Stock: {{ produit.quantite }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Quantité</label>
+                    <input type="number" name="quantite[]" class="form-control bg-dark text-white border-secondary" min="1" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger remove-produit">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(newLine);
+            
+            // Ajouter l'événement de suppression au nouveau bouton
+            const removeButton = newLine.querySelector('.remove-produit');
+            removeButton.addEventListener('click', function() {
+                this.closest('.produit-ligne').remove();
+            });
+        });
+        
+        // Gérer la soumission du formulaire
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Vérifier qu'au moins un produit est sélectionné
+            const produits = document.querySelectorAll('select[name="produits[]"]');
+            const quantites = document.querySelectorAll('input[name="quantite[]"]');
+            
+            let valid = true;
+            
+            // Vérifier que tous les champs sont remplis
+            produits.forEach((select, index) => {
+                if (!select.value) {
+                    valid = false;
+                    select.classList.add('is-invalid');
+                } else {
+                    select.classList.remove('is-invalid');
+                }
+                
+                const quantite = quantites[index];
+                if (!quantite.value || quantite.value < 1) {
+                    valid = false;
+                    quantite.classList.add('is-invalid');
+                } else {
+                    quantite.classList.remove('is-invalid');
+                }
+            });
+            
+            if (valid) {
+                // Créer un objet FormData à partir du formulaire
+                const formData = new FormData(this);
+                
+                // Afficher un message de chargement
+                const loadingAlert = document.createElement('div');
+                loadingAlert.className = 'alert alert-info mt-3';
+                loadingAlert.innerHTML = '<i class="bi bi-hourglass-split"></i> Traitement de votre commande en cours...';
+                form.appendChild(loadingAlert);
+                
+                // Soumettre le formulaire via AJAX
+                fetch(form.action || window.location.href, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Supprimer le message de chargement
+                    loadingAlert.remove();
+                    
+                    if (data.success) {
+                        // Afficher un message de succès
+                        const successAlert = document.createElement('div');
+                        successAlert.className = 'alert alert-success mt-3';
+                        successAlert.innerHTML = '<i class="bi bi-check-circle"></i> Commande enregistrée avec succès! Redirection en cours...';
+                        form.appendChild(successAlert);
+                        
+                        // Rediriger vers la page indiquée
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 1500);
+                    } else {
+                        // Afficher un message d'erreur
+                        const errorAlert = document.createElement('div');
+                        errorAlert.className = 'alert alert-danger mt-3';
+                        errorAlert.innerHTML = `<i class="bi bi-exclamation-triangle"></i> Erreur: ${data.error}`;
+                        form.appendChild(errorAlert);
+                    }
+                })
+                .catch(error => {
+                    // Supprimer le message de chargement
+                    loadingAlert.remove();
+                    
+                    // Afficher un message d'erreur
+                    const errorAlert = document.createElement('div');
+                    errorAlert.className = 'alert alert-danger mt-3';
+                    errorAlert.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Une erreur est survenue lors de la communication avec le serveur.';
+                    form.appendChild(errorAlert);
+                    console.error('Erreur:', error);
+                });
+            } else {
+                // Afficher un message d'erreur
+                alert('Veuillez remplir tous les champs correctement.');
+            }
+        });
+    });
+</script>
+{% endblock %}

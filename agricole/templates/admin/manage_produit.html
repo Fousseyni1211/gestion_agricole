@@ -1,0 +1,847 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+
+{% block main_content %}
+<section class="content py-4">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="page-title">
+                        <h1 class="display-6 fw-bold mb-2" style="color: white;">
+                            <i class="fas fa-seedling me-3" style="color: var(--grain-gold);"></i>
+                            Gestion des Produits Agricoles
+                        </h1>
+                        <p class="mb-0" style="color: rgba(255,255,255,0.9); font-size: 1.1rem;">Gérez votre inventaire de produits agricoles avec efficacité</p>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{% url 'add_produit' %}" class="btn btn-lg shadow-sm" style="background: linear-gradient(135deg, var(--grain-gold) 0%, var(--harvest-orange) 100%); border: none; color: white;">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Nouveau Produit
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card stats-card bg-gradient-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-white-50"><i class="fas fa-cubes me-2"></i>Total Produits</h6>
+                                <h3 class="mb-0">{{ products|length }}</h3>
+                            </div>
+                            <div class="stats-icon">
+                                <i class="fas fa-cubes"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card stats-card bg-gradient-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-white-50"><i class="fas fa-coins me-2"></i>Valeur Stock</h6>
+                                <h3 class="mb-0">{% widthratio products|length 1 1000 %} FCFA</h3>
+                            </div>
+                            <div class="stats-icon">
+                                <i class="fas fa-euro-sign"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card stats-card bg-gradient-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-white-50"><i class="fas fa-exclamation-triangle me-2"></i>Stock Faible</h6>
+                                <h3 class="mb-0">3</h3>
+                            </div>
+                            <div class="stats-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card stats-card bg-gradient-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-white-50"><i class="fas fa-layer-group me-2"></i>Catégories</h6>
+                                <h3 class="mb-0">5</h3>
+                            </div>
+                            <div class="stats-icon">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show modern-alert" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Products Table Card -->
+        <div class="card modern-card shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="card-title mb-0 text-dark fw-semibold">
+                            <i class="fas fa-list me-2 text-primary"></i>
+                            Liste des Produits
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-filter me-1"></i>Filtrer
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-download me-1"></i>Exporter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table id="produitsTable" class="table table-hover modern-table mb-0">
+                        <thead class="table-header">
+                            <tr>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted">
+                                    <div class="d-flex align-items-center">
+                                        <span>ID</span>
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    </div>
+                                </th>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted">
+                                    <div class="d-flex align-items-center">
+                                        <span>Image</span>
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    </div>
+                                </th>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted">
+                                    <div class="d-flex align-items-center">
+                                        <span>Nom du Produit</span>
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    </div>
+                                </th>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted">
+                                    <div class="d-flex align-items-center">
+                                        <span>Type</span>
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    </div>
+                                </th>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted">
+                                    <div class="d-flex align-items-center">
+                                        <span>Quantité</span>
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    </div>
+                                </th>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted">
+                                    <div class="d-flex align-items-center">
+                                        <span>Prix Unitaire</span>
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    </div>
+                                </th>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted">
+                                    <div class="d-flex align-items-center">
+                                        <span>Montant Total</span>
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    </div>
+                                </th>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted">
+                                    <div class="d-flex align-items-center">
+                                        <span>Date Création</span>
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    </div>
+                                </th>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr class="table-row">
+                                <td class="align-middle">
+                                    <span class="badge bg-light text-dark fw-normal">#{{ product.id }}</span>
+                                </td>
+                                <td class="align-middle">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.nom_produit }}" class="product-thumb">
+                                    {% else %}
+                                        <img src="{% static product.image_static %}" alt="{{ product.nom_produit }}" class="product-thumb">
+                                    {% endif %}
+                                </td>
+                                <td class="align-middle">
+                                    <div class="d-flex align-items-center">
+                                        <!-- <div class="product-icon me-3">
+                                            <i class="fas fa-seedling text-success"></i>
+                                        </div> -->
+                                        <div>
+                                            <h6 class="mb-0 fw-semibold">{{ product.nom_produit }}</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    <span class="badge bg-primary-soft text-primary">{{ product.type_produit }}</span>
+                                </td>
+                                <td class="align-middle">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-semibold">{{ product.quantite }}</span>
+                                        <small class="text-muted ms-1">unités</small>
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    <span class="fw-semibold text-success">{{ product.prix_unitaire }} FCFA</span>
+                                </td>
+                                <td class="align-middle">
+                                    <span class="fw-bold text-primary">{{ product.montant_total }} FCFA</span>
+                                </td>
+                                <td class="align-middle">
+                                    <div>
+                                        <span class="fw-semibold">{{ product.created_at|date:"d/m/Y" }}</span>
+                                        <br>
+                                        <small class="text-muted">{{ product.created_at|date:"H:i" }}</small>
+                                    </div>
+                                </td>
+                                <td class="align-middle text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'edit_product' product.id %}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           data-bs-toggle="tooltip" 
+                                           title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'delete_product' product.id %}" 
+                                           class="btn btn-sm btn-outline-danger" 
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');"
+                                           data-bs-toggle="tooltip" 
+                                           title="Supprimer">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="fas fa-box-open text-muted mb-3" style="font-size: 3rem;"></i>
+                                        <h5 class="text-muted">Aucun produit trouvé</h5>
+                                        <p class="text-muted mb-3">Commencez par ajouter votre premier produit</p>
+                                        <a href="{% url 'add_produit' %}" class="btn btn-primary">
+                                            <i class="fas fa-plus me-2"></i>Ajouter un Produit
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DataTables + Buttons -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Initialize DataTable with enhanced features
+        var table = $('#produitsTable').DataTable({
+            responsive: true,
+            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
+            buttons: [
+                {
+                    extend: 'copy',
+                    className: 'btn btn-outline-secondary btn-sm',
+                    text: '<i class="fas fa-copy me-1"></i>Copier'
+                },
+                {
+                    extend: 'excel',
+                    className: 'btn btn-outline-success btn-sm',
+                    text: '<i class="fas fa-file-excel me-1"></i>Excel'
+                },
+                {
+                    extend: 'pdf',
+                    className: 'btn btn-outline-danger btn-sm',
+                    text: '<i class="fas fa-file-pdf me-1"></i>PDF'
+                },
+                {
+                    extend: 'print',
+                    className: 'btn btn-outline-info btn-sm',
+                    text: '<i class="fas fa-print me-1"></i>Imprimer'
+                }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json',
+                search: "Rechercher:",
+                lengthMenu: "Afficher _MENU_ éléments par page",
+                info: "Affichage de _START_ à _END_ sur _TOTAL_ éléments",
+                paginate: {
+                    first: "Premier",
+                    last: "Dernier",
+                    next: "Suivant",
+                    previous: "Précédent"
+                }
+            },
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            order: [[0, 'desc']],
+            columnDefs: [
+                { orderable: false, targets: [1, 8] }, // Image and Actions columns not sortable
+                { className: "text-center", targets: [0, 8] }
+            ]
+        });
+
+        // Initialize tooltips
+        $('[data-bs-toggle="tooltip"]').tooltip();
+
+        // Add smooth animations for cards
+        $('.stats-card').each(function(index) {
+            $(this).css('animation-delay', (index * 0.1) + 's');
+        });
+
+        // Enhanced delete confirmation
+        $('a[href*="delete_product"]').on('click', function(e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            var productName = $(this).closest('tr').find('h6').text();
+            
+            Swal.fire({
+                title: 'Confirmer la suppression',
+                text: `Êtes-vous sûr de vouloir supprimer le produit "${productName}" ?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e53e3e',
+                cancelButtonColor: '#a0aec0',
+                confirmButtonText: 'Oui, supprimer',
+                cancelButtonText: 'Annuler',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = href;
+                }
+            });
+        });
+
+        // Add loading state for buttons
+        $('.btn').on('click', function() {
+            var $btn = $(this);
+            if (!$btn.hasClass('no-loading')) {
+                var originalText = $btn.html();
+                $btn.html('<i class="fas fa-spinner fa-spin me-2"></i>Chargement...');
+                setTimeout(function() {
+                    $btn.html(originalText);
+                }, 1000);
+            }
+        });
+
+        // Add search highlighting
+        table.on('search.dt', function() {
+            var searchTerm = table.search();
+            if (searchTerm) {
+                $('.modern-table tbody tr').each(function() {
+                    var $row = $(this);
+                    var text = $row.text();
+                    if (text.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1) {
+                        $row.addClass('search-highlight');
+                    } else {
+                        $row.removeClass('search-highlight');
+                    }
+                });
+            } else {
+                $('.modern-table tbody tr').removeClass('search-highlight');
+            }
+        });
+
+        // Add counter animation
+        function animateCounter(element, target) {
+            var current = 0;
+            var increment = target / 50;
+            var timer = setInterval(function() {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                $(element).text(Math.floor(current));
+            }, 20);
+        }
+
+        // Animate statistics on page load
+        setTimeout(function() {
+            $('.stats-card h3').each(function() {
+                var $this = $(this);
+                var target = parseInt($this.text().replace(/[^\d]/g, ''));
+                if (target > 0) {
+                    $this.text('0');
+                    animateCounter($this, target);
+                }
+            });
+        }, 500);
+    });
+</script>
+
+<!-- Add SweetAlert2 for better modals -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* Agricultural Theme Variables */
+    :root {
+        --primary-green: #2d5016;
+        --secondary-green: #4a7c59;
+        --accent-green: #6b8e23;
+        --light-green: #8fbc8f;
+        --earth-brown: #8b4513;
+        --warm-beige: #f5f5dc;
+        --soft-cream: #faf0e6;
+        --forest-dark: #1a3d0a;
+        --grain-gold: #daa520;
+        --harvest-orange: #ff8c00;
+    }
+
+    /* Modern Agricultural Styling */
+    body {
+        background: linear-gradient(135deg, var(--soft-cream) 0%, var(--warm-beige) 50%, #e8f5e8 100%);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: var(--forest-dark);
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            radial-gradient(circle at 20% 80%, rgba(107, 142, 35, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(139, 69, 19, 0.03) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    /* Agricultural Page Header */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 50%, var(--accent-green) 100%);
+        border-radius: 25px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        color: white;
+        box-shadow: 0 15px 40px rgba(45, 80, 22, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 10c-5 0-10 5-10 10v20c0 5 5 10 10 10s10-5 10-10V20c0-5-5-10-10-10zm-20 30c-5 0-10 5-10 10v20c0 5 5 10 10 10s10-5 10-10V50c0-5-5-10-10-10zm40 0c-5 0-10 5-10 10v20c0 5 5 10 10 10s10-5 10-10V50c0-5-5-10-10-10z" fill="%23ffffff" opacity="0.1"/></svg>') no-repeat;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+    }
+
+    .page-title h1 {
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+    /* Statistics Cards */
+    .stats-card {
+        border: none;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent);
+        pointer-events: none;
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+        box-shadow: 0 8px 25px rgba(45, 80, 22, 0.3);
+    }
+
+    .bg-gradient-success {
+        background: linear-gradient(135deg, var(--accent-green) 0%, var(--light-green) 100%);
+        box-shadow: 0 8px 25px rgba(107, 142, 35, 0.3);
+    }
+
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, var(--harvest-orange) 0%, var(--grain-gold) 100%);
+        box-shadow: 0 8px 25px rgba(255, 140, 0, 0.3);
+    }
+
+    .bg-gradient-info {
+        background: linear-gradient(135deg, var(--earth-brown) 0%, #cd853f 100%);
+        color: white !important;
+        box-shadow: 0 8px 25px rgba(139, 69, 19, 0.3);
+    }
+
+    .bg-gradient-info .text-white-50 {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+
+    .bg-gradient-info .text-white-50 {
+        color: rgba(45, 55, 72, 0.7) !important;
+    }
+
+    .stats-icon {
+        font-size: 2.5rem;
+        opacity: 0.8;
+    }
+
+    /* Modern Card */
+    .modern-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .modern-card:hover {
+        box-shadow: 0 8px 35px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--soft-cream) 0%, var(--warm-beige) 100%);
+        border-bottom: 2px solid rgba(45, 80, 22, 0.1);
+        position: relative;
+    }
+
+    .card-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary-green), var(--accent-green), var(--primary-green));
+    }
+
+    /* Modern Table */
+    .modern-table {
+        font-size: 0.9rem;
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, var(--soft-cream) 0%, #f0f8f0 100%);
+        position: relative;
+    }
+
+    .table-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-green) 0%, var(--accent-green) 50%, var(--primary-green) 100%);
+    }
+
+    .table-header th {
+        padding: 1rem 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .table-row {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .table-row:hover {
+        background: linear-gradient(135deg, rgba(45, 80, 22, 0.03) 0%, rgba(107, 142, 35, 0.03) 100%);
+        transform: scale(1.001);
+        box-shadow: 0 4px 15px rgba(45, 80, 22, 0.1);
+        border-left: 4px solid var(--accent-green);
+    }
+
+    .table-row td {
+        padding: 1rem 0.75rem;
+        border: none;
+    }
+
+    /* Product Icon */
+    .product-icon {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, var(--light-green) 0%, #90ee90 100%);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        box-shadow: 0 4px 12px rgba(107, 142, 35, 0.2);
+        border: 2px solid rgba(45, 80, 22, 0.1);
+    }
+
+    .product-icon i {
+        color: var(--primary-green);
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+    }
+
+    /* Product thumbnail */
+    .product-thumb {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid rgba(45, 80, 22, 0.2);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    /* Badges */
+    .badge {
+        font-weight: 500;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+    }
+
+    .bg-primary-soft {
+        background: linear-gradient(135deg, rgba(45, 80, 22, 0.1) 0%, rgba(107, 142, 35, 0.1) 100%) !important;
+        color: var(--primary-green) !important;
+        border: 1px solid rgba(45, 80, 22, 0.2);
+    }
+
+    /* Buttons */
+    .btn {
+        border-radius: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+        box-shadow: 0 4px 15px rgba(45, 80, 22, 0.3);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--forest-dark) 0%, var(--primary-green) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(45, 80, 22, 0.4);
+    }
+
+    .btn-outline-primary {
+        border: 2px solid var(--primary-green);
+        color: var(--primary-green);
+        background: transparent;
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--primary-green);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(45, 80, 22, 0.3);
+    }
+
+    .btn-outline-danger {
+        border: 2px solid #e53e3e;
+        color: #e53e3e;
+        background: transparent;
+    }
+
+    .btn-outline-danger:hover {
+        background: #e53e3e;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid #a0aec0;
+        color: #a0aec0;
+        background: transparent;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #a0aec0;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Modern Alert */
+    .modern-alert {
+        border: none;
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        border-left: 4px solid;
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+        border-left-color: #38a169;
+        color: #22543d;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 3rem 1rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .page-header .row > div {
+            margin-bottom: 1rem;
+        }
+        
+        .stats-card {
+            margin-bottom: 1rem;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+        }
+        
+        .btn-group .btn {
+            margin-bottom: 0.25rem;
+        }
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stats-card, .modern-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .stats-card:nth-child(1) { animation-delay: 0.1s; }
+    .stats-card:nth-child(2) { animation-delay: 0.2s; }
+    .stats-card:nth-child(3) { animation-delay: 0.3s; }
+    .stats-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* DataTables Custom Styling */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        margin: 1rem 0;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: 8px;
+        margin: 0 2px;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+        border-color: var(--primary-green);
+        color: white !important;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, var(--forest-dark) 0%, var(--primary-green) 100%);
+    }
+</style>
+
+{% endblock main_content %}

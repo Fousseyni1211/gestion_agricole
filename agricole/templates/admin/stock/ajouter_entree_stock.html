@@ -1,0 +1,221 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Ajouter une Entrée en Stock{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-plus-circle"></i>
+                        Ajouter une Entrée en Stock
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'tableau_bord_stock' %}">Stock</a></li>
+                        <li class="breadcrumb-item active">Ajout entrée</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-edit"></i>
+                                Informations de l'Entrée
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="produit">Produit:</label>
+                                            <select name="produit" id="produit" class="form-control" required onchange="updateStockInfo()">
+                                                <option value="">-- Sélectionner un produit --</option>
+                                                {% for produit in produits %}
+                                                <option value="{{ produit.id }}" data-stock="{{ produit.quantite }}" data-seuil="{{ produit.seuil_alerte }}" data-unite="{{ produit.unite }}">
+                                                    {{ produit.nom_produit }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="quantite">Quantité:</label>
+                                            <input type="number" name="quantite" id="quantite" class="form-control" min="1" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="commentaire">Commentaire:</label>
+                                    <textarea name="commentaire" id="commentaire" class="form-control" rows="3" placeholder="Optionnel: ajoutez des détails sur cette entrée de stock..."></textarea>
+                                </div>
+
+                                <!-- Informations du stock actuel -->
+                                <div class="card bg-light" id="stockInfo" style="display: none;">
+                                    <div class="card-body">
+                                        <h6>Informations du stock actuel</h6>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <strong>Stock actuel:</strong> <span id="currentStock">-</span>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <strong>Seuil d'alerte:</strong> <span id="seuilAlerte">-</span>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <strong>Après entrée:</strong> <span id="newStock">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="progress">
+                                                <div id="stockProgress" class="progress-bar" role="progressbar" style="width: 0%">
+                                                    0%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mt-3">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save"></i> Ajouter l'entrée
+                                    </button>
+                                    <a href="{% url 'liste_stock_ameliore' %}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Annuler
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i>
+                                Aide
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <h6>Conseils pour les entrées de stock</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Vérifiez le produit sélectionné</li>
+                                <li><i class="fas fa-check text-success"></i> Entrez une quantité positive</li>
+                                <li><i class="fas fa-check text-success"></i> Ajoutez un commentaire descriptif</li>
+                                <li><i class="fas fa-check text-success"></i> Le stock sera mis à jour automatiquement</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Impact sur le stock</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-arrow-up text-success"></i> Augmentation de la quantité</li>
+                                <li><i class="fas fa-history text-info"></i> Historique mis à jour</li>
+                                <li><i class="fas fa-bell text-warning"></i> Alertes recalculées</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Types d'entrées courantes</h6>
+                            <ul class="list-unstyled">
+                                <li>• Nouvelles approvisionnements</li>
+                                <li>• Retours de clients</li>
+                                <li>• Corrections d'inventaire</li>
+                                <li>• Transferts entre sites</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateStockInfo() {
+    const select = document.getElementById('produit');
+    const quantiteInput = document.getElementById('quantite');
+    const stockInfo = document.getElementById('stockInfo');
+    
+    if (select.value) {
+        const option = select.options[select.selectedIndex];
+        const currentStock = parseInt(option.dataset.stock) || 0;
+        const seuilAlerte = parseInt(option.dataset.seuil) || 1;
+        const unite = option.dataset.unite || '';
+        
+        // Mettre à jour les informations
+        document.getElementById('currentStock').textContent = currentStock + ' ' + unite;
+        document.getElementById('seuilAlerte').textContent = seuilAlerte + ' ' + unite;
+        
+        // Calculer le nouveau stock
+        function updateNewStock() {
+            const quantite = parseInt(quantiteInput.value) || 0;
+            const newStock = currentStock + quantite;
+            document.getElementById('newStock').textContent = newStock + ' ' + unite;
+            
+            // Mettre à jour la barre de progression
+            const percentage = Math.min((newStock / seuilAlerte) * 100, 100);
+            const progressBar = document.getElementById('stockProgress');
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = Math.round(percentage) + '%';
+            
+            // Changer la couleur selon le niveau
+            progressBar.className = 'progress-bar';
+            if (newStock >= seuilAlerte) {
+                progressBar.classList.add('bg-success');
+            } else if (newStock > 0) {
+                progressBar.classList.add('bg-warning');
+            } else {
+                progressBar.classList.add('bg-danger');
+            }
+        }
+        
+        // Écouter les changements de quantité
+        quantiteInput.addEventListener('input', updateNewStock);
+        updateNewStock();
+        
+        stockInfo.style.display = 'block';
+    } else {
+        stockInfo.style.display = 'none';
+    }
+}
+
+// Validation du formulaire
+document.querySelector('form').addEventListener('submit', function(e) {
+    const quantite = parseInt(document.getElementById('quantite').value);
+    const produit = document.getElementById('produit').value;
+    
+    if (!produit) {
+        e.preventDefault();
+        alert('Veuillez sélectionner un produit');
+        return false;
+    }
+    
+    if (!quantite || quantite <= 0) {
+        e.preventDefault();
+        alert('Veuillez entrer une quantité positive');
+        return false;
+    }
+});
+</script>
+{% endblock %}

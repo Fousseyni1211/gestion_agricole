@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Commande #{{ commande.id }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h3>Commande #{{ commande.id }}</h3>
+  <p><strong>Client :</strong> {{ request.user.get_full_name }}</p>
+  <p><strong>Date :</strong> {{ commande.date_commande|date:"d/m/Y H:i" }}</p>
+
+  <table class="table">
+    <thead><tr><th>Produit</th><th>Qté</th><th>PU</th><th>Sous‑total</th></tr></thead>
+    <tbody>
+      {% for d in commande.details.all %}
+      <tr>
+        <td>{{ d.produit.nom }}</td>
+        <td>{{ d.quantite }}</td>
+        <td>{{ d.produit.prix }} FCFA</td>
+        <td>{{ d.sous_total }} FCFA</td>
+      </tr>
+      {% endfor %}
+      <tr class="table-dark">
+        <td colspan="3" class="text-end"><strong>Total</strong></td>
+        <td><strong>{{ commande.total }} FCFA</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

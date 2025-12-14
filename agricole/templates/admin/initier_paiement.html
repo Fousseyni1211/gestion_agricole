@@ -1,0 +1,226 @@
+{% extends "admin/base_template.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | Administration Kayupe{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Enregistrer un paiement
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Sélection du client -->
+                        <div class="mb-4">
+                            <label for="client" class="form-label fw-bold">Sélectionner un client</label>
+                            <select class="form-select form-select-lg" id="client" name="client" required>
+                                <option value="" selected disabled>Choisir un client...</option>
+                                {% for client in clients %}
+                                    {% if client.commandes_en_attente %}
+                                        <option value="{{ client.id }}">
+                                            {{ client.get_full_name }} - {{ client.telephone }}
+                                            ({{ client.commandes_en_attente|length }} commande{{ client.commandes_en_attente|length|pluralize }} en attente)
+                                        </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Veuillez sélectionner un client.
+                            </div>
+                        </div>
+
+                        <!-- Sélection de la commande -->
+                        <div class="mb-4">
+                            <label for="commande" class="form-label fw-bold">Sélectionner une commande</label>
+                            <select class="form-select form-select-lg" id="commande" name="commande" required disabled>
+                                <option value="" selected disabled>Choisir d'abord un client</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Veuillez sélectionner une commande.
+                            </div>
+                        </div>
+
+                        <!-- Montant du paiement -->
+                        <div class="mb-4">
+                            <label for="montant" class="form-label fw-bold">Montant du paiement (FCFA)</label>
+                            <div class="input-group input-group-lg">
+                                <input type="number" class="form-control" id="montant" name="montant" required 
+                                       step="0.01" min="0" placeholder="0.00">
+                                <span class="input-group-text">FCFA</span>
+                                <div class="invalid-feedback">
+                                    Veuillez entrer un montant valide.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mode de paiement -->
+                        <div class="mb-4">
+                            <label for="mode_paiement" class="form-label fw-bold">Mode de paiement</label>
+                            <select class="form-select form-select-lg" id="mode_paiement" name="mode_paiement" required>
+                                <option value="" selected disabled>Sélectionner un mode de paiement</option>
+                                {% for mode, libelle in modes_paiement %}
+                                    <option value="{{ mode }}">{{ libelle }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Veuillez sélectionner un mode de paiement.
+                            </div>
+                        </div>
+
+                        <!-- Bouton de soumission -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'liste_commandes' %}" class="btn btn-outline-secondary btn-lg me-md-2">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check-circle me-2"></i>Enregistrer le paiement
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript pour la gestion dynamique des commandes -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const clientSelect = document.getElementById('client');
+    const commandeSelect = document.getElementById('commande');
+    const montantInput = document.getElementById('montant');
+    
+    // Données des commandes par client
+    const commandesParClient = {
+        {% for client in clients %}
+            {% if client.commandes_en_attente %}
+                '{{ client.id }}': [
+                    {% for commande in client.commandes_en_attente %}
+                        {
+                            id: {{ commande.id }},
+                            montant: {{ commande.total|floatformat:2|default:'0.00' }},
+                            date: '{{ commande.date_commande|date:"d/m/Y H:i" }}',
+                            statut: '{{ commande.get_statut_display|escapejs }}'
+                        }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ]{% if not forloop.last %},{% endif %}
+            {% endif %}
+        {% endfor %}
+    };
+
+    // Mettre à jour les commandes lorsque le client change
+    clientSelect.addEventListener('change', function() {
+        const clientId = this.value;
+        commandeSelect.innerHTML = '<option value="" selected disabled>Choisir une commande...</option>';
+        
+        if (clientId && commandesParClient[clientId]) {
+            commandeSelect.disabled = false;
+            
+            commandesParClient[clientId].forEach(function(commande) {
+                const option = document.createElement('option');
+                option.value = commande.id;
+                option.textContent = `Commande #${commande.id} - ${commande.montant} FCFA (${commande.date})`;
+                commandeSelect.appendChild(option);
+            });
+            
+            // Mettre à jour le montant par défaut avec la première commande
+            if (commandesParClient[clientId].length > 0) {
+                montantInput.value = commandesParClient[clientId][0].montant;
+            }
+        } else {
+            commandeSelect.disabled = true;
+            montantInput.value = '';
+        }
+    });
+    
+    // Mettre à jour le montant lorsque la commande change
+    commandeSelect.addEventListener('change', function() {
+        if (this.value) {
+            const clientId = clientSelect.value;
+            const commandeId = parseInt(this.value);
+            const commande = commandesParClient[clientId].find(c => c.id === commandeId);
+            
+            if (commande) {
+                montantInput.value = commande.montant;
+            }
+        } else {
+            montantInput.value = '';
+        }
+    });
+    
+    // Validation du formulaire
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+});
+</script>
+
+<style>
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    padding: 1.25rem 1.5rem;
+}
+
+.form-label {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-select, .form-control {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+    border-radius: 8px;
+}
+
+.invalid-feedback {
+    font-size: 0.875rem;
+}
+
+.was-validated .form-control:invalid, 
+.was-validated .form-select:invalid {
+    border-color: #dc3545;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.was-validated .form-control:valid,
+.was-validated .form-select:valid {
+    border-color: #198754;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+</style>
+{% endblock %}

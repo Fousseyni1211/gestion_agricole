@@ -1,0 +1,126 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-camera"></i> {{ titre }}
+        </h1>
+        <a href="{% url 'tableau_de_bord_agronome' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Photos Envoyées par les Agriculteurs</h6>
+        </div>
+        <div class="card-body">
+            {% if photos %}
+                <div class="row">
+                    {% for photo in photos %}
+                    <div class="col-xl-4 col-lg-6 mb-4">
+                        <div class="card shadow">
+                            <div class="card-img-top position-relative">
+                                <img src="{{ photo.image.url }}" class="img-fluid" alt="Photo de {{ photo.culture.nom }}">
+                                <div class="position-absolute top-0 right-0 m-2">
+                                    <span class="badge badge-warning">En attente</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    {{ photo.culture.nom }}
+                                    <small class="text-muted">- {{ photo.parcelle.nom }}</small>
+                                </h6>
+                                <p class="card-text">
+                                    <strong>Agriculteur:</strong> {{ photo.agriculteur.farm_name }}<br>
+                                    <strong>Date:</strong> {{ photo.date_envoi|date:"d/m/Y H:i" }}<br>
+                                    {% if photo.description %}
+                                    <strong>Description:</strong> {{ photo.description|truncatechars:50 }}
+                                    {% endif %}
+                                </p>
+                                <div class="btn-group w-100" role="group">
+                                    <a href="{% url 'valider_photo' photo.id %}" class="btn btn-success">
+                                        <i class="fas fa-check"></i> Valider
+                                    </a>
+                                    <button type="button" class="btn btn-info" 
+                                            onclick="showPhotoDetails({{ photo.id }})">
+                                        <i class="fas fa-search-plus"></i> Détails
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-camera fa-3x text-gray-300 mb-3"></i>
+                    <h5 class="text-gray-500">Aucune photo en attente</h5>
+                    <p class="text-gray-400">Toutes les photos ont été vérifiées.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal Détails Photo -->
+<div class="modal fade" id="photoDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails de la Photo</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="photoDetailsContent">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function showPhotoDetails(photoId) {
+    // Simuler le chargement des détails de la photo
+    const detailsHtml = `
+        <div class="row">
+            <div class="col-md-8">
+                <img src="/static/images/placeholder-photo.jpg" class="img-fluid rounded" alt="Photo détaillée">
+            </div>
+            <div class="col-md-4">
+                <h6>Informations détaillées</h6>
+                <p><strong>ID Photo:</strong> ${photoId}</p>
+                <p><strong>Date d'envoi:</strong> Date/Heure</p>
+                <p><strong>Agriculteur:</strong> Nom de l'agriculteur</p>
+                <p><strong>Culture:</strong> Type de culture</p>
+                <p><strong>Parcelle:</strong> Nom de la parcelle</p>
+                <p><strong>Description:</strong> Description complète de la photo...</p>
+            </div>
+        </div>
+    `;
+    document.getElementById('photoDetailsContent').innerHTML = detailsHtml;
+    $('#photoDetailsModal').modal('show');
+}
+</script>
+{% endblock %}
+{% endblock %}

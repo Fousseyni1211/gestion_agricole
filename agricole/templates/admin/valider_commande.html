@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="mb-4">Validation de la commande n° {{ commande.id }}</h2>
+
+  <div class="card shadow-sm p-4 mb-4">
+    <h4>Détails de la commande</h4>
+    <p><strong>Client :</strong> {{ commande.client }}</p>
+    <p><strong>Date :</strong> {{ commande.date_commande|date:"d/m/Y H:i" }}</p>
+    <p><strong>Statut actuel :</strong>
+      {% if commande.statut == 'en_attente' %}
+        <span class="badge bg-warning text-dark">En attente</span>
+      {% elif commande.statut == 'confirmee' %}
+        <span class="badge bg-success">Confirmée</span>
+      {% elif commande.statut == 'annulee' %}
+        <span class="badge bg-danger">Annulée</span>
+      {% else %}
+        <span class="badge bg-secondary">{{ commande.statut }}</span>
+      {% endif %}
+    </p>
+
+    <h5>Lignes de commande</h5>
+    <table class="table table-bordered align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Produit</th>
+          <th>Quantité</th>
+          <th>Prix Unitaire</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in commande.lignecommande_set.all %}
+          <tr>
+            <td>{{ ligne.produit.nom_produit }}</td>
+            <td>{{ ligne.quantite }}</td>
+            <td>{{ ligne.prix_unitaire|floatformat:2 }} €</td>
+            <td>{{ ligne.get_total|floatformat:2 }} €</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="text-center">Aucune ligne de commande</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if commande.statut == 'en_attente' %}
+  <form method="post" class="card shadow-sm p-4">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label for="id_statut" class="form-label">Modifier le statut :</label>
+      <select id="id_statut" name="statut" class="form-select" disabled>
+        <option value="en_attente" selected>En attente</option>
+        <option value="confirmee">Confirmée</option>
+        <option value="annulee">Annulée</option>
+      </select>
+    </div>
+
+    <div class="d-flex justify-content-start gap-2">
+      <button type="submit" name="action" value="confirmer" class="btn btn-success">Valider</button>
+      <button type="submit" name="action" value="annuler" class="btn btn-danger">Annuler</button>
+      <a href="{% url 'liste_commandes' %}" class="btn btn-secondary">Retour</a>
+    </div>
+  </form>
+  {% else %}
+    <a href="{% url 'liste_commandes' %}" class="btn btn-secondary">Retour</a>
+  {% endif %}
+</div>
+{% endblock %}

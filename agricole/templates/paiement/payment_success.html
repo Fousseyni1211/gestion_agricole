@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-success">
+        <h4>Paiement initié avec succès !</h4>
+        <p>Votre transaction a été soumise. Vous recevrez une notification de confirmation dès que le paiement sera validé par Orange Money.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary">Retour à l'accueil</a>
+    </div>
+</div>
+{% endblock %}

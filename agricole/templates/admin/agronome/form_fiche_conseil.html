@@ -1,0 +1,248 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-book"></i> {{ titre }}
+        </h1>
+        <a href="{% url 'liste_fiches_conseils' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        {% if action == 'Créer' %}Créer une nouvelle fiche-conseil{% else %}Modifier la fiche-conseil{% endif %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.titre.id_for_label }}" class="form-label">
+                                        <i class="fas fa-heading"></i> Titre de la fiche-conseil
+                                    </label>
+                                    {{ form.titre }}
+                                    <div class="form-text">Choisissez un titre clair et informatif</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.type_culture.id_for_label }}" class="form-label">
+                                        <i class="fas fa-seedling"></i> Type de culture
+                                    </label>
+                                    {{ form.type_culture }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.culture.id_for_label }}" class="form-label">
+                                        <i class="fas fa-leaf"></i> Culture spécifique (optionnel)
+                                    </label>
+                                    {{ form.culture }}
+                                    <div class="form-text">Laissez vide si la fiche s'applique à plusieurs cultures</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.categorie.id_for_label }}" class="form-label">
+                                        <i class="fas fa-tag"></i> Catégorie
+                                    </label>
+                                    {{ form.categorie }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left"></i> Description
+                            </label>
+                            {{ form.description }}
+                            <div class="form-text">Résumé de la fiche-conseil (visible dans la liste)</div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.contenu.id_for_label }}" class="form-label">
+                                <i class="fas fa-file-alt"></i> Contenu détaillé
+                            </label>
+                            {{ form.contenu }}
+                            <div class="form-text">
+                                Instructions complètes, recommandations, calendrier, etc.
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.recommandations.id_for_label }}" class="form-label">
+                                <i class="fas fa-lightbulb"></i> Recommandations principales
+                            </label>
+                            {{ form.recommandations }}
+                            <div class="form-text">Points clés à retenir par les agriculteurs</div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.periode_optimale.id_for_label }}" class="form-label">
+                                        <i class="fas fa-calendar-alt"></i> Période optimale
+                                    </label>
+                                    {{ form.periode_optimale }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.difficulte.id_for_label }}" class="form-label">
+                                        <i class="fas fa-signal"></i> Niveau de difficulté
+                                    </label>
+                                    {{ form.difficulte }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.image.id_for_label }}" class="form-label">
+                                <i class="fas fa-image"></i> Image illustrative
+                            </label>
+                            {{ form.image }}
+                            <div class="form-text">Format JPG, PNG. Max 2MB</div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                {{ form.publie }}
+                                <label class="form-check-label" for="{{ form.publie.id_for_label }}">
+                                    Publier cette fiche-conseil
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {{ action }} la fiche-conseil
+                            </button>
+                            <a href="{% url 'liste_fiches_conseils' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-info-circle"></i> Guide de rédaction
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-lightbulb"></i> Conseils pour une bonne fiche-conseil:</h6>
+                        <ul class="mb-0">
+                            <li>Utilisez un langage clair et accessible</li>
+                            <li>Structurez l'information avec des titres et listes</li>
+                            <li>Incluez des exemples pratiques et concrets</li>
+                            <li>Précisez les dosages et fréquences recommandés</li>
+                            <li>Mentionnez les précautions et risques potentiels</li>
+                        </ul>
+                    </div>
+                    
+                    <h6>Structure recommandée:</h6>
+                    <div class="small">
+                        <ol>
+                            <li><strong>Introduction:</strong> Contexte et objectif</li>
+                            <li><strong>Prérequis:</strong> Matériel et conditions nécessaires</li>
+                            <li><strong>Étapes détaillées:</strong> Procédure pas à pas</li>
+                            <li><strong>Calendrier:</strong> Périodes optimales</li>
+                            <li><strong>Surveillance:</strong> Points à vérifier</li>
+                            <li><strong>Traitement des problèmes:</strong> Solutions courantes</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <h6><i class="fas fa-exclamation-triangle"></i> À éviter:</h6>
+                        <ul class="mb-0">
+                            <li>Terminologie trop technique</li>
+                            <li>Instructions ambiguës</li>
+                            <li>Omettre les précautions de sécurité</li>
+                            <li>Recommandations sans fondement scientifique</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-chart-line"></i> Statistiques
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="h4 text-primary">{{ fiche.telechargements|default:0 }}</div>
+                            <div class="small text-gray-500">Téléchargements</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="h4 text-success">4.8</div>
+                            <div class="small text-gray-500">Note moyenne</div>
+                        </div>
+                    </div>
+                    {% if fiche.date_creation %}
+                    <div class="mt-3">
+                        <p class="small text-muted mb-0">
+                            <strong>Créée le:</strong> {{ fiche.date_creation|date:"d/m/Y" }}
+                        </p>
+                        <p class="small text-muted mb-0">
+                            <strong>Dernière mise à jour:</strong> {{ fiche.date_modification|date:"d/m/Y" }}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Auto-ajustement de la hauteur des textarea
+document.addEventListener('DOMContentLoaded', function() {
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(function(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+        
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

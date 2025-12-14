@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="alert alert-success mt-4">
+    <h3>Votre compte a été activé avec succès 🎉</h3>
+    <p>Bonjour {{ user.first_name }}, vous pouvez maintenant vous connecter.</p>
+    <a href="{% url 'login' %}" class="btn btn-primary">Connexion</a>
+  </div>
+{% endblock %}

@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-5 bg-light">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-9 col-xl-8">
+      <!-- En-tête avec dégradé de couleur et ombre portée -->
+      <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-gradient-primary-to-secondary text-white py-4">
+          <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
+            <div class="d-flex align-items-center mb-3 mb-md-0">
+              <div class="icon-shape icon-shape-lg bg-white bg-opacity-20 rounded-3 p-3 me-3">
+                <i class="bi bi-person-plus-fill fs-2"></i>
+              </div>
+              <div>
+                <h1 class="h3 mb-1 fw-bold">{{ titre|default:"Nouveau Client" }}</h1>
+                <p class="mb-0 text-white-75">Ajoutez un nouveau client à votre base de données</p>
+              </div>
+            </div>
+            <a href="{% url 'liste_clients' %}" class="btn btn-outline-light rounded-pill px-4">
+              <i class="bi bi-arrow-left me-2"></i> Retour à la liste
+            </a>
+          </div>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+          <!-- Messages d'alerte -->
+          {% if messages %}
+            <div class="mb-4">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                  <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %} me-2"></i>
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <i class="bi bi-exclamation-octagon-fill me-2"></i>
+              {{ form.non_field_errors }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endif %}
+          
+          <!-- Carte d'information -->
+          <div class="alert alert-info bg-light border-start border-info border-4 mb-4">
+            <div class="d-flex">
+              <div class="me-3">
+                <i class="bi bi-info-circle-fill text-info fs-4"></i>
+              </div>
+              <div>
+                <h5 class="alert-heading">Informations requises</h5>
+                <p class="mb-0">Veuillez remplir tous les champs obligatoires marqués d'un astérisque (<span class="text-danger">*</span>).</p>
+              </div>
+            </div>
+          </div>
+
+          <form method="post" enctype="multipart/form-data" novalidate class="needs-validation">
+            {% csrf_token %}
+
+            <div class="row g-4">
+              <!-- Prénom -->
+              <div class="col-12 col-md-6">
+                <div class="form-group">
+                  <label for="id_first_name" class="form-label fw-semibold">Prénom <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-person-fill text-primary"></i></span>
+                    <input type="text" name="first_name" class="form-control form-control-lg" id="id_first_name" required 
+                           placeholder="Entrez le prénom">
+                  </div>
+                  {% if form.first_name.errors %}
+                    <div class="invalid-feedback d-block">{{ form.first_name.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Nom -->
+              <div class="col-12 col-md-6">
+                <div class="form-group">
+                  <label for="id_last_name" class="form-label fw-semibold">Nom <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-person-badge-fill text-primary"></i></span>
+                    <input type="text" name="last_name" class="form-control form-control-lg" id="id_last_name" required
+                           placeholder="Entrez le nom de famille">
+                  </div>
+                  {% if form.last_name.errors %}
+                    <div class="invalid-feedback d-block">{{ form.last_name.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Téléphone -->
+              <div class="col-12 col-md-6">
+                <div class="form-group">
+                  <label for="id_phone_number" class="form-label fw-semibold">Téléphone <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-telephone-fill text-primary"></i></span>
+                    <input type="tel" name="phone_number" class="form-control form-control-lg" id="id_phone_number" required
+                           placeholder="Ex: +221 77 123 45 67">
+                  </div>
+                  {% if form.phone_number.errors %}
+                    <div class="invalid-feedback d-block">{{ form.phone_number.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="col-12 col-md-6">
+                <div class="form-group">
+                  <label for="id_email" class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-envelope-fill text-primary"></i></span>
+                    <input type="email" name="email" class="form-control form-control-lg" id="id_email" required
+                           placeholder="exemple@domaine.com">
+                  </div>
+                  {% if form.email.errors %}
+                    <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Mot de passe -->
+              <div class="col-12 col-md-6">
+                <div class="form-group">
+                  <label for="id_password" class="form-label fw-semibold">Mot de passe <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-lock-fill text-primary"></i></span>
+                    <input type="password" name="password" class="form-control form-control-lg" id="id_password" required
+                           placeholder="Créez un mot de passe sécurisé">
+                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                      <i class="bi bi-eye-fill"></i>
+                    </button>
+                  </div>
+                  <div class="form-text">Minimum 8 caractères avec des chiffres et des lettres</div>
+                  {% if form.password.errors %}
+                    <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Sexe -->
+              <div class="col-12 col-md-6">
+                <div class="form-group">
+                  <label for="id_gender" class="form-label fw-semibold">Sexe <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-gender-ambiguous text-primary"></i></span>
+                    <select name="gender" class="form-select form-select-lg" id="id_gender" required>
+                      <option value="" disabled selected>Sélectionnez un genre</option>
+                      <option value="M">Homme</option>
+                      <option value="F">Femme</option>
+                    </select>
+                  </div>
+                  {% if form.gender.errors %}
+                    <div class="invalid-feedback d-block">{{ form.gender.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex flex-column flex-md-row gap-3 justify-content-between align-items-center mt-5 pt-4 border-top">
+              <div class="text-muted small">
+                <i class="bi bi-info-circle me-1"></i> Tous les champs marqués d'un <span class="text-danger">*</span> sont obligatoires
+              </div>
+              <div class="d-flex gap-2">
+                <a href="{% url 'liste_clients' %}" class="btn btn-lg btn-outline-secondary px-4">
+                  <i class="bi bi-x-lg me-2"></i>Annuler
+                </a>
+                <button type="submit" class="btn btn-lg btn-primary px-4">
+                  <i class="bi bi-check2-circle me-2"></i>Enregistrer le client
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  .bg-gradient-primary-to-secondary {
+    background: linear-gradient(135deg, #198754 0%, #0d6efd 100%);
+  }
+  
+  .form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+  }
+  
+  .form-control-lg, .form-select-lg {
+    padding: 0.75rem 1rem;
+  }
+  
+  .input-group-text {
+    min-width: 45px;
+    justify-content: center;
+  }
+  
+  .btn-primary {
+    background-color: #0d6efd;
+    border: none;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    background-color: #0b5ed7;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+  }
+  
+  .btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .toggle-password {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  
+  .card {
+    border: none;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .icon-shape {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+
+<script>
+  // Script pour le bouton d'affichage/masquage du mot de passe
+  document.addEventListener('DOMContentLoaded', function() {
+    const togglePassword = document.querySelector('.toggle-password');
+    const password = document.querySelector('#id_password');
+    
+    if (togglePassword) {
+      togglePassword.addEventListener('click', function() {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('bi-eye');
+        this.querySelector('i').classList.toggle('bi-eye-slash');
+      });
+    }
+    
+    // Validation du formulaire
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+      form.addEventListener('submit', event => {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Supprimer une Culture{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-trash"></i> Supprimer une Culture
+        </h1>
+        <a href="{% url 'liste_cultures' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-danger">Confirmation de suppression</h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Attention!</strong> Cette action est irréversible.
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>Êtes-vous sûr de vouloir supprimer cette culture?</h5>
+                    <p><strong>Nom:</strong> {{ culture.nom }}</p>
+                    <p><strong>Type:</strong> {{ culture.get_type_culture_display }}</p>
+                    {% if culture.description %}
+                        <p><strong>Description:</strong> {{ culture.description }}</p>
+                    {% endif %}
+                    <p><strong>Durée du cycle:</strong> {{ culture.duree_cycle }} jours</p>
+                    {% if culture.rendement_moyen %}
+                        <p><strong>Rendement moyen:</strong> {{ culture.rendement_moyen }} t/ha</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <i class="fas fa-leaf fa-5x text-danger mb-3"></i>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Confirmer la suppression
+                    </button>
+                    <a href="{% url 'liste_cultures' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "agriculteur/base_template.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Ajouter une culture{% endblock %}
+
+{# --------------------------------------------------------- #}
+{#  EXTRA CSS : thème spécifique pour la page "Ajouter"     #}
+{# --------------------------------------------------------- #}
+{% block extra_css %}
+  <!-- Flatpickr pour un date‑picker moderne (CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.17/dist/flatpickr.min.css">
+  <style>
+    :root {
+      --accent: #20c997;           /* teal principal */
+      --page-bg: #f5fffa;          /* vert très pâle en arrière‑plan */
+    }
+
+    /* Applique la couleur de fond uniquement sur cette page */
+    body {
+      background: var(--page-bg);
+    }
+
+    /* Animation subtile sur la carte */
+    .card-animate {
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .card-animate:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 1rem 1.5rem rgba(0,0,0,.12);
+    }
+
+    .btn-save {
+      background: var(--accent);
+      border: none;
+    }
+    .btn-save:hover {
+      background: #17b58b;
+    }
+  </style>
+{% endblock %}
+
+{# --------------------------------------------------------- #}
+{#  CONTENU PRINCIPAL                                        #}
+{# --------------------------------------------------------- #}
+{% block content %}
+<div class="container py-5" style="max-width: 720px;">
+  <h2 class="mb-4 text-center fw-semibold">🌱 Ajouter une culture</h2>
+
+  <div class="card shadow-sm border-0 card-animate">
+    <div class="card-body p-4">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="text-end mt-4">
+          <button type="submit" class="btn btn-save px-4 py-2 d-inline-flex align-items-center gap-2 shadow-sm">
+            <i class="bi bi-save"></i> Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{# --------------------------------------------------------- #}
+{#  SCRIPTS SPÉCIFIQUES                                     #}
+{# --------------------------------------------------------- #}
+{% block extra_js %}
+  <!-- Bootstrap Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.js"></script>
+  <!-- Flatpickr JS -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.17/dist/flatpickr.min.js"></script>
+  <script>
+    // Activer Flatpickr sur les champs date si présents
+    document.addEventListener("DOMContentLoaded", () => {
+      flatpickr("input[type=date]", {
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d/m/Y",
+      });
+    });
+  </script>
+{% endblock %}

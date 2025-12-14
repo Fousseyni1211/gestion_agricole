@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h3>Suivi de mes cultures</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Culture</th>
+                <th>Type d'action</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for suivi in suivis %}
+            <tr>
+                <td>{{ suivi.date_action }}</td>
+                <td>{{ suivi.culture.nom }}</td>
+                <td>{{ suivi.get_type_action_display }}</td>
+                <td>{{ suivi.description }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">Aucune action enregistrée.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+
+{% block title %}Gestion des Demandes de Service{% endblock %}
+{% block main_content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Gestion des Demandes de Service</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item active">Demandes de Service</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Liste des demandes de service</h3>
+                    <div class="card-tools">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                Filtrer par statut
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" role="menu">
+                                <a href="{% url 'gerant_liste_demandes_service' %}" class="dropdown-item">Tous</a>
+                                <div class="dropdown-divider"></div>
+                                {% for code, label in statuts %}
+                                <a href="{% url 'gerant_liste_demandes_service' %}?statut={{ code }}" class="dropdown-item">{{ label }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if demandes %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Client</th>
+                                    <th>Service</th>
+                                    <th>Date demande</th>
+                                    <th>Date souhaitée</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for demande in demandes %}
+                                <tr>
+                                    <td>{{ demande.id }}</td>
+                                    <td>{{ demande.client.get_full_name|default:demande.client.username }}</td>
+                                    <td>{{ demande.service.nom }}</td>
+                                    <td>{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
+                                    <td>{% if demande.date_souhaitee %}{{ demande.date_souhaitee|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+                                    <td>
+                                        {% if demande.statut == 'en_attente' %}
+                                            <span class="badge badge-warning">{{ demande.get_statut_display }}</span>
+                                        {% elif demande.statut == 'acceptee' %}
+                                            <span class="badge badge-info">{{ demande.get_statut_display }}</span>
+                                        {% elif demande.statut == 'en_cours' %}
+                                            <span class="badge badge-primary">{{ demande.get_statut_display }}</span>
+                                        {% elif demande.statut == 'terminee' %}
+                                            <span class="badge badge-success">{{ demande.get_statut_display }}</span>
+                                        {% elif demande.statut == 'annulee' %}
+                                            <span class="badge badge-danger">{{ demande.get_statut_display }}</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">{{ demande.get_statut_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'gerant_detail_demande_service' demande.id %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> Détails
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-5x text-muted mb-3"></i>
+                        <h5>Aucune demande de service trouvée</h5>
+                        <p class="text-muted">Il n'y a pas de demandes de service correspondant à vos critères</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+    $(function () {
+        // Initialiser DataTables
+        $('table').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+            }
+        });
+    });
+</script>
+{% endblock %}

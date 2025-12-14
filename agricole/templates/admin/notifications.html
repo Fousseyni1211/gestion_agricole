@@ -1,0 +1,98 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-white"><i class="bi bi-bell"></i> Notifications</h2>
+            <p class="text-muted">Gérez les notifications et les commandes en attente</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Notifications -->
+        <div class="col-md-5">
+            <div class="card bg-dark text-white shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-bell"></i> Notifications récentes</h5>
+                    <span class="badge bg-danger">{{ notifications|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if notifications %}
+                        <div class="list-group list-group-flush bg-dark">
+                            {% for notification in notifications %}
+                                <div class="list-group-item bg-dark text-white border-secondary">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <p class="mb-1">{{ notification.message }}</p>
+                                            <small class="text-muted">{{ notification.created_at|date:"d/m/Y H:i" }}</small>
+                                        </div>
+                                        <a href="{% url 'marquer_notification_lue' notification.id %}" class="btn btn-sm btn-outline-light">
+                                            <i class="bi bi-check"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-bell-slash fs-1 mb-3 text-muted"></i>
+                            <p>Aucune notification</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Commandes en attente -->
+        <div class="col-md-7">
+            <div class="card bg-dark text-white shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> Commandes en attente</h5>
+                    <span class="badge bg-warning">{{ commandes_en_attente|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if commandes_en_attente %}
+                        <div class="list-group list-group-flush bg-dark">
+                            {% for commande in commandes_en_attente %}
+                                <div class="list-group-item bg-dark text-white border-secondary">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">Commande #{{ commande.id }} de {{ commande.client.username }}</h6>
+                                            <p class="mb-1">
+                                                <small class="text-muted">{{ commande.date_commande|date:"d/m/Y H:i" }}</small>
+                                            </p>
+                                            <ul class="list-unstyled mb-2">
+                                                {% for detail in commande.details.all %}
+                                                    <li>{{ detail.produit.nom_produit }} (x{{ detail.quantite }})</li>
+                                                {% endfor %}
+                                            </ul>
+                                            <p class="mb-0"><strong>Total:</strong> {{ commande.total }} FCFA</p>
+                                        </div>
+                                        <div class="btn-group">
+                                            <a href="{% url 'admin_valider_commande' commande.id %}" class="btn btn-success">
+                                                <i class="bi bi-check-circle"></i> Valider
+                                            </a>
+                                            <a href="{% url 'admin_annuler_commande' commande.id %}" class="btn btn-danger">
+                                                <i class="bi bi-x-circle"></i> Annuler
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-hourglass fs-1 mb-3 text-muted"></i>
+                            <p>Aucune commande en attente</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

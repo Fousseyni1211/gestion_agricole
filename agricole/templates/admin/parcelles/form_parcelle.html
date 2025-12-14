@@ -1,0 +1,253 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-map"></i> {{ titre }}
+        </h1>
+        <a href="{% url 'liste_parcelles' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">{{ titre }}</h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.nom.id_for_label }}">{{ form.nom.label }} *</label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.nom.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.code_unique.id_for_label }}">{{ form.code_unique.label }} *</label>
+                            {{ form.code_unique }}
+                            {% if form.code_unique.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.code_unique.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.superficie.id_for_label }}">{{ form.superficie.label }} *</label>
+                            {{ form.superficie }}
+                            {% if form.superficie.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.superficie.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.type_sol.id_for_label }}">{{ form.type_sol.label }} *</label>
+                            {{ form.type_sol }}
+                            {% if form.type_sol.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.type_sol.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.statut.id_for_label }}">{{ form.statut.label }} *</label>
+                            {{ form.statut }}
+                            {% if form.statut.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.statut.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.localisation.id_for_label }}">{{ form.localisation.label }} *</label>
+                    {{ form.localisation }}
+                    {% if form.localisation.errors %}
+                        <div class="text-danger">
+                            {% for error in form.localisation.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.coordonnees_gps.id_for_label }}">{{ form.coordonnees_gps.label }}</label>
+                            {{ form.coordonnees_gps }}
+                            {% if form.coordonnees_gps.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.coordonnees_gps.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.ph_sol.id_for_label }}">{{ form.ph_sol.label }}</label>
+                            {{ form.ph_sol }}
+                            {% if form.ph_sol.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.ph_sol.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.qualite_eau.id_for_label }}">{{ form.qualite_eau.label }}</label>
+                            {{ form.qualite_eau }}
+                            {% if form.qualite_eau.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.qualite_eau.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.systeme_irrigation.id_for_label }}">{{ form.systeme_irrigation.label }}</label>
+                            {{ form.systeme_irrigation }}
+                            {% if form.systeme_irrigation.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.systeme_irrigation.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.agriculteur.id_for_label }}">{{ form.agriculteur.label }}</label>
+                            {{ form.agriculteur }}
+                            {% if form.agriculteur.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.agriculteur.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.culture_actuelle.id_for_label }}">{{ form.culture_actuelle.label }}</label>
+                            {{ form.culture_actuelle }}
+                            {% if form.culture_actuelle.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.culture_actuelle.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                        <div class="text-danger">
+                            {% for error in form.notes.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <div class="custom-control custom-checkbox">
+                        {{ form.est_active }}
+                        <label class="custom-control-label" for="{{ form.est_active.id_for_label }}">
+                            {{ form.est_active.label }}
+                        </label>
+                    </div>
+                    {% if form.est_active.errors %}
+                        <div class="text-danger">
+                            {% for error in form.est_active.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> {{ action }}
+                    </button>
+                    <a href="{% url 'liste_parcelles' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Activer les tooltips Bootstrap si nécessaire
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock %}

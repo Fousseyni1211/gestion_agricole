@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <div class="alert alert-success shadow p-5">
+        <h2 class="mb-4">✅ Paiement réussi !</h2>
+        <p>Merci pour votre commande. Vous recevrez une confirmation sous peu.</p>
+        <a href="{% url 'admin_home' %}" class="btn btn-primary mt-3">Retour à l'accueil</a>
+    </div>
+</div>
+{% endblock %}

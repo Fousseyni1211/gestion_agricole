@@ -1,0 +1,105 @@
+{% extends 'client/base.html' %}
+{% load static %}
+
+{% block title %}Mes Demandes de Service{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold">Mes Demandes de Service</h2>
+            <p class="text-muted">Suivez l'état de vos demandes de service</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'services' %}" class="btn btn-success">
+                <i class="fas fa-plus-circle me-2"></i>Nouvelle demande
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    {% if demandes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Date de demande</th>
+                                    <th>Date souhaitée</th>
+                                    <th>Statut</th>
+                                    <th>Commentaire</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for demande in demandes %}
+                                <tr>
+                                    <td>{{ demande.service.nom }}</td>
+                                    <td>{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
+                                    <td>{% if demande.date_souhaitee %}{{ demande.date_souhaitee|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+                                    <td>
+                                        {% if demande.statut == 'en_attente' %}
+                                        <span class="badge bg-warning text-dark">En attente</span>
+                                        {% elif demande.statut == 'acceptee' %}
+                                        <span class="badge bg-info">Acceptée</span>
+                                        {% elif demande.statut == 'en_cours' %}
+                                        <span class="badge bg-primary">En cours</span>
+                                        {% elif demande.statut == 'terminee' %}
+                                        <span class="badge bg-success">Terminée</span>
+                                        {% elif demande.statut == 'annulee' %}
+                                        <span class="badge bg-danger">Annulée</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if demande.commentaire_admin %}
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ demande.commentaire_admin }}">
+                                            <i class="fas fa-comment-dots"></i> Voir
+                                        </button>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <img src="{% static 'dist/img/empty-state.svg' %}" alt="Aucune demande" class="img-fluid mb-3" style="max-height: 150px;">
+                        <h5>Vous n'avez pas encore de demandes de service</h5>
+                        <p class="text-muted">Consultez notre page de services pour découvrir nos offres</p>
+                        <a href="{% url 'services' %}" class="btn btn-primary mt-3">Voir les services</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialiser les tooltips Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}

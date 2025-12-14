@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Matériel Agricole à Louer{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Liste du Matériel Agricole</h2>
+
+    <!-- ✅ Filtrage par catégorie et disponibilité -->
+    <form method="get" class="row mb-4">
+        <div class="col-md-4">
+            <select name="disponibilite" class="form-select">
+                <option value="">-- Disponibilité --</option>
+                <option value="oui">Disponible</option>
+                <option value="non">Indisponible</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select name="categorie" class="form-select">
+                <option value="">-- Catégorie --</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}">{{ cat }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-primary w-100" type="submit">Filtrer</button>
+        </div>
+    </form>
+
+    <!-- ✅ Liste des matériels -->
+    <div class="row">
+        {% for materiel in materiels %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <img src="{{ materiel.photo.url }}" class="card-img-top" alt="{{ materiel.nom }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ materiel.nom }}</h5>
+                    <p class="card-text">Catégorie : {{ materiel.categorie }}</p>
+                    <p class="card-text text-muted">Prix : {{ materiel.prix_location }} FCFA/jour</p>
+                    {% if materiel.disponible %}
+                        <span class="badge bg-success">Disponible</span>
+                        <a href="{% url 'reserver_materiel' materiel.id %}" class="btn btn-outline-primary mt-2 w-100">Réserver</a>
+                    {% else %}
+                        <span class="badge bg-danger">Indisponible</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p>Aucun matériel trouvé selon vos critères.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

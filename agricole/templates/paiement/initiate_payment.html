@@ -1,0 +1,22 @@
+{% extends 'base.html' %}  <!-- Assurez-vous d'avoir un template de base -->
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Paiement via Orange Money</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'initiate_payment' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="amount">Montant à payer (XOF)</label>
+            <input type="number" name="amount" id="amount" class="form-control" placeholder="Entrez le montant" required min="1">
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Payer avec Orange Money</button>
+    </form>
+</div>
+{% endblock %}

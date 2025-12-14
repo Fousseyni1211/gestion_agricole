@@ -1,0 +1,238 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Détails de la Facture{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-file-invoice"></i>
+                        Détails de la Facture
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'tableau_bord_financier' %}">Finances</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'liste_factures' %}">Factures</a></li>
+                        <li class="breadcrumb-item active">Détails</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Informations de la facture -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i>
+                                Informations de la Facture
+                            </h3>
+                            <div class="card-tools">
+                                <a href="{% url 'ajouter_paiement_client' facture.pk %}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-plus"></i> Ajouter un paiement
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>N° Facture:</strong></td>
+                                            <td>{{ facture.numero_facture }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Client:</strong></td>
+                                            <td>{{ facture.client }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Date d'émission:</strong></td>
+                                            <td>{{ facture.date_emission|date:"d/m/Y" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Date d'échéance:</strong></td>
+                                            <td>{{ facture.date_echeance|date:"d/m/Y" }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Montant total:</strong></td>
+                                            <td class="text-end">{{ facture.montant_total|floatformat:0 }} FCFA</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Montant réglé:</strong></td>
+                                            <td class="text-end">{{ facture.montant_regle|floatformat:0 }} FCFA</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Montant restant:</strong></td>
+                                            <td class="text-end {% if facture.montant_restant > 0 %}text-danger{% else %}text-success{% endif %}">
+                                                {{ facture.montant_restant|floatformat:0 }} FCFA
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Statut:</strong></td>
+                                            <td>
+                                                {% if facture.statut == 'payee' %}
+                                                    <span class="badge bg-success">Payée</span>
+                                                {% elif facture.statut == 'partiellement_payee' %}
+                                                    <span class="badge bg-warning">Partiellement payée</span>
+                                                {% elif facture.statut == 'en_retard' %}
+                                                    <span class="badge bg-danger">En retard</span>
+                                                {% elif facture.statut == 'annulee' %}
+                                                    <span class="badge bg-secondary">Annulée</span>
+                                                {% else %}
+                                                    <span class="badge bg-info">En attente</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <h5>Description des services/produits</h5>
+                            <p>{{ facture.description|linebreaks }}</p>
+                            
+                            {% if facture.fichier_pdf %}
+                                <hr>
+                                <h5>Fichier PDF</h5>
+                                <a href="{{ facture.fichier_pdf.url }}" target="_blank" class="btn btn-outline-primary">
+                                    <i class="fas fa-file-pdf"></i> Voir le PDF
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-pie"></i>
+                                Résumé du paiement
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="progress mb-3">
+                                {% with pourcentage=facture.montant_regle|div:facture.montant_total|mul:100 %}
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ pourcentage|floatformat:0 }}%">
+                                    {{ pourcentage|floatformat:0 }}% payé
+                                </div>
+                                {% endwith %}
+                            </div>
+                            
+                            <div class="text-center">
+                                <h4>{{ facture.montant_restant|floatformat:0 }} FCFA</h4>
+                                <p class="text-muted">Reste à payer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historique des paiements -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-history"></i>
+                                Historique des Paiements
+                            </h3>
+                            <div class="card-tools">
+                                <span class="badge bg-info">{{ paiements.count }} paiement(s)</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if paiements %}
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Montant</th>
+                                                <th>Méthode</th>
+                                                <th>Référence</th>
+                                                <th>Statut</th>
+                                                <th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for paiement in paiements %}
+                                            <tr>
+                                                <td>{{ paiement.date_paiement|date:"d/m/Y" }}</td>
+                                                <td class="text-end">{{ paiement.montant|floatformat:0 }} FCFA</td>
+                                                <td>{{ paiement.get_methode_paiement_display }}</td>
+                                                <td>{{ paiement.reference_paiement|default:"-" }}</td>
+                                                <td>
+                                                    {% if paiement.statut == 'valide' %}
+                                                        <span class="badge bg-success">Validé</span>
+                                                    {% elif paiement.statut == 'en_attente' %}
+                                                        <span class="badge bg-warning">En attente</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger">Rejeté</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ paiement.notes|default:"-" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <div class="alert alert-success">
+                                            <strong>Total payé:</strong> 
+                                            <span class="float-right">{{ facture.montant_regle|floatformat:0 }} FCFA</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="text-center">
+                                    <i class="fas fa-money-bill-wave fa-3x text-muted mb-3"></i>
+                                    <h4>Aucun paiement enregistré</h4>
+                                    <p class="text-muted">Cette facture n'a pas encore reçu de paiement.</p>
+                                    <a href="{% url 'ajouter_paiement_client' facture.pk %}" class="btn btn-success">
+                                        <i class="fas fa-plus"></i> Ajouter un paiement
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <a href="{% url 'liste_factures' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Retour à la liste
+                            </a>
+                            <a href="{% url 'ajouter_paiement_client' facture.pk %}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Ajouter un paiement
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

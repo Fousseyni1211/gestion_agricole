@@ -1,0 +1,91 @@
+{% extends 'admin/base_template.html' %}
+
+{% block page_title %}
+    Mon Profil
+{% endblock page_title %}
+
+{% block main_content %}
+
+{% load static %}
+
+<section class="content">
+  <div class="container-fluid">
+
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <!-- Profile Card -->
+        <div class="card card-success">
+          <div class="card-header">
+            <h3 class="card-title">Mettre à jour le profil gérant</h3>
+          </div>
+
+          <form method="POST" action="{% url 'admin_profile_update' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if messages %}
+              <div class="form-group mt-2">
+                {% for message in messages %}
+                  <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="card-body">
+
+              <div class="form-group">
+                <label for="username">Nom d’utilisateur</label>
+                <input type="text" class="form-control" value="{{ user.username }}" disabled>
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" value="{{ user.email }}" disabled>
+              </div>
+
+              <div class="form-group">
+                <label for="first_name">Prénom</label>
+                <input type="text" class="form-control" name="prénom" value="{{ user.prénom }}" required>
+              </div>
+
+              <div class="form-group">
+                <label for="last_name">Nom</label>
+                <input type="text" class="form-control" name="nom_de_famille" value="{{ user.nom_de_famille }}" required>
+              </div>
+
+              <div class="form-group">
+                <label for="password">Mot de passe (laisser vide pour ne pas changer)</label>
+                <input type="password" class="form-control" name="password" placeholder="Nouveau mot de passe">
+              </div>
+
+              <!-- Optionnel : ajout d’un champ téléphone -->
+              <div class="form-group">
+                <label for="phone">Téléphone (optionnel)</label>
+                <input type="text" class="form-control" name="phone" value="{{ profile.phone|default_if_none:'' }}">
+              </div>
+
+              <!-- Optionnel : image de profil -->
+              <div class="form-group">
+                <label for="profile_pic">Photo de profil (optionnel)</label>
+                <input type="file" name="profile_pic" class="form-control-file">
+              </div>
+
+            </div>
+
+            <div class="card-footer text-right">
+              <button type="submit" class="btn btn-success">Enregistrer les modifications</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock main_content %}

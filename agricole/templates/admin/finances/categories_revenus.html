@@ -1,0 +1,260 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Catégories de Revenus{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">
+                        <i class="fas fa-tags"></i>
+                        Catégories de Revenus
+                    </h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'tableau_bord_financier' %}">Finances</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'liste_revenus' %}">Revenus</a></li>
+                        <li class="breadcrumb-item active">Catégories</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-list"></i>
+                                Liste des Catégories
+                            </h3>
+                            <div class="card-tools">
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#ajoutCategorieModal">
+                                    <i class="fas fa-plus"></i> Ajouter une catégorie
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if categories %}
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Couleur</th>
+                                                <th>Nom</th>
+                                                <th>Description</th>
+                                                <th>Nb. revenus</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for categorie in categories %}
+                                            <tr>
+                                                <td>
+                                                    <span class="badge" style="background-color: {{ categorie.couleur }};">
+                                                        &nbsp;&nbsp;&nbsp;
+                                                    </span>
+                                                </td>
+                                                <td><strong>{{ categorie.nom }}</strong></td>
+                                                <td>{{ categorie.description|default:"-"|truncatechars:50 }}</td>
+                                                <td>
+                                                    <span class="badge bg-success">{{ categorie.revenu_set.count }}</span>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <button class="btn btn-sm btn-warning" onclick="modifierCategorie({{ categorie.id }})">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        {% if categorie.revenu_set.count == 0 %}
+                                                        <button class="btn btn-sm btn-danger" onclick="supprimerCategorie({{ categorie.id }})">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center">
+                                    <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                                    <h4>Aucune catégorie trouvée</h4>
+                                    <p class="text-muted">Commencez par ajouter des catégories pour organiser vos revenus.</p>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ajoutCategorieModal">
+                                        <i class="fas fa-plus"></i> Ajouter une catégorie
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-pie"></i>
+                                Répartition
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="categoriesChart" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-info-circle"></i>
+                                Aide
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <h6>Pourquoi utiliser des catégories ?</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Organisation claire</li>
+                                <li><i class="fas fa-check text-success"></i> Analyse facile</li>
+                                <li><i class="fas fa-check text-success"></i> Rapports précis</li>
+                                <li><i class="fas fa-check text-success"></i> Suivi par source</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Conseils</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-lightbulb text-warning"></i> Utilisez des couleurs distinctes</li>
+                                <li><i class="fas fa-lightbulb text-warning"></i> Soyez précis dans les noms</li>
+                                <li><i class="fas fa-lightbulb text-warning"></i> Ajoutez des descriptions claires</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Modal Ajout -->
+<div class="modal fade" id="ajoutCategorieModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter une Catégorie</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="ajoutCategorieForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="nom">Nom de la catégorie:</label>
+                        <input type="text" name="nom" id="nom" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <textarea name="description" id="description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="couleur">Couleur:</label>
+                        <input type="color" name="couleur" id="couleur" class="form-control" value="#28a745">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Modification -->
+<div class="modal fade" id="modificationCategorieModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier une Catégorie</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="modificationCategorieForm">
+                {% csrf_token %}
+                <input type="hidden" name="categorie_id" id="categorie_id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="mod_nom">Nom de la catégorie:</label>
+                        <input type="text" name="nom" id="mod_nom" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="mod_description">Description:</label>
+                        <textarea name="description" id="mod_description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="mod_couleur">Couleur:</label>
+                        <input type="color" name="couleur" id="mod_couleur" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-warning">Modifier</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Graphique des catégories
+const ctx = document.getElementById('categoriesChart').getContext('2d');
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: [{% for categorie in categories %}'{{ categorie.nom }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            data: [{% for categorie in categories %}{{ categorie.revenu_set.count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            backgroundColor: [{% for categorie in categories %}'{{ categorie.couleur }}'{% if not forloop.last %},{% endif %}{% endfor %}]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+function modifierCategorie(categorieId) {
+    // En pratique, charger les données via AJAX
+    document.getElementById('categorie_id').value = categorieId;
+    document.getElementById('mod_nom').value = 'Nom à charger';
+    document.getElementById('mod_description').value = 'Description à charger';
+    document.getElementById('mod_couleur').value = '#28a745';
+    
+    var modal = new bootstrap.Modal(document.getElementById('modificationCategorieModal'));
+    modal.show();
+}
+
+function supprimerCategorie(categorieId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) {
+        // En pratique, faire une requête AJAX pour supprimer
+        alert('Catégorie supprimée avec succès !');
+        location.reload();
+    }
+}
+</script>
+{% endblock %}

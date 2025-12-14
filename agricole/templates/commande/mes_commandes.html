@@ -1,0 +1,358 @@
+{% extends 'client/base.html' %}
+{% load static %}
+
+{% block title %}Mes Commandes{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Header */
+    .page-header {
+        background: linear-gradient(135deg, var(--cream), white);
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2.5rem;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+    }
+
+    /* General Button Style */
+    .btn-primary-agricultural {
+        background-color: var(--primary-green);
+        border-color: var(--primary-green);
+        color: white;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-radius: 50px;
+        padding: 0.75rem 1.5rem;
+    }
+    .btn-primary-agricultural:hover {
+        background-color: var(--secondary-green);
+        border-color: var(--secondary-green);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    /* Filter Pills */
+    .nav-pills .nav-link {
+        color: var(--text-dark);
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-radius: 50px;
+    }
+    .nav-pills .nav-link.active,
+    .nav-pills .show > .nav-link {
+        background-color: var(--primary-green);
+        color: white;
+        box-shadow: var(--shadow);
+    }
+    .nav-pills .nav-link:hover:not(.active) {
+        background-color: var(--light-green);
+        color: var(--primary-green);
+    }
+
+    /* Commande Card Styling */
+    .commande-card .card {
+        border: 1px solid transparent;
+        border-left-width: 5px;
+        transition: all 0.3s ease;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+    .commande-card .card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-hover);
+        border-color: var(--border-color);
+    }
+    .card-header-gradient {
+        background: linear-gradient(135deg, var(--cream), white);
+        padding: 1rem 1.5rem;
+    }
+
+    /* Status-specific card styles */
+    .commande-card[data-status="validee"] .card { border-left-color: var(--accent-green); }
+    .commande-card[data-status="en_attente"] .card { border-left-color: #ffc107; }
+    .commande-card[data-status="annulee"] .card { border-left-color: #dc3545; }
+
+    .commande-card .card-title {
+        color: var(--primary-green);
+        font-weight: 600;
+    }
+    .commande-card .badge {
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    .products-summary span {
+        color: var(--text-dark);
+    }
+    .total-section {
+        background-color: var(--cream) !important;
+    }
+    .total-section h5 {
+        color: var(--primary-green);
+    }
+    
+    .card-footer {
+        background-color: #fafafa;
+    }
+
+    /* Action buttons in card */
+    .card-footer .btn {
+        font-weight: 500;
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+    }
+    .btn-view-details {
+        color: var(--primary-green);
+        border-color: var(--primary-green);
+    }
+    .btn-view-details:hover {
+        background-color: var(--primary-green);
+        color: white;
+    }
+    .btn-invoice {
+        color: var(--brown);
+        border-color: var(--brown);
+    }
+    .btn-invoice:hover {
+        background-color: var(--brown);
+        color: white;
+    }
+    .btn-cancel {
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+    .btn-cancel:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    /* No Orders Message */
+    .no-orders-card {
+        background: linear-gradient(135deg, white, var(--cream));
+        border: 2px dashed var(--border-color);
+        padding: 3rem;
+        border-radius: 20px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center page-header">
+        <div>
+            <h1 class="fw-bold mb-0">Mes Commandes</h1>
+            <p class="text-muted">Suivez l'état de vos commandes et consultez les détails.</p>
+        </div>
+        <a href="{% url 'passer_commande' %}" class="btn btn-primary-agricultural">
+            <i class="bi bi-plus-circle me-2"></i> Nouvelle Commande
+        </a>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Rechercher par ID, produit, ou montant...">
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="d-flex justify-content-lg-end nav nav-pills">
+                        <button class="nav-link active filter-btn" data-filter="all">Toutes</button>
+                        <button class="nav-link filter-btn" data-filter="en_attente">En attente</button>
+                        <button class="nav-link filter-btn" data-filter="validee">Validées</button>
+                        <button class="nav-link filter-btn" data-filter="annulee">Annulées</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="commandesContainer">
+        {% if commandes %}
+            <div class="row row-cols-1 row-cols-lg-2 g-4">
+                {% for commande in commandes %}
+                <div class="col commande-card" data-status="{{ commande.statut }}">
+                    <div class="card h-100">
+                        <div class="card-header-gradient">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title mb-1">Commande #{{ commande.pk }}</h5>
+                                    <small class="text-muted">{{ commande.date_commande|date:"d F Y à H:i" }}</small>
+                                </div>
+                                <span class="badge fs-6
+                                    {% if commande.statut == 'en_attente' %} text-bg-warning
+                                    {% elif commande.statut == 'validee' %} text-bg-success
+                                    {% else %} text-bg-danger {% endif %}">
+                                    {{ commande.get_statut_display }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body pt-3">
+                            <div class="products-summary mb-3">
+                                <ul class="list-group list-group-flush">
+                                    {% for detail in commande.details.all %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ detail.produit.nom_produit }}
+                                            <span class="badge bg-primary rounded-pill">{{ detail.quantite }}</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center p-3 rounded total-section">
+                                <h6 class="mb-0">Total</h6>
+                                <h5 class="mb-0 fw-bold">{{ commande.total }} FCFA</h5>
+                            </div>
+                        </div>
+                        <div class="card-footer pt-0">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="#" class="btn btn-sm btn-view-details" data-bs-toggle="modal" data-bs-target="#detailCommandeModal" data-commande-id="{{ commande.id }}">
+                                    <i class="bi bi-eye me-1"></i> Voir Détails
+                                </a>
+                                <a href="{% url 'pdf_commande' commande.id %}" class="btn btn-sm btn-invoice">
+                                    <i class="bi bi-file-pdf me-1"></i> Facture
+                                </a>
+
+                                {% if commande.statut == 'validee' or commande.statut == 'en_attente_paiement' %}
+                                <a href="{% url 'paiement' commande.id %}" class="btn btn-sm btn-success">
+                                    <i class="bi bi-credit-card me-1"></i> Payer maintenant
+                                </a>
+                                {% endif %}
+
+                                {% if commande.statut == 'en_attente' %}
+                                <a href="{% url 'supprimer_commande' commande.id %}" class="btn btn-sm btn-cancel">
+                                    <i class="bi bi-trash me-1"></i> Annuler
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-orders-card">
+                <i class="bi bi-basket2 display-1 text-muted"></i>
+                <h3 class="mt-3">Aucune commande pour le moment</h3>
+                <p class="text-muted">Passez votre première commande pour la voir apparaître ici.</p>
+                <a href="{% url 'passer_commande' %}" class="btn btn-primary-agricultural mt-2">
+                    <i class="bi bi-plus-circle me-2"></i> Commencer mes achats
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal pour les détails de la commande -->
+<div class="modal fade" id="detailCommandeModal" tabindex="-1" aria-labelledby="detailCommandeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: var(--shadow-hover);">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--cream), white); border-bottom: 1px solid var(--border-color);">
+                <h5 class="modal-title" id="detailCommandeModalLabel" style="color: var(--primary-green); font-weight: 600;">Détails de la Commande</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const commandeCards = document.querySelectorAll('.commande-card');
+
+    function filterAndSearch() {
+        const searchText = searchInput.value.toLowerCase();
+        const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+
+        commandeCards.forEach(card => {
+            const cardStatus = card.getAttribute('data-status');
+            const cardText = card.textContent.toLowerCase();
+
+            const statusMatch = activeFilter === 'all' || cardStatus === activeFilter;
+            const searchMatch = cardText.includes(searchText);
+
+            if (statusMatch && searchMatch) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            filterAndSearch();
+        });
+    });
+
+    searchInput.addEventListener('keyup', filterAndSearch);
+
+    // Gestion du modal de détails
+    const detailCommandeModal = document.getElementById('detailCommandeModal');
+    detailCommandeModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const commandeId = button.getAttribute('data-commande-id');
+        const modalBody = detailCommandeModal.querySelector('.modal-body');
+        modalBody.innerHTML = '<div class="text-center"><div class="spinner-border text-success" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+
+        fetch(`/api/commande/${commandeId}/`)
+            .then(response => response.json())
+            .then(data => {
+                let detailsHtml = `
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Commande</h6>
+                            <p class="fs-5 fw-bold">#${data.id}</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <h6 class="text-muted">Date</h6>
+                            <p class="fs-5">${data.date}</p>
+                        </div>
+                    </div>
+                    <table class="table table-striped table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Produit</th>
+                                <th class="text-center">Quantité</th>
+                                <th class="text-end">Prix Unitaire</th>
+                                <th class="text-end">Sous-total</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                
+                data.details.forEach(detail => {
+                    detailsHtml += `
+                        <tr>
+                            <td>${detail.produit}</td>
+                            <td class="text-center">${detail.quantite}</td>
+                            <td class="text-end">${detail.prix_unitaire} FCFA</td>
+                            <td class="text-end fw-bold">${detail.sous_total} FCFA</td>
+                        </tr>`;
+                });
+
+                detailsHtml += `
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-success">
+                                <td colspan="3" class="text-end fw-bold">Total</td>
+                                <td class="text-end fs-5 fw-bold">${data.total} FCFA</td>
+                            </tr>
+                        </tfoot>
+                    </table>`;
+                
+                modalBody.innerHTML = detailsHtml;
+            });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,1266 @@
+{% extends "agriculteur/base_template.html" %}
+{% load static %}
+
+{% block title %}Tableau de bord Agriculteur - FAMA{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="hero-background">
+    <div class="hero-overlay"></div>
+    <div class="floating-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-text">
+        <div class="welcome-header">
+          <h1 class="hero-title">
+            <i class="bi bi-leaf"></i>
+            Bienvenue, {{ user.first_name }} 👨‍🌾
+          </h1>
+          <p class="hero-subtitle">Votre tableau de bord agricole intelligent</p>
+          <div class="weather-widget">
+            <i class="bi bi-thermometer-half"></i>
+            <span>24°C</span>
+            <i class="bi bi-cloud-sun ms-2"></i>
+          </div>
+        </div>
+        
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-number">{{ cultures.count|default:"0" }}</div>
+            <div class="stat-label">Cultures actives</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">{{ total_revenus|floatformat:0|default:"0" }}</div>
+            <div class="stat-label">Revenus (FCFA)</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">{{ commandes.count|default:"0" }}</div>
+            <div class="stat-label">Commandes</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hero-actions">
+        <a href="{% url 'passer_commande' %}" class="btn btn-primary-agricultural btn-lg">
+          <i class="bi bi-plus-circle"></i>
+          Nouvelle commande
+        </a>
+        <a href="{% url 'ajouter_mouvement' %}" class="btn btn-outline-agricultural btn-lg">
+          <i class="bi bi-calculator"></i>
+          Ajouter mouvement
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container py-4">
+  <!-- Quick Stats Cards -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-3">
+      <div class="stats-card revenue-card">
+        <div class="card-icon">
+          <i class="bi bi-cash-coin"></i>
+        </div>
+        <div class="card-content">
+          <h3 class="stats-number">{{ total_revenus|floatformat:0|default:"0" }}</h3>
+          <p class="stats-label">Total Revenus</p>
+          <div class="stats-trend">
+            <i class="bi bi-arrow-up trend-up"></i>
+            <span>+15% ce mois</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="stats-card expense-card">
+        <div class="card-icon">
+          <i class="bi bi-cart-dash"></i>
+        </div>
+        <div class="card-content">
+          <h3 class="stats-number">{{ total_depenses|floatformat:0|default:"0" }}</h3>
+          <p class="stats-label">Total Dépenses</p>
+          <div class="stats-trend">
+            <i class="bi bi-arrow-down trend-down"></i>
+            <span>-8% ce mois</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="stats-card profit-card">
+        <div class="card-icon">
+          <i class="bi bi-graph-up-arrow"></i>
+        </div>
+        <div class="card-content">
+          <h3 class="stats-number">{{ profit|floatformat:0|default:"0" }}</h3>
+          <p class="stats-label">Profit/Perte</p>
+          <div class="stats-trend {% if profit >= 0 %}trend-up{% else %}trend-down{% endif %}">
+            <i class="bi bi-arrow-{% if profit >= 0 %}up{% else %}down{% endif %}"></i>
+            <span>{% if profit >= 0 %}+{% endif %}{{ profit|floatformat:0|default:"0" }} FCFA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="stats-card cultures-card">
+        <div class="card-icon">
+          <i class="bi bi-seedling"></i>
+        </div>
+        <div class="card-content">
+          <h3 class="stats-number">{{ cultures.count|default:"0" }}</h3>
+          <p class="stats-label">Cultures actives</p>
+          <div class="stats-trend">
+            <i class="bi bi-arrow-up trend-up"></i>
+            <span>{{ cultures.count|default:"0" }} en cours</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+      <div class="row">
+    <!-- Cultures Section -->
+    <div class="col-lg-8">
+      <div class="content-card">
+        <div class="card-header-agricultural">
+          <h5><i class="bi bi-seedling"></i> Mes Cultures</h5>
+          <a href="#" class="btn btn-sm btn-outline-agricultural">Voir tout</a>
+            </div>
+            <div class="card-body">
+          {% if cultures %}
+          <div class="cultures-grid">
+            {% for culture in cultures %}
+            <div class="culture-card" data-aos="fade-up" data-aos-delay="{% widthratio forloop.counter 1 100 %}">
+              <div class="culture-header">
+                <h6 class="culture-name">{{ culture.nom }}</h6>
+                <span class="culture-type">{{ culture.get_type_culture_display }}</span>
+              </div>
+              <div class="culture-details">
+                <div class="detail-item">
+                  <i class="bi bi-calendar3"></i>
+                  <span>Semis: {{ culture.date_semis|date:"d/m/Y" }}</span>
+                </div>
+                <div class="detail-item">
+                  <i class="bi bi-geo-alt"></i>
+                  <span>{{ culture.superficie }} ha</span>
+                </div>
+              </div>
+
+              {% if culture.needs_water %}
+              <div class="culture-alert water-alert">
+                <i class="bi bi-droplet-half"></i>
+                <span>Besoin d'eau ! ({{ culture.meteo.humidite|default:"--" }}%)</span>
+              </div>
+              {% endif %}
+
+              {% if culture.harvest_soon %}
+              <div class="culture-alert harvest-alert">
+                <i class="bi bi-hourglass-split"></i>
+                <span>Récolte dans {{ culture.harvest_days_left|default:"--" }} jour(s)</span>
+              </div>
+              {% endif %}
+
+              <div class="culture-actions">
+                <button class="btn btn-sm btn-primary" onclick="showCultureDetails({{ culture.pk }}, '{{ culture.nom }}', '{{ culture.get_type_culture_display }}', '{{ culture.date_semis|date:"d/m/Y" }}', '{{ culture.superficie }}', '{{ culture.meteo.humidite|default:"--" }}', '{{ culture.harvest_days_left|default:"--" }}')">
+                  <i class="bi bi-eye"></i> Détails
+                </button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+          <div class="empty-state">
+            <i class="bi bi-seedling empty-icon"></i>
+            <h6>Aucune culture enregistrée</h6>
+            <p>Commencez par ajouter votre première culture</p>
+            <a href="#" class="btn btn-primary-agricultural">Ajouter une culture</a>
+          </div>
+      {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Content -->
+    <div class="col-lg-4">
+      <!-- Stock Alerts -->
+      <div class="content-card mb-4">
+        <div class="card-header-agricultural">
+          <h5><i class="bi bi-exclamation-triangle"></i> Alertes stocks</h5>
+        </div>
+        <div class="card-body">
+      {% if low_stocks %}
+          <div class="alerts-list">
+          {% for stock in low_stocks %}
+            <div class="alert-item stock-alert">
+              <div class="alert-icon">
+                <i class="bi bi-box-seam"></i>
+              </div>
+              <div class="alert-content">
+                <span class="alert-title">{{ stock.produit.nom }}</span>
+                <span class="alert-message">Stock bas: {{ stock.quantite }}</span>
+              </div>
+            </div>
+          {% endfor %}
+          </div>
+      {% else %}
+          <div class="success-state">
+            <i class="bi bi-check-circle"></i>
+            <span>Stocks suffisants</span>
+          </div>
+      {% endif %}
+        </div>
+      </div>
+
+      <!-- Recent Payments -->
+      <div class="content-card">
+        <div class="card-header-agricultural">
+          <h5><i class="bi bi-credit-card"></i> Derniers paiements</h5>
+        </div>
+        <div class="card-body">
+      {% if derniers_paiements %}
+          <div class="payments-list">
+          {% for paiement in derniers_paiements %}
+            <div class="payment-item">
+              <div class="payment-info">
+                <span class="payment-date">{{ paiement.date|date:"d/m/Y" }}</span>
+                <span class="payment-amount">{{ paiement.montant }} FCFA</span>
+              </div>
+              <span class="payment-description">{{ paiement.description }}</span>
+            </div>
+          {% endfor %}
+          </div>
+      {% else %}
+          <div class="empty-state small">
+            <i class="bi bi-credit-card"></i>
+            <span>Aucun paiement récent</span>
+          </div>
+      {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Commands Section -->
+  <div class="content-card mt-4">
+    <div class="card-header-agricultural">
+      <h5><i class="bi bi-cart-check"></i> Mes commandes d'intrants</h5>
+      <a href="{% url 'passer_commande' %}" class="btn btn-primary-agricultural">
+        <i class="bi bi-plus-circle"></i> Nouvelle commande
+      </a>
+    </div>
+    <div class="card-body">
+    {% if commandes %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th>Total</th>
+              <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for commande in commandes %}
+          <tr>
+              <td><strong>#{{ commande.pk }}</strong></td>
+            <td>{{ commande.date_commande|date:"d/m/Y H:i" }}</td>
+            <td>
+                <span class="status-badge
+                  {% if commande.statut == 'EN_ATTENTE' %} status-warning
+                  {% elif commande.statut == 'EN_COURS' %} status-info
+                  {% elif commande.statut == 'LIVREE' %} status-success
+                  {% elif commande.statut == 'ANNULEE' %} status-danger
+                  {% else %} status-secondary {% endif %}">
+                  {{ commande.statut|title }}
+                </span>
+            </td>
+              <td><strong>{{ commande.total }} FCFA</strong></td>
+            <td>
+                <div class="action-buttons">
+                  <a href="{% url 'detail_commande' commande.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-eye"></i>
+                  </a>
+              {% if commande.facture %}
+                  <a href="{% url 'consultation_facture' commande.pk %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-file-text"></i>
+                  </a>
+              {% endif %}
+                </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <div class="empty-state">
+        <i class="bi bi-cart-x empty-icon"></i>
+        <h6>Aucune commande passée</h6>
+        <p>Commencez par passer votre première commande d'intrants</p>
+        <a href="{% url 'passer_commande' %}" class="btn btn-primary-agricultural">Passer une commande</a>
+      </div>
+    {% endif %}
+    </div>
+  </div>
+
+  <!-- Financial Overview -->
+  <div class="row mt-4">
+    <div class="col-lg-8">
+      <div class="content-card">
+        <div class="card-header-agricultural">
+          <h5><i class="bi bi-graph-up"></i> Vue financière</h5>
+          <div class="chart-controls">
+            <button class="btn btn-sm btn-outline-agricultural" onclick="changeChartPeriod('month')">Mois</button>
+            <button class="btn btn-sm btn-outline-agricultural" onclick="changeChartPeriod('quarter')">Trimestre</button>
+            <button class="btn btn-sm btn-outline-agricultural" onclick="changeChartPeriod('year')">Année</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <canvas id="financialChart" height="300"></canvas>
+        </div>
+    </div>
+  </div>
+
+    <div class="col-lg-4">
+      <div class="content-card">
+        <div class="card-header-agricultural">
+          <h5><i class="bi bi-bell"></i> Alertes et conseils</h5>
+        </div>
+        <div class="card-body">
+          {% if alertes_conseils %}
+          <div class="alerts-list">
+            {% for alerte in alertes_conseils %}
+            <div class="alert-item advice-alert">
+              <div class="alert-icon">
+                <i class="bi bi-lightbulb"></i>
+              </div>
+              <div class="alert-content">
+                <span class="alert-message">{{ alerte.message }}</span>
+              </div>
+        </div>
+      {% endfor %}
+          </div>
+    {% else %}
+          <div class="success-state">
+            <i class="bi bi-check-circle"></i>
+            <span>Aucune alerte pour le moment</span>
+          </div>
+    {% endif %}
+  </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Section -->
+  <div class="content-card mt-4">
+    <div class="card-header-agricultural">
+      <h5><i class="bi bi-person-circle"></i> Mon profil</h5>
+      <a href="{% url 'profil_modifier' %}" class="btn btn-outline-agricultural">
+        <i class="bi bi-pencil"></i> Modifier
+      </a>
+    </div>
+    <div class="card-body">
+      <div class="profile-info">
+        <div class="profile-item">
+          <i class="bi bi-person"></i>
+          <span><strong>Nom :</strong> {{ user.get_full_name }}</span>
+        </div>
+        <div class="profile-item">
+          <i class="bi bi-envelope"></i>
+          <span><strong>Email :</strong> {{ user.email }}</span>
+        </div>
+        <div class="profile-item">
+          <i class="bi bi-geo-alt"></i>
+          <span><strong>Localisation :</strong> {{ user.profile.ville|default:"Non spécifiée" }}</span>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Modal Détails Culture -->
+<div class="modal fade" id="cultureDetailsModal" tabindex="-1" aria-labelledby="cultureDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="cultureDetailsModalLabel">
+          <i class="bi bi-seedling"></i>
+          Détails de la culture
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="culture-details-content">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="detail-section">
+                <h6 class="detail-title">
+                  <i class="bi bi-info-circle"></i>
+                  Informations générales
+                </h6>
+                <div class="detail-item">
+                  <span class="detail-label">Nom de la culture :</span>
+                  <span class="detail-value" id="cultureName"></span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Type :</span>
+                  <span class="detail-value" id="cultureType"></span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Date de semis :</span>
+                  <span class="detail-value" id="cultureDateSemis"></span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Superficie :</span>
+                  <span class="detail-value" id="cultureSuperficie"></span>
+      </div>
+    </div>
+  </div>
+            <div class="col-md-6">
+              <div class="detail-section">
+                <h6 class="detail-title">
+                  <i class="bi bi-thermometer-half"></i>
+                  Conditions météo
+                </h6>
+                <div class="detail-item">
+                  <span class="detail-label">Humidité :</span>
+                  <span class="detail-value" id="cultureHumidite"></span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Jours avant récolte :</span>
+                  <span class="detail-value" id="cultureHarvestDays"></span>
+                </div>
+              </div>
+              
+              <div class="detail-section mt-3">
+                <h6 class="detail-title">
+                  <i class="bi bi-graph-up"></i>
+                  Statistiques
+                </h6>
+                <div class="detail-item">
+                  <span class="detail-label">État de santé :</span>
+                  <span class="detail-value">
+                    <span class="badge bg-success">Excellent</span>
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Progression :</span>
+                  <span class="detail-value">
+                    <div class="progress" style="height: 20px;">
+                      <div class="progress-bar bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                    </div>
+                  </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+          <div class="row mt-4">
+            <div class="col-12">
+              <div class="detail-section">
+                <h6 class="detail-title">
+                  <i class="bi bi-calendar-check"></i>
+                  Actions recommandées
+                </h6>
+                <div class="actions-grid">
+                  <div class="action-item">
+                    <i class="bi bi-droplet"></i>
+                    <span>Arrosage recommandé</span>
+                  </div>
+                  <div class="action-item">
+                    <i class="bi bi-bug"></i>
+                    <span>Vérifier les parasites</span>
+                  </div>
+                  <div class="action-item">
+                    <i class="bi bi-sun"></i>
+                    <span>Exposition optimale</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        <button type="button" class="btn btn-success">
+          <i class="bi bi-pencil"></i>
+          Modifier
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom CSS -->
+<style>
+  :root {
+    --primary-green: #2d5a27;
+    --secondary-green: #4a7c59;
+    --accent-green: #7cb342;
+    --light-green: #c5e1a5;
+    --brown: #8d6e63;
+    --light-brown: #d7ccc8;
+    --beige: #f5f5dc;
+    --cream: #faf8f0;
+    --text-dark: #2c3e50;
+    --text-muted: #7f8c8d;
+    --border-color: #e0e0e0;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
+    --border-radius: 16px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body {
+    background: linear-gradient(135deg, var(--cream) 0%, var(--beige) 100%);
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  /* Hero Section */
+  .hero-section {
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+    color: white;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 0 30px 30px;
+  }
+
+  .hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="%23ffffff" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="%23ffffff" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.1;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--light-green);
+  }
+
+  .hero-subtitle {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1.5rem;
+  }
+
+  .weather-widget {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--accent-green);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Stats Cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stats-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    border: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-green);
+  }
+
+  .stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .stats-card.revenue-card::before { background: var(--success-color); }
+  .stats-card.expense-card::before { background: var(--danger-color); }
+  .stats-card.profit-card::before { background: var(--info-color); }
+  .stats-card.cultures-card::before { background: var(--accent-green); }
+
+  .card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: white;
+  }
+
+  .revenue-card .card-icon { background: var(--success-color); }
+  .expense-card .card-icon { background: var(--danger-color); }
+  .profit-card .card-icon { background: var(--info-color); }
+  .cultures-card .card-icon { background: var(--accent-green); }
+
+  .stats-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  .stats-label {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stats-trend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .trend-up { color: var(--success-color); }
+  .trend-down { color: var(--danger-color); }
+
+  /* Content Cards */
+  .content-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border: none;
+    overflow: hidden;
+    transition: var(--transition);
+  }
+
+  .content-card:hover {
+    box-shadow: var(--shadow-hover);
+  }
+
+  .card-header-agricultural {
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+    color: white;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-header-agricultural h5 {
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  /* Cultures Grid */
+  .cultures-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .culture-card {
+    background: var(--light-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+  }
+
+  .culture-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+  }
+
+  .culture-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .culture-name {
+    font-weight: 600;
+    color: var(--primary-green);
+    margin: 0;
+  }
+
+  .culture-type {
+    background: var(--accent-green);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+  }
+
+  .culture-details {
+    margin-bottom: 1rem;
+  }
+
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+  }
+
+  .culture-alert {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .water-alert {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--danger-color);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+  }
+
+  .harvest-alert {
+    background: rgba(23, 162, 184, 0.1);
+    color: var(--info-color);
+    border: 1px solid rgba(23, 162, 184, 0.2);
+  }
+
+  .culture-actions {
+    text-align: center;
+  }
+
+  /* Buttons */
+  .btn-primary-agricultural {
+    background: var(--accent-green);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: var(--transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-primary-agricultural:hover {
+    background: var(--secondary-green);
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+  }
+
+  .btn-outline-agricultural {
+    color: var(--primary-green);
+    border: 2px solid var(--primary-green);
+    background: transparent;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    transition: var(--transition);
+  }
+
+  .btn-outline-agricultural:hover {
+    background: var(--primary-green);
+    color: white;
+  }
+
+  /* Status Badges */
+  .status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-success {
+    background: var(--light-green);
+    color: var(--primary-green);
+  }
+
+  .status-warning {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .status-info {
+    background: var(--light-brown);
+    color: var(--brown);
+  }
+
+  .status-danger {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  /* Empty States */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+  }
+
+  .empty-icon {
+    font-size: 3rem;
+    color: var(--border-color);
+    margin-bottom: 1rem;
+  }
+
+  .empty-state.small {
+    padding: 1.5rem 1rem;
+  }
+
+  .empty-state.small .empty-icon {
+    font-size: 2rem;
+  }
+
+  /* Success States */
+  .success-state {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--success-color);
+    padding: 1rem;
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 8px;
+  }
+
+  /* Alerts */
+  .alerts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    transition: var(--transition);
+  }
+
+  .alert-item:hover {
+    background: var(--light-color);
+  }
+
+  .alert-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .stock-alert .alert-icon { background: var(--danger-color); }
+  .advice-alert .alert-icon { background: var(--warning-color); }
+
+  .alert-content {
+    flex: 1;
+  }
+
+  .alert-title {
+    font-weight: 600;
+    color: var(--text-dark);
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .alert-message {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* Tables */
+  .table {
+    margin-bottom: 0;
+  }
+
+  .table th {
+    background: var(--light-color);
+    color: var(--text-dark);
+    font-weight: 600;
+    border: none;
+    padding: 1rem;
+  }
+
+  .table td {
+    padding: 1rem;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+
+  .table tbody tr:hover {
+    background: var(--cream);
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  /* Profile */
+  .profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .profile-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--light-color);
+    border-radius: 8px;
+  }
+
+  .profile-item i {
+    color: var(--accent-green);
+    font-size: 1.2rem;
+  }
+
+  /* Chart Controls */
+  .chart-controls {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero-content {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .hero-stats {
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cultures-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .card-header-agricultural {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+  }
+
+  /* Modal Styles */
+  .modal-content {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: var(--shadow-hover);
+  }
+
+  .modal-header {
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    border-bottom: none;
+  }
+
+  .modal-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .detail-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .detail-title {
+    color: var(--primary-green);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--light-color);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .detail-value {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .action-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--light-color);
+    border-radius: 8px;
+    border-left: 4px solid var(--accent-green);
+    transition: var(--transition);
+  }
+
+  .action-item:hover {
+    background: var(--cream);
+    transform: translateX(5px);
+  }
+
+  .action-item i {
+    color: var(--accent-green);
+    font-size: 1.2rem;
+  }
+
+  .progress {
+    background-color: var(--border-color);
+    border-radius: 10px;
+  }
+
+  .progress-bar {
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  /* Modal Animation */
+  .modal.fade .modal-dialog {
+    transform: scale(0.8);
+    transition: transform 0.3s ease-out;
+  }
+
+  .modal.show .modal-dialog {
+    transform: scale(1);
+  }
+
+  /* Responsive Modal */
+  @media (max-width: 768px) {
+    .modal-dialog {
+      margin: 1rem;
+    }
+    
+    .actions-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .detail-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  }
+</style>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- AOS Animation -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<!-- JavaScript -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true,
+      offset: 100
+    });
+
+    // Financial Chart
+    const ctx = document.getElementById('financialChart').getContext('2d');
+    const financialChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+          datasets: [{
+          label: 'Revenus',
+          data: [65, 59, 80, 81, 56, 90],
+          backgroundColor: 'rgba(40, 167, 69, 0.1)',
+          borderColor: 'rgba(40, 167, 69, 1)',
+          borderWidth: 3,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: 'rgba(40, 167, 69, 1)',
+          pointRadius: 6,
+          tension: 0.4
+        }, {
+          label: 'Dépenses',
+          data: [45, 39, 60, 61, 46, 70],
+          backgroundColor: 'rgba(220, 53, 69, 0.1)',
+          borderColor: 'rgba(220, 53, 69, 1)',
+          borderWidth: 3,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: 'rgba(220, 53, 69, 1)',
+          pointRadius: 6,
+          tension: 0.4
+          }]
+      },
+      options: {
+          responsive: true,
+        maintainAspectRatio: false,
+          plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              padding: 15
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            padding: 12
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              drawBorder: false,
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        }
+      }
+    });
+
+    // Chart period change function
+    window.changeChartPeriod = function(period) {
+      console.log('Changing chart period to:', period);
+      // Add logic to change chart data based on period
+    };
+
+    // Culture details modal function
+    window.showCultureDetails = function(id, nom, type, dateSemis, superficie, humidite, harvestDays) {
+      // Populate modal with culture data
+      document.getElementById('cultureName').textContent = nom;
+      document.getElementById('cultureType').textContent = type;
+      document.getElementById('cultureDateSemis').textContent = dateSemis;
+      document.getElementById('cultureSuperficie').textContent = superficie + ' ha';
+      document.getElementById('cultureHumidite').textContent = humidite + '%';
+      document.getElementById('cultureHarvestDays').textContent = harvestDays + ' jour(s)';
+      
+      // Show the modal
+      const modal = new bootstrap.Modal(document.getElementById('cultureDetailsModal'));
+      modal.show();
+    };
+  });
+</script>
+{% endblock %}

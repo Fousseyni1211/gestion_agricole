@@ -1,0 +1,61 @@
+{% extends 'client/base.html' %}
+{% load static %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-white"><i class="bi bi-bell"></i> Notifications</h2>
+            <p class="text-muted">Consultez vos notifications et mises à jour</p>
+        </div>
+    </div>
+
+    <div class="card bg-dark text-white shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-bell"></i> Vos notifications</h5>
+            <span class="badge bg-danger">{{ notifications|length }}</span>
+        </div>
+        <div class="card-body p-0">
+            {% if notifications %}
+                <div class="list-group list-group-flush bg-dark">
+                    {% for notification in notifications %}
+                        <div class="list-group-item bg-dark text-white border-secondary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="mb-1">{{ notification.message }}</p>
+                                    <small class="text-muted">{{ notification.created_at|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <a href="{% url 'client_marquer_notification_lue' notification.id %}" class="btn btn-sm btn-outline-light">
+                                    <i class="bi bi-check"></i> Marquer comme lue
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-bell-slash fs-1 mb-3 text-muted"></i>
+                    <h5>Aucune notification</h5>
+                    <p class="text-muted">Vous n'avez pas de nouvelles notifications pour le moment.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card bg-dark text-white shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-info-circle"></i> À propos des notifications</h5>
+        </div>
+        <div class="card-body">
+            <p>Les notifications vous informent des événements importants concernant vos commandes, paiements et autres activités sur la plateforme.</p>
+            <ul>
+                <li>Vous recevez une notification lorsque votre commande est validée par un gérant</li>
+                <li>Vous pouvez marquer les notifications comme lues pour les supprimer de cette liste</li>
+                <li>Le nombre de notifications non lues est affiché dans le menu principal</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

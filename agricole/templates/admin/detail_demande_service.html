@@ -1,0 +1,169 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+
+{% block title %}Détail de la Demande de Service{% endblock %}
+
+{% block main_content %}
+
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Détail de la Demande de Service</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_liste_demandes_service' %}">Demandes de Service</a></li>
+                        <li class="breadcrumb-item active">Détail #{{ demande.id }}</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Informations de la demande</h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 30%">ID</th>
+                                    <td>{{ demande.id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Service</th>
+                                    <td>{{ demande.service.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Type de service</th>
+                                    <td>{{ demande.service.get_type_service_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Date de demande</th>
+                                    <td>{{ demande.date_demande|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Date souhaitée</th>
+                                    <td>{% if demande.date_souhaitee %}{{ demande.date_souhaitee|date:"d/m/Y" }}{% else %}<span class="text-muted">Non spécifiée</span>{% endif %}</td>
+                                </tr>
+                                <tr>
+                                    <th>Statut</th>
+                                    <td>
+                                        {% if demande.statut == 'en_attente' %}
+                                            <span class="badge badge-warning">{{ demande.get_statut_display }}</span>
+                                        {% elif demande.statut == 'acceptee' %}
+                                            <span class="badge badge-info">{{ demande.get_statut_display }}</span>
+                                        {% elif demande.statut == 'en_cours' %}
+                                            <span class="badge badge-primary">{{ demande.get_statut_display }}</span>
+                                        {% elif demande.statut == 'terminee' %}
+                                            <span class="badge badge-success">{{ demande.get_statut_display }}</span>
+                                        {% elif demande.statut == 'annulee' %}
+                                            <span class="badge badge-danger">{{ demande.get_statut_display }}</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">{{ demande.get_statut_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Informations du client</h3>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 30%">Nom</th>
+                                    <td>{{ demande.client.get_full_name|default:demande.client.username }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email</th>
+                                    <td>{{ demande.client.email }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Téléphone</th>
+                                    <td>{{ demande.client.phone|default:"Non renseigné" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Adresse</th>
+                                    <td>{{ demande.client.address|default:"Non renseignée" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Compte créé le</th>
+                                    <td>{{ demande.client.date_joined|date:"d/m/Y" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Message du client</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="callout callout-info">
+                                <p>{{ demande.message|linebreaks }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Traitement de la demande</h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'gerant_detail_demande_service' demande.id %}">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="statut">Statut</label>
+                                    <select class="form-control" id="statut" name="statut">
+                                        {% for code, label in statuts %}
+                                        <option value="{{ code }}" {% if demande.statut == code %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="commentaire_admin">Commentaire</label>
+                                    <textarea class="form-control" id="commentaire_admin" name="commentaire_admin" rows="4">{{ demande.commentaire_admin|default:'' }}</textarea>
+                                    <small class="form-text text-muted">Ce commentaire sera visible par le client.</small>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

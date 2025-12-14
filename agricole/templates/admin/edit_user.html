@@ -1,0 +1,14 @@
+{% extends 'admin/base_template.html' %}
+
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+        <h1>Modifier un Utilisateur</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-warning">Sauvegarder les modifications</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  <h4>Confirmer la suppression de la commande #{{ commande.id }} ?</h4>
+  <form method="post">
+    {% csrf_token %}
+    <a href="{% url 'mes_commandes' %}" class="btn btn-secondary">Annuler</a>
+    <button type="submit" class="btn btn-danger">Supprimer</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Assigner une Parcelle{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-user-plus"></i> Assigner une Parcelle
+        </h1>
+        <a href="{% url 'liste_parcelles' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Assignation de la parcelle: {{ parcelle.nom }}</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Informations sur la parcelle -->
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Informations sur la parcelle</h6>
+                            <p><strong>Nom:</strong> {{ parcelle.nom }}</p>
+                            <p><strong>Code unique:</strong> {{ parcelle.code_unique }}</p>
+                            <p><strong>Superficie:</strong> {{ parcelle.superficie }} ha</p>
+                            <p><strong>Localisation:</strong> {{ parcelle.localisation }}</p>
+                            <p><strong>Type de sol:</strong> {{ parcelle.get_type_sol_display }}</p>
+                            {% if parcelle.agriculteur %}
+                                <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> <strong>Actuellement assignée à:</strong> {{ parcelle.agriculteur.farm_name }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.agriculteur.id_for_label }}">{{ form.agriculteur.label }}</label>
+                                    {{ form.agriculteur }}
+                                    {% if form.agriculteur.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.agriculteur.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Sélectionnez "---------" pour libérer la parcelle</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.culture_actuelle.id_for_label }}">{{ form.culture_actuelle.label }}</label>
+                                    {{ form.culture_actuelle }}
+                                    {% if form.culture_actuelle.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.culture_actuelle.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Culture à planter sur cette parcelle</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Enregistrer l'assignation
+                            </button>
+                            <a href="{% url 'liste_parcelles' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">Guide d'assignation</h6>
+                </div>
+                <div class="card-body">
+                    <h6><i class="fas fa-question-circle"></i> Comment assigner une parcelle?</h6>
+                    <ol>
+                        <li>Sélectionnez un agriculteur dans la liste déroulante</li>
+                        <li>Choisissez la culture à planter</li>
+                        <li>Cliquez sur "Enregistrer l'assignation"</li>
+                    </ol>
+                    
+                    <hr>
+                    
+                    <h6><i class="fas fa-lightbulb"></i> Conseils</h6>
+                    <ul>
+                        <li>Vérifiez que la culture est adaptée au type de sol</li>
+                        <li>Assurez-vous que la superficie est suffisante</li>
+                        <li>Considérez la période de semis optimale</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h6><i class="fas fa-exclamation-triangle text-warning"></i> Important</h6>
+                    <p class="small text-muted">
+                        Pour libérer une parcelle, sélectionnez "---------" dans le champ agriculteur 
+                        et laissez le champ culture vide.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Statut actuel -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-secondary">Statut actuel</h6>
+                </div>
+                <div class="card-body text-center">
+                    {% if parcelle.statut == 'disponible' %}
+                        <i class="fas fa-check-circle fa-3x text-success mb-2"></i>
+                        <h5 class="text-success">Disponible</h5>
+                    {% elif parcelle.statut == 'occupee' %}
+                        <i class="fas fa-users fa-3x text-primary mb-2"></i>
+                        <h5 class="text-primary">Occupée</h5>
+                    {% elif parcelle.statut == 'en_preparation' %}
+                        <i class="fas fa-tools fa-3x text-warning mb-2"></i>
+                        <h5 class="text-warning">En préparation</h5>
+                    {% elif parcelle.statut == 'en_repos' %}
+                        <i class="fas fa-bed fa-3x text-secondary mb-2"></i>
+                        <h5 class="text-secondary">En repos</h5>
+                    {% elif parcelle.statut == 'maintenance' %}
+                        <i class="fas fa-wrench fa-3x text-danger mb-2"></i>
+                        <h5 class="text-danger">Maintenance</h5>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Activer les tooltips Bootstrap si nécessaire
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // Logique pour le champ agriculteur
+    const agriculteurField = document.getElementById('{{ form.agriculteur.id_for_label }}');
+    const cultureField = document.getElementById('{{ form.culture_actuelle.id_for_label }}');
+    
+    agriculteurField.addEventListener('change', function() {
+        if (this.value === '') {
+            // Si aucun agriculteur n'est sélectionné, vider aussi le champ culture
+            cultureField.value = '';
+        }
+    });
+});
+</script>
+{% endblock %}

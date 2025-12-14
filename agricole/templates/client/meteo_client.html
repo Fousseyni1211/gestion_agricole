@@ -1,0 +1,230 @@
+{% extends 'client/base.html' %}
+{% load static %}
+
+{% block title %}Météo Agricole{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-white"><i class="bi bi-cloud-sun"></i> Météo Agricole</h2>
+            <p class="text-muted">Prévisions météorologiques pour vos activités agricoles</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-light active" id="btn-card-view">
+                    <i class="bi bi-grid-3x3-gap"></i> Cartes
+                </button>
+                <button type="button" class="btn btn-outline-light" id="btn-table-view">
+                    <i class="bi bi-table"></i> Tableau
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue en cartes (par défaut) -->
+    <div id="card-view" class="row g-4">
+        {% for m in meteo_data %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card bg-dark text-white shadow-sm h-100 border-0">
+                <div class="card-header bg-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ m.date }}</h5>
+                    <div class="weather-icon">
+                        {% if 'nuage' in m.pluie|lower or 'couvert' in m.pluie|lower %}
+                            <i class="bi bi-cloud fs-1 text-secondary"></i>
+                        {% elif 'pluie' in m.pluie|lower %}
+                            <i class="bi bi-cloud-rain fs-1 text-info"></i>
+                        {% elif 'orage' in m.pluie|lower %}
+                            <i class="bi bi-cloud-lightning fs-1 text-warning"></i>
+                        {% elif 'neige' in m.pluie|lower %}
+                            <i class="bi bi-snow fs-1 text-light"></i>
+                        {% else %}
+                            <i class="bi bi-sun fs-1 text-warning"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 border-end">
+                            <div class="display-5 mb-1">{{ m.temperature }}°C</div>
+                            <div class="text-muted small">Température</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="display-5 mb-1">{{ m.humidite }}%</div>
+                            <div class="text-muted small">Humidité</div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h6 class="text-center mb-3">{{ m.pluie }}</h6>
+                        <div class="progress bg-dark">
+                            {% if 'pluie' in m.pluie|lower %}
+                                <div class="progress-bar bg-info" style="width: {{ m.humidite }}%"></div>
+                            {% else %}
+                                <div class="progress-bar bg-warning" style="width: {{ m.temperature|add:30 }}%"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark border-top border-secondary">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted"><i class="bi bi-calendar-date"></i> {{ m.date }}</span>
+                        <span class="text-muted">
+                            <i class="bi bi-info-circle"></i> Indice UV:
+                            {% if m.temperature > 25 %}Élevé
+                            {% elif m.temperature > 15 %}Modéré
+                            {% else %}Faible
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-exclamation-circle"></i> Aucune donnée météo disponible pour le moment.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Vue en tableau (masquée par défaut) -->
+    <div id="table-view" class="d-none">
+        <div class="card bg-dark text-white shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th class="text-center">Conditions</th>
+                                <th class="text-center">Température (°C)</th>
+                                <th class="text-center">Humidité (%)</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in meteo_data %}
+                            <tr>
+                                <td>{{ m.date }}</td>
+                                <td class="text-center">
+                                    {% if 'nuage' in m.pluie|lower or 'couvert' in m.pluie|lower %}
+                                        <i class="bi bi-cloud fs-4 text-secondary"></i>
+                                    {% elif 'pluie' in m.pluie|lower %}
+                                        <i class="bi bi-cloud-rain fs-4 text-info"></i>
+                                    {% elif 'orage' in m.pluie|lower %}
+                                        <i class="bi bi-cloud-lightning fs-4 text-warning"></i>
+                                    {% elif 'neige' in m.pluie|lower %}
+                                        <i class="bi bi-snow fs-4 text-light"></i>
+                                    {% else %}
+                                        <i class="bi bi-sun fs-4 text-warning"></i>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ m.temperature }}</td>
+                                <td class="text-center">{{ m.humidite }}</td>
+                                <td>{{ m.pluie }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center">Aucune donnée météo disponible.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conseils agricoles basés sur la météo -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-dark text-white shadow-sm">
+                <div class="card-header bg-dark">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Conseils agricoles</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-droplet-half fs-2 text-info me-3"></i>
+                                </div>
+                                <div>
+                                    <h5>Irrigation</h5>
+                                    <p class="text-muted">
+                                        {% if meteo_data.0.humidite < 40 %}
+                                            Augmentez l'irrigation en raison de la faible humidité.
+                                        {% elif meteo_data.0.humidite > 70 %}
+                                            Réduisez l'irrigation en raison de la forte humidité.
+                                        {% else %}
+                                            Maintenez une irrigation régulière.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-thermometer-half fs-2 text-danger me-3"></i>
+                                </div>
+                                <div>
+                                    <h5>Protection</h5>
+                                    <p class="text-muted">
+                                        {% if meteo_data.0.temperature > 30 %}
+                                            Protégez vos cultures contre la chaleur excessive.
+                                        {% elif meteo_data.0.temperature < 10 %}
+                                            Protégez vos cultures contre le froid.
+                                        {% else %}
+                                            Conditions de température favorables pour la plupart des cultures.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-calendar-check fs-2 text-success me-3"></i>
+                                </div>
+                                <div>
+                                    <h5>Planification</h5>
+                                    <p class="text-muted">
+                                        {% if 'pluie' in meteo_data.0.pluie|lower %}
+                                            Reportez les activités de plein air comme la pulvérisation.
+                                        {% else %}
+                                            Conditions favorables pour les travaux agricoles en extérieur.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cardView = document.getElementById('card-view');
+        const tableView = document.getElementById('table-view');
+        const btnCardView = document.getElementById('btn-card-view');
+        const btnTableView = document.getElementById('btn-table-view');
+        
+        btnCardView.addEventListener('click', function() {
+            cardView.classList.remove('d-none');
+            tableView.classList.add('d-none');
+            btnCardView.classList.add('active');
+            btnTableView.classList.remove('active');
+        });
+        
+        btnTableView.addEventListener('click', function() {
+            tableView.classList.remove('d-none');
+            cardView.classList.add('d-none');
+            btnTableView.classList.add('active');
+            btnCardView.classList.remove('active');
+        });
+    });
+</script>
+{% endblock %}

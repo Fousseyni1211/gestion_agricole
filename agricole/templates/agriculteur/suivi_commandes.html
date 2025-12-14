@@ -1,0 +1,53 @@
+<table class="table table-hover table-striped">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Date</th>
+      <th>Statut</th>
+      <th>Total</th>
+      <th>Détails</th>
+      <th>Facture</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for commande in commandes %}
+    <tr>
+      <td>{{ commande.pk }}</td>
+      <td>{{ commande.date_commande|date:"d/m/Y H:i" }}</td>
+      <td>
+        {% if commande.statut == 'EN_ATTENTE' %}
+          <span class="badge bg-warning text-dark">En attente</span>
+        {% elif commande.statut == 'EN_COURS' %}
+          <span class="badge bg-info text-dark">En cours</span>
+        {% elif commande.statut == 'LIVREE' %}
+          <span class="badge bg-success">Livrée</span>
+        {% elif commande.statut == 'ANNULEE' %}
+          <span class="badge bg-danger">Annulée</span>
+        {% endif %}
+      </td>
+      <td>{{ commande.total }} FCFA</td>
+      <td><a href="{% url 'detail_commande' commande.pk %}" class="btn btn-sm btn-outline-primary">Voir</a></td>
+      <td>
+        {% if commande.facture %}
+          <a href="{% url 'consultation_facture' commande.pk %}" class="btn btn-sm btn-outline-secondary">Facture</a>
+        {% else %}
+          N/A
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" class="text-center">Aucune commande passée.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<script>
+$(document).ready(function () {
+    $('table').DataTable({
+        language: {
+            url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json"
+        },
+        pageLength: 10,
+        lengthChange: false
+    });
+});
+</script>

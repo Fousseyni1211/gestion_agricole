@@ -1,0 +1,273 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1B2A1F, #2F4F4F, #4CAF50);
+    color: #fff;
+  }
+
+  .dashboard-header {
+    padding: 2rem 1rem;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+    margin-bottom: 2rem;
+    animation: fadeIn 1s ease-out;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .welcome-text {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #A8E6A2;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+
+  .date-text {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.8);
+  }
+
+  @keyframes fadeIn {
+    from {opacity:0; transform: translateY(20px);}
+    to {opacity:1; transform: translateY(0);}
+  }
+
+  /* Panels statistiques */
+  .panel-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .panel-card {
+    flex: 1 1 calc(25% - 1rem);
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    transition: all 0.3s ease;
+  }
+
+  .panel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+  }
+
+  .panel-card .panel-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-card .panel-info h3 {
+    font-size: 2rem;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .panel-card .panel-info p {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .panel-card .panel-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.8rem;
+  }
+
+  /* Couleurs des panels */
+  .bg-products { background: linear-gradient(135deg, #4CAF50, #2E7D32); }
+  .bg-users { background: linear-gradient(135deg, #FFA726, #FB8C00); }
+  .bg-orders { background: linear-gradient(135deg, #29B6F6, #0288D1); }
+  .bg-payments { background: linear-gradient(135deg, #EF5350, #C62828); }
+
+  /* Responsive */
+  @media (max-width: 1200px) {
+    .panel-card { flex: 1 1 calc(50% - 1rem); }
+  }
+  @media (max-width: 768px) {
+    .panel-card { flex: 1 1 100%; }
+    .welcome-text { font-size: 1.4rem; }
+  }
+
+  /* Boutons uniformes */
+  .btn-dashboard {
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+  }
+  .btn-dashboard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(46,125,50,0.7);
+  }
+
+</style>
+{% endblock %}
+
+{% block main_content %}
+<section class="content container-fluid">
+
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div>
+      <h1 class="welcome-text">Bienvenue, {{ user.first_name }} {{ user.last_name }}</h1>
+      <p class="date-text" id="current-date">Aujourd'hui</p>
+    </div>
+    <div>
+      <button class="btn-dashboard"><i class="fas fa-sync-alt"></i> Actualiser</button>
+    </div>
+  </div>
+
+  <!-- Panels statistiques -->
+  <div class="panel-row">
+    <div class="panel-card bg-products">
+      <div class="panel-info">
+        <h3>{{ total_products }}</h3>
+        <p>Produits</p>
+      </div>
+      <div class="panel-icon">
+        <i class="fas fa-box-open"></i>
+      </div>
+    </div>
+
+    <div class="panel-card bg-users">
+      <div class="panel-info">
+        <h3>{{ total_users }}</h3>
+        <p>Utilisateurs</p>
+      </div>
+      <div class="panel-icon">
+        <i class="fas fa-users"></i>
+      </div>
+    </div>
+
+    <div class="panel-card bg-orders">
+      <div class="panel-info">
+        <h3>{{ total_orders }}</h3>
+        <p>Commandes</p>
+      </div>
+      <div class="panel-icon">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+    </div>
+
+    <div class="panel-card bg-payments">
+      <div class="panel-info">
+        <h3>{{ total_payments }}</h3>
+        <p>Paiements Validés</p>
+      </div>
+      <div class="panel-icon">
+        <i class="fas fa-credit-card"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graphiques -->
+  <div class="panel-row">
+    <div class="panel-card" style="flex:2;">
+      <h3>Évolution des commandes</h3>
+      <canvas id="ordersChart" height="200"></canvas>
+    </div>
+    <div class="panel-card" style="flex:1;">
+      <h3>Répartition des stocks</h3>
+      <canvas id="stockChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <div class="panel-row">
+    <div class="panel-card" style="flex:1;">
+      <h3>Performances financières</h3>
+      <canvas id="financeChart" height="200"></canvas>
+    </div>
+    <div class="panel-card" style="flex:1;">
+      <h3>Activités récentes</h3>
+      <ul>
+        <li>Nouvelle commande #1234</li>
+        <li>Nouvel utilisateur inscrit</li>
+        <li>Paiement reçu #1230</li>
+      </ul>
+    </div>
+  </div>
+
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Date
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const today = new Date();
+    document.getElementById('current-date').textContent = today.toLocaleDateString('fr-FR', options);
+
+    // Orders Chart
+    if(document.getElementById('ordersChart')){
+      new Chart(document.getElementById('ordersChart'), {
+        type:'line',
+        data:{
+          labels:['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août'],
+          datasets:[{
+            label:'Commandes',
+            data:[65,59,80,81,56,55,40,84],
+            backgroundColor:'rgba(72, 239, 128,0.2)',
+            borderColor:'#A8E6A2',
+            borderWidth:3,
+            tension:0.4
+          }]
+        },
+        options:{responsive:true, maintainAspectRatio:false}
+      });
+    }
+
+    // Stock Chart
+    if(document.getElementById('stockChart')){
+      new Chart(document.getElementById('stockChart'), {
+        type:'doughnut',
+        data:{
+          labels:['Semences','Engrais','Pesticides'],
+          datasets:[{
+            data:[35,25,15],
+            backgroundColor:['#4CAF50','#2E7D32','#A8E6A2']
+          }]
+        },
+        options:{responsive:true, maintainAspectRatio:false}
+      });
+    }
+
+    // Finance Chart
+    if(document.getElementById('financeChart')){
+      new Chart(document.getElementById('financeChart'), {
+        type:'bar',
+        data:{
+          labels:['Jan','Fév','Mar','Avr','Mai','Juin'],
+          datasets:[
+            {label:'Revenus', data:[1.2,1.5,1.8,2.1,2.3,2.5], backgroundColor:'#A8E6A2'},
+            {label:'Dépenses', data:[0.8,0.9,1.0,1.1,1.1,1.2], backgroundColor:'#2F4F4F'}
+          ]
+        },
+        options:{responsive:true, maintainAspectRatio:false}
+      });
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,321 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-book"></i> {{ titre }}
+        </h1>
+        <div class="btn-group">
+            <a href="{% url 'creer_fiche_conseil' %}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Créer une Fiche
+            </a>
+            <a href="{% url 'tableau_de_bord_agronome' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Toutes les Fiches-Conseils</h6>
+            <div class="dropdown no-arrow">
+                <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+                    <i class="fas fa-filter fa-sm fa-fw text-gray-400"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right shadow">
+                    <a class="dropdown-item" href="#">Toutes les cultures</a>
+                    <a class="dropdown-item" href="#">Céréales</a>
+                    <a class="dropdown-item" href="#">Légumes</a>
+                    <a class="dropdown-item" href="#">Fruits</a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if fiches %}
+                <div class="row">
+                    {% for fiche in fiches %}
+                    <div class="col-xl-4 col-lg-6 mb-4">
+                        <div class="card shadow h-100">
+                            {% if fiche.image %}
+                            <div class="card-img-top">
+                                <img src="{{ fiche.image.url }}" class="img-fluid" alt="{{ fiche.titre }}" style="height: 200px; object-fit: cover;">
+                            </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title">{{ fiche.titre }}</h6>
+                                    <span class="badge badge-info">{{ fiche.get_type_culture_display }}</span>
+                                </div>
+                                
+                                <p class="card-text text-muted small">
+                                    <i class="fas fa-user"></i> {{ fiche.auteur.get_full_name|default:fiche.auteur.username }}<br>
+                                    <i class="fas fa-calendar"></i> {{ fiche.date_creation|date:"d/m/Y" }}<br>
+                                    {% if fiche.culture %}
+                                    <i class="fas fa-seedling"></i> {{ fiche.culture.nom }}
+                                    {% endif %}
+                                </p>
+                                
+                                <p class="card-text">{{ fiche.description|truncatechars:100 }}</p>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                onclick="showFicheDetails({{ fiche.id }})">
+                                            <i class="fas fa-eye"></i> Voir
+                                        </button>
+                                        <a href="{% url 'modifier_fiche_conseil' fiche.id %}" class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-edit"></i> Modifier
+                                        </a>
+                                    </div>
+                                    <div class="text-muted small">
+                                        <i class="fas fa-download"></i> {{ fiche.telechargements|default:0 }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-book fa-3x text-gray-300 mb-3"></i>
+                    <h5 class="text-gray-500">Aucune fiche-conseil</h5>
+                    <p class="text-gray-400">Commencez par créer votre première fiche-conseil agricole.</p>
+                    <a href="{% url 'creer_fiche_conseil' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Créer une Fiche-Conseil
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Fiches
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ fiches.count }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Fiches Actives
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ fiches.count }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Téléchargements
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ fiches.count|add:15 }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-download fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Ce Mois
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                3
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Détails Fiche -->
+<div class="modal fade" id="ficheDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails de la Fiche-Conseil</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="ficheDetailsContent">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Télécharger
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function showFicheDetails(ficheId) {
+    const detailsHtml = `
+        <div class="row">
+            <div class="col-md-8">
+                <h4>Titre de la fiche-conseil</h4>
+                <div class="mb-3">
+                    <span class="badge badge-info">Type de culture</span>
+                    <span class="badge badge-success ml-2">Catégorie</span>
+                </div>
+                
+                <h5>Description</h5>
+                <p>Description complète de la fiche-conseil avec toutes les informations pertinentes pour les agriculteurs...</p>
+                
+                <h5>Recommandations principales</h5>
+                <ul>
+                    <li>Recommandation 1 avec détails spécifiques</li>
+                    <li>Recommandation 2 avec explications techniques</li>
+                    <li>Recommandation 3 avec conseils pratiques</li>
+                </ul>
+                
+                <h5>Calendrier recommandé</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Période</th>
+                                <th>Action</th>
+                                <th>Fréquence</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Juin-Juillet</td>
+                                <td>Arrosage régulier</td>
+                                <td>2-3 fois/semaine</td>
+                            </tr>
+                            <tr>
+                                <td>Août</td>
+                                <td>Fertilisation</td>
+                                <td>1 fois/mois</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h5>Produits recommandés</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Engrais NPK 15-15-15</h6>
+                                <p class="small text-muted">Dosage: 50kg/ha</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Traitement préventif</h6>
+                                <p class="small text-muted">Dosage: 2L/ha</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>Informations</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Auteur:</strong> Nom du technicien</p>
+                        <p><strong>Date création:</strong> XX/XX/XXXX</p>
+                        <p><strong>Dernière mise à jour:</strong> XX/XX/XXXX</p>
+                        <p><strong>Culture concernée:</strong> Nom culture</p>
+                        <p><strong>Téléchargements:</strong> XX</p>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6>Documents joints</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <i class="fas fa-file-pdf"></i> Guide complet (PDF)
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <i class="fas fa-image"></i> Illustration 1
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <i class="fas fa-image"></i> Illustration 2
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('ficheDetailsContent').innerHTML = detailsHtml;
+    $('#ficheDetailsModal').modal('show');
+}
+</script>
+{% endblock %}
+{% endblock %}

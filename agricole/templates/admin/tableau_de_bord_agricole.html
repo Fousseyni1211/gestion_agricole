@@ -1,0 +1,244 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}Tableau de Bord Agricole{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-seedling"></i> Tableau de Bord Agricole
+        </h1>
+    </div>
+
+    <!-- Statistiques principales -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Cultures
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_cultures }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-leaf fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Parcelles
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_parcelles }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-map fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Parcelles Occupées
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ parcelles_occupees }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Parcelles Disponibles
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ parcelles_disponibles }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides et alertes -->
+    <div class="row">
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-tasks"></i> Actions Rapides
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'ajouter_culture' %}" class="btn btn-success btn-block">
+                                <i class="fas fa-plus"></i> Ajouter une Culture
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'ajouter_parcelle' %}" class="btn btn-info btn-block">
+                                <i class="fas fa-map-marked-alt"></i> Ajouter une Parcelle
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'liste_parcelles' %}" class="btn btn-warning btn-block">
+                                <i class="fas fa-user-plus"></i> Assigner Parcelles
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'ajouter_itineraire_technique' %}" class="btn btn-primary btn-block">
+                                <i class="fas fa-route"></i> Itinéraire Technique
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Alertes
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if activites_en_attente > 0 %}
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-clock"></i> 
+                        <strong>{{ activites_en_attente }}</strong> activité(s) en attente de validation
+                        <a href="{% url 'liste_activites_agricoles' %}" class="btn btn-sm btn-warning float-right">
+                            Voir
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if itineraires_en_cours > 0 %}
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-play-circle"></i> 
+                        <strong>{{ itineraires_en_cours }}</strong> itinéraire(s) technique(s) en cours
+                        <a href="{% url 'liste_itineraires_techniques' %}" class="btn btn-sm btn-info float-right">
+                            Voir
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if activites_en_attente == 0 and itineraires_en_cours == 0 %}
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle"></i> 
+                        Tout est à jour! Aucune action requise.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation rapide -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-th-large"></i> Navigation Rapide
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card bg-success text-white shadow">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-leaf"></i> Cultures
+                                    </h5>
+                                    <p class="card-text">Gérer les types de cultures</p>
+                                    <a href="{% url 'liste_cultures' %}" class="btn btn-light btn-sm">
+                                        Gérer
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card bg-info text-white shadow">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-map"></i> Parcelles
+                                    </h5>
+                                    <p class="card-text">Gérer les parcelles et champs</p>
+                                    <a href="{% url 'liste_parcelles' %}" class="btn btn-light btn-sm">
+                                        Gérer
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card bg-primary text-white shadow">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-route"></i> Itinéraires
+                                    </h5>
+                                    <p class="card-text">Planifier les itinéraires techniques</p>
+                                    <a href="{% url 'liste_itineraires_techniques' %}" class="btn btn-light btn-sm">
+                                        Gérer
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card bg-warning text-white shadow">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-tasks"></i> Activités
+                                    </h5>
+                                    <p class="card-text">Valider les activités agricoles</p>
+                                    <a href="{% url 'liste_activites_agricoles' %}" class="btn btn-light btn-sm">
+                                        Valider
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

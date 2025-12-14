@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>💰 Suivi Financier</h2>
+    <p>Revenus : <strong class="text-success">{{ total_revenus }} €</strong></p>
+    <p>Dépenses : <strong class="text-danger">{{ total_depenses }} €</strong></p>
+    <p>Solde : <strong>{{ solde }} €</strong></p>
+    <a href="{% url 'ajouter_transaction' %}" class="btn btn-primary mb-3">+ Ajouter</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Montant</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in transactions %}
+            <tr>
+                <td>{{ t.date }}</td>
+                <td>{{ t.get_type_transaction_display }}</td>
+                <td>
+                    {% if t.type_transaction == 'revenu' %}
+                        <span class="text-success">+ {{ t.montant }} €</span>
+                    {% else %}
+                        <span class="text-danger">- {{ t.montant }} €</span>
+                    {% endif %}
+                </td>
+                <td>{{ t.description }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,777 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+
+{% block title %}Gestion des Stocks{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Styles pour la gestion de stock */
+  .dashboard-header {
+    padding: 1.5rem 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    background: linear-gradient(120deg, #2c3e50, #1e3c35);
+    margin-bottom: 1.5rem;
+  }
+
+  .dashboard-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 100%;
+    background: url('{% static "dist/img/pattern.svg" %}') no-repeat;
+    background-size: cover;
+    opacity: 0.1;
+  }
+
+  .welcome-text {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #fff;
+  }
+
+  .date-text {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .stat-card {
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+    height: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.12);
+  }
+
+  .stat-card .card-body {
+    padding: 1.5rem;
+  }
+
+  .stat-card .card-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-card .card-text {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0;
+  }
+
+  .stat-card .icon-box {
+    width: 64px;
+    height: 64px;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .stat-card .card-footer {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-top: none;
+    padding: 0.75rem 1.5rem;
+  }
+
+  .stat-card .card-footer a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .stat-card .card-footer a:hover {
+    opacity: 0.8;
+  }
+
+  .chart-card {
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+    border: none;
+    height: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .chart-card .card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #fff;
+  }
+
+  .chart-card .card-header .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0;
+  }
+
+  .chart-card .card-body {
+    padding: 1rem;
+  }
+
+  .filter-card {
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+    border: none;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(to right, #f8f9fa, #ffffff);
+  }
+
+  .filter-card .card-body {
+    padding: 1.25rem;
+  }
+
+  .filter-form select, 
+  .filter-form .form-control {
+    border-radius: 0.5rem;
+    border: 1px solid #e9ecef;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s;
+  }
+
+  .filter-form select:focus, 
+  .filter-form .form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+
+  .filter-form .btn {
+    border-radius: 0.5rem;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .action-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: #fff;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
+    transition: all 0.3s;
+    text-decoration: none;
+    color: #495057;
+    border: 1px solid #e9ecef;
+  }
+
+  .action-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    color: #212529;
+  }
+
+  .action-button i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .action-button.primary {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+  }
+
+  .action-button.primary:hover {
+    background-color: #0069d9;
+    color: #fff;
+  }
+
+  .action-button.success {
+    background-color: #28a745;
+    color: #fff;
+    border-color: #28a745;
+  }
+
+  .action-button.success:hover {
+    background-color: #218838;
+    color: #fff;
+  }
+
+  .action-button.danger {
+    background-color: #dc3545;
+    color: #fff;
+    border-color: #dc3545;
+  }
+
+  .action-button.danger:hover {
+    background-color: #c82333;
+    color: #fff;
+  }
+
+  .action-button.warning {
+    background-color: #ffc107;
+    color: #212529;
+    border-color: #ffc107;
+  }
+
+  .action-button.warning:hover {
+    background-color: #e0a800;
+    color: #212529;
+  }
+
+  .action-button.info {
+    background-color: #17a2b8;
+    color: #fff;
+    border-color: #17a2b8;
+  }
+
+  .action-button.info:hover {
+    background-color: #138496;
+    color: #fff;
+  }
+
+  .stock-table {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
+  }
+
+  .stock-table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.05rem;
+  }
+
+  .stock-table td {
+    vertical-align: middle;
+  }
+
+  .stock-table .badge {
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+  }
+
+  .stock-table .btn-group .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .stock-alert {
+    border-left: 4px solid #ffc107;
+    background-color: #fff3cd;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+  }
+
+  .stock-alert.danger {
+    border-left-color: #dc3545;
+    background-color: #f8d7da;
+  }
+
+  .stock-alert.success {
+    border-left-color: #28a745;
+    background-color: #d4edda;
+  }
+
+  .stock-alert-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .stock-alert-text {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+  }
+
+  .movement-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .movement-item:last-child {
+    border-bottom: none;
+  }
+
+  .movement-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    color: #fff;
+  }
+
+  .movement-icon.in {
+    background-color: #28a745;
+  }
+
+  .movement-icon.out {
+    background-color: #dc3545;
+  }
+
+  .movement-content {
+    flex-grow: 1;
+  }
+
+  .movement-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .movement-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+  }
+
+  .movement-time {
+    font-size: 0.75rem;
+    color: #adb5bd;
+  }
+
+  .movement-quantity {
+    font-weight: 600;
+    margin-left: 1rem;
+  }
+
+  .movement-quantity.in {
+    color: #28a745;
+  }
+
+  .movement-quantity.out {
+    color: #dc3545;
+  }
+
+  .tab-content {
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 0 0 0.5rem 0.5rem;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
+  }
+
+  .nav-tabs {
+    border-bottom: none;
+  }
+
+  .nav-tabs .nav-link {
+    border: none;
+    border-radius: 0.5rem 0.5rem 0 0;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    color: #495057;
+  }
+
+  .nav-tabs .nav-link.active {
+    background-color: #fff;
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+  }
+
+  .nav-tabs .nav-link:hover {
+    color: #007bff;
+  }
+
+  /* Animation pour les compteurs */
+  @keyframes countUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .counter-anim {
+    animation: countUp 1s ease-out forwards;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="container-fluid">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h1 class="welcome-text">Gestion des Stocks</h1>
+          <p class="date-text">
+            <i class="far fa-calendar-alt mr-2"></i>
+            <span id="current-date">Aujourd'hui</span>
+          </p>
+        </div>
+        <div class="col-md-6 text-md-right">
+          <button class="btn btn-light btn-sm mr-2" id="refreshStockBtn">
+            <i class="fas fa-sync-alt mr-1"></i> Actualiser
+          </button>
+          <div class="btn-group">
+            <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fas fa-download mr-1"></i> Exporter
+            </button>
+            <div class="dropdown-menu dropdown-menu-right">
+              <a class="dropdown-item" href="{% url 'exporter_stock_excel' %}">
+                <i class="fas fa-file-excel mr-2"></i> Excel
+              </a>
+              <a class="dropdown-item" href="{% url 'exporter_stock_pdf' %}">
+                <i class="fas fa-file-pdf mr-2"></i> PDF
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistiques principales -->
+  <div class="row">
+    <!-- Total Produits -->
+    <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+      <div class="card stat-card bg-gradient-primary text-white">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="card-title counter-anim" data-count="{{ total_produits }}">{{ total_produits }}</h3>
+            <p class="card-text">Produits en stock</p>
+          </div>
+          <div class="icon-box">
+            <i class="fas fa-boxes fa-2x"></i>
+          </div>
+        </div>
+        <div class="card-footer">
+          <a href="#" class="text-white" data-toggle="tab" data-target="#stock-tab">
+            <span>Voir les détails</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Valeur du Stock -->
+    <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+      <div class="card stat-card bg-gradient-success text-white">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="card-title counter-anim" data-count="{{ valeur_stock }}">{{ valeur_stock }}</h3>
+            <p class="card-text">Valeur du stock (FCFA)</p>
+          </div>
+          <div class="icon-box">
+            <i class="fas fa-money-bill-wave fa-2x"></i>
+          </div>
+        </div>
+        <div class="card-footer">
+          <a href="#" class="text-white" data-toggle="tab" data-target="#stock-tab">
+            <span>Voir les détails</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mouvements -->
+    <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+      <div class="card stat-card bg-gradient-info text-white">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="card-title counter-anim" data-count="{{ total_mouvements }}">{{ total_mouvements }}</h3>
+            <p class="card-text">Mouvements ce mois</p>
+          </div>
+          <div class="icon-box">
+            <i class="fas fa-exchange-alt fa-2x"></i>
+          </div>
+        </div>
+        <div class="card-footer">
+          <a href="#" class="text-white" data-toggle="tab" data-target="#movements-tab">
+            <span>Voir les détails</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alertes -->
+    <div class="col-xl-3 col-lg-6 col-md-6 col-12">
+      <div class="card stat-card bg-gradient-danger text-white">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="card-title counter-anim" data-count="{{ produits_alerte }}">{{ produits_alerte }}</h3>
+            <p class="card-text">Produits en alerte</p>
+          </div>
+          <div class="icon-box">
+            <i class="fas fa-exclamation-triangle fa-2x"></i>
+          </div>
+        </div>
+        <div class="card-footer">
+          <a href="#" class="text-white" data-toggle="tab" data-target="#alerts-tab">
+            <span>Voir les détails</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions rapides -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h5 class="mb-3">Actions rapides</h5>
+      <div class="action-buttons">
+        <a href="{% url 'ajouter_mouvements' %}" class="action-button primary">
+          <i class="fas fa-plus"></i>
+          <span>Ajouter un mouvement</span>
+        </a>
+        <a href="{% url 'add_product' %}" class="action-button success">
+          <i class="fas fa-box-open"></i>
+          <span>Nouveau produit</span>
+        </a>
+        <a href="{% url 'stock_movement' %}" class="action-button info">
+          <i class="fas fa-history"></i>
+          <span>Historique</span>
+        </a>
+        <a href="{% url 'exporter_stock_pdf' %}" class="action-button warning">
+          <i class="fas fa-file-pdf"></i>
+          <span>Rapport PDF</span>
+        </a>
+        <a href="#" class="action-button" data-toggle="modal" data-target="#inventoryModal">
+          <i class="fas fa-clipboard-check"></i>
+          <span>Inventaire</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu principal -->
+  <div class="row">
+    <div class="col-12">
+      <ul class="nav nav-tabs" id="stockTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a class="nav-link active" id="stock-tab" data-toggle="tab" href="#stock" role="tab" aria-controls="stock" aria-selected="true">
+            <i class="fas fa-boxes mr-2"></i>État du stock
+          </a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" id="movements-tab" data-toggle="tab" href="#movements" role="tab" aria-controls="movements" aria-selected="false">
+            <i class="fas fa-exchange-alt mr-2"></i>Mouvements
+          </a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" id="alerts-tab" data-toggle="tab" href="#alerts" role="tab" aria-controls="alerts" aria-selected="false">
+            <i class="fas fa-exclamation-triangle mr-2"></i>Alertes
+          </a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" id="analytics-tab" data-toggle="tab" href="#analytics" role="tab" aria-controls="analytics" aria-selected="false">
+            <i class="fas fa-chart-line mr-2"></i>Analytiques
+          </a>
+        </li>
+      </ul>
+      <div class="tab-content" id="stockTabsContent">
+        <!-- Onglet État du stock -->
+        <div class="tab-pane fade show active" id="stock" role="tabpanel" aria-labelledby="stock-tab">
+          <!-- Filtres -->
+          <div class="card filter-card mb-4">
+            <div class="card-body">
+              <form method="get" class="filter-form">
+                <div class="row">
+                  <div class="col-md-3 mb-2 mb-md-0">
+                    <label for="categorie" class="form-label mb-1">Catégorie</label>
+                    <select id="categorie" name="categorie" class="form-select">
+                      <option value="">Toutes les catégories</option>
+                      <option value="semences">Semences</option>
+                      <option value="engrais">Engrais</option>
+                      <option value="pesticides">Pesticides</option>
+                      <option value="outils">Outils</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3 mb-2 mb-md-0">
+                    <label for="statut" class="form-label mb-1">Statut</label>
+                    <select id="statut" name="statut" class="form-select">
+                      <option value="">Tous les statuts</option>
+                      <option value="normal">Normal</option>
+                      <option value="alerte">En alerte</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4 mb-2 mb-md-0">
+                    <label for="recherche" class="form-label mb-1">Recherche</label>
+                    <input type="text" id="recherche" name="recherche" class="form-control" placeholder="Rechercher un produit...">
+                  </div>
+                  <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100 mt-md-4">
+                      <i class="fas fa-search mr-1"></i> Filtrer
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Tableau des produits -->
+          <div class="table-responsive stock-table">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Type</th>
+                  <th>Quantité</th>
+                  <th>Prix unitaire</th>
+                  <th>Montant total</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for produit in produits %}
+                <tr class="produit-row {% if produit.en_alerte %}table-warning{% endif %}">
+                  <td>{{ produit.nom_produit }}</td>
+                  <td>{{ produit.type_produit }}</td>
+                  <td>{{ produit.quantite }}</td>
+                  <td>{{ produit.prix_unitaire }} FCFA</td>
+                  <td>{{ produit.montant_total }} FCFA</td>
+                  <td>
+                    {% if produit.en_alerte %}
+                    <span class="badge badge-warning">En alerte</span>
+                    {% else %}
+                    <span class="badge badge-success">Normal</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <a href="{% url 'edit_product' produit.id %}" class="btn btn-sm btn-primary" title="Modifier">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <button type="button" class="btn btn-sm btn-success" title="Entrée" data-toggle="modal" data-target="#entreeModal" data-product="{{ produit.id }}" data-name="{{ produit.nom_produit }}">
+                        <i class="fas fa-arrow-down"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-danger" title="Sortie" data-toggle="modal" data-target="#sortieModal" data-product="{{ produit.id }}" data-name="{{ produit.nom_produit }}">
+                        <i class="fas fa-arrow-up"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Onglet Mouvements -->
+        <div class="tab-pane fade" id="movements" role="tabpanel" aria-labelledby="movements-tab">
+          <!-- Filtres -->
+          <div class="card filter-card mb-4">
+            <div class="card-body">
+              <form method="get" class="filter-form">
+                <div class="row">
+                  <div class="col-md-3 mb-2 mb-md-0">
+                    <label for="produit" class="form-label mb-1">Produit</label>
+                    <select name="produit" id="produit" class="form-select">
+                      <option value="">Tous les produits</option>
+                      {% for produit in produits %}
+                        <option value="{{ produit.id }}">{{ produit.nom_produit }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-md-2 mb-2 mb-md-0">
+                    <label for="type_mouvement" class="form-label mb-1">Type</label>
+                    <select name="type_mouvement" id="type_mouvement" class="form-select">
+                      <option value="">Tous les types</option>
+                      <option value="ENTREE">Entrée</option>
+                      <option value="SORTIE">Sortie</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3 mb-2 mb-md-0">
+                    <label for="date_debut" class="form-label mb-1">Du</label>
+                    <input type="date" name="date_debut" id="date_debut" class="form-control">
+                  </div>
+                  <div class="col-md-3 mb-2 mb-md-0">
+                    <label for="date_fin" class="form-label mb-1">Au</label>
+                    <input type="date" name="date_fin" id="date_fin" class="form-control">
+                  </div>
+                  <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100 mt-md-4">
+                      <i class="fas fa-filter"></i>
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Statistiques des mouvements -->
+          <div class="row mb-4">
+            <div class="col-md-3">
+              <div class="card bg-light">
+                <div class="card-body text-center">
+                  <h6 class="text-muted mb-2">Total des mouvements</h6>
+                  <h3 class="mb-0">{{ movements|length }}</h3>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                  <h6 class="text-white-50 mb-2">Entrées</h6>
+                  <h3 class="mb-0">{{ entrees }}</h3>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                  <h6 class="text-white-50 mb-2">Sorties</h6>
+                  <h3 class="mb-0">{{ sorties }}</h3>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                  <h6 class="text-white-50 mb-2">Produits concernés</h6>
+                  <h3 class="mb-0">{{ produits_concernes }}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tableau des mouvements -->
+          <div class="table-responsive stock-table">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Produit</th>
+                  <th>Type</th>
+                  <th>Quantité</th>
+                  <th>Commentaire</th>
+                  

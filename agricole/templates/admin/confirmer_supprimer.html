@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-4">
+  <h2>Confirmer la suppression</h2>
+  <p>Voulez-vous vraiment supprimer la commande <strong>#{{ commande.id }}</strong> de <strong>{{ commande.client.nom }}</strong> ?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Oui, supprimer</button>
+    <a href="{% url 'liste_commandes' %}" class="btn btn-secondary ms-2">Annuler</a>
+  </form>
+</div>
+{% endblock %}

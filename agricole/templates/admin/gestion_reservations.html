@@ -1,0 +1,37 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+{% block content %}
+<h1>Gestion des réservations à valider</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Client</th>
+            <th>Matériel</th>
+            <th>Date début</th>
+            <th>Date fin</th>
+            <th>Commentaire</th>
+            <th>Date demande</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for reservation in reservations %}
+        <tr>
+            <td>{{ reservation.client.username }}</td>
+            <td>{{ reservation.materiel.nom }}</td>
+            <td>{{ reservation.date_debut }}</td>
+            <td>{{ reservation.date_fin }}</td>
+            <td>{{ reservation.commentaire|default:"-" }}</td>
+            <td>{{ reservation.date_demande|date:"d/m/Y H:i" }}</td>
+            <td>
+                <a href="{% url 'valider_reservation' reservation.id %}" class="btn btn-success btn-sm">Valider</a>
+                <a href="{% url 'annuler_reservation' reservation.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Confirmer l\'annulation ?')">Annuler</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="7">Aucune réservation en attente.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

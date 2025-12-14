@@ -1,0 +1,313 @@
+{% extends "admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-heartbeat"></i> {{ titre }}
+        </h1>
+        <a href="{% url 'tableau_de_bord_agronome' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="row">
+        {% for culture_stat in cultures_stats %}
+        <div class="col-xl-4 col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        {{ culture_stat.culture.nom }}
+                    </h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow">
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-chart-line"></i> Voir l'évolution
+                            </a>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-camera"></i> Photos récentes
+                            </a>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-file-medical"></i> Diagnostic
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center mb-3">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Activités récentes (30j)
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ culture_stat.activites_recentes }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="row no-gutters align-items-center mb-3">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Photos récentes (30j)
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ culture_stat.photos_recentes }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-camera fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Indicateur de santé -->
+                    <div class="mb-3">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            État de santé estimé
+                        </div>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 75%">
+                                Bon
+                            </div>
+                        </div>
+                        <small class="text-muted">Basé sur les activités et photos récentes</small>
+                    </div>
+                    
+                    <!-- Actions rapides -->
+                    <div class="btn-group w-100" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                onclick="showCultureDetails({{ culture_stat.culture.id }})">
+                            <i class="fas fa-search"></i> Détails
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-success" 
+                                onclick="showDiagnostic({{ culture_stat.culture.id }})">
+                            <i class="fas fa-stethoscope"></i> Diagnostic
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                onclick="showPhotos({{ culture_stat.culture.id }})">
+                            <i class="fas fa-images"></i> Photos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Vue d'ensemble -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-line"></i> Vue d'ensemble de la santé des cultures
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-success">75%</div>
+                                <div class="small text-gray-500">Cultures en bonne santé</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-warning">20%</div>
+                                <div class="small text-gray-500">Cultures nécessitant attention</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-danger">5%</div>
+                                <div class="small text-gray-500">Cultures à risque</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-info">{{ cultures_stats|length }}</div>
+                                <div class="small text-gray-500">Total cultures suivies</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Graphique simulé -->
+                    <div class="mt-4">
+                        <canvas id="santeCulturesChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Détails Culture -->
+<div class="modal fade" id="cultureDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Détails de la Culture</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="cultureDetailsContent">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Diagnostic -->
+<div class="modal fade" id="diagnosticModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Diagnostic de la Culture</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="diagnosticContent">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function showCultureDetails(cultureId) {
+    const detailsHtml = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Informations générales</h6>
+                <p><strong>ID Culture:</strong> ${cultureId}</p>
+                <p><strong>Type:</strong> Nom de la culture</p>
+                <p><strong>Surface totale:</strong> XX hectares</p>
+                <p><strong>Nombre de parcelles:</strong> XX</p>
+                <p><strong>Date de plantation:</strong> XX/XX/XXXX</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Statistiques récentes</h6>
+                <p><strong>Arrosages:</strong> XX ce mois</p>
+                <p><strong>Traitements:</strong> XX ce mois</p>
+                <p><strong>Fertilisations:</strong> XX ce mois</p>
+                <p><strong>Photos reçues:</strong> XX ce mois</p>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6>Historique des activités</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Agriculteur</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>XX/XX/XXXX</td>
+                                <td>Arrosage</td>
+                                <td>Nom agriculteur</td>
+                                <td><span class="badge badge-success">Validé</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('cultureDetailsContent').innerHTML = detailsHtml;
+    $('#cultureDetailsModal').modal('show');
+}
+
+function showDiagnostic(cultureId) {
+    const diagnosticHtml = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Évaluation visuelle</h6>
+                <div class="mb-3">
+                    <label>Couleur des feuilles</label>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" style="width: 80%">Vert sain</div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label>Taille des plants</label>
+                    <div class="progress">
+                        <div class="progress-bar bg-info" style="width: 70%">Normale</div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label>Densité</label>
+                    <div class="progress">
+                        <div class="progress-bar bg-warning" style="width: 60%">Moyenne</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6>Recommandations</h6>
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-lightbulb"></i> Actions recommandées:</h6>
+                    <ul>
+                        <li>Augmenter la fréquence d'arrosage de 20%</li>
+                        <li>Surveiller l'apparition de jaunissement</li>
+                        <li>Apporter un complément de nutriments</li>
+                        <li>Prévoir un traitement préventif dans 15 jours</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6>Notes du technicien</h6>
+                <textarea class="form-control" rows="3" placeholder="Ajouter vos observations..."></textarea>
+                <button class="btn btn-primary mt-2">Enregistrer les notes</button>
+            </div>
+        </div>
+    `;
+    document.getElementById('diagnosticContent').innerHTML = diagnosticHtml;
+    $('#diagnosticModal').modal('show');
+}
+
+function showPhotos(cultureId) {
+    // Simuler l'affichage des photos
+    alert(`Fonctionnalité de photos pour la culture ${cultureId} à implémenter`);
+}
+
+// Graphique simulé de santé des cultures
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('santeCulturesChart');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        // Dessiner un simple graphique
+        ctx.fillStyle = '#28a745';
+        ctx.fillRect(50, 50, 100, 20);
+        ctx.fillStyle = '#ffc107';
+        ctx.fillRect(200, 50, 80, 20);
+        ctx.fillStyle = '#dc3545';
+        ctx.fillRect(330, 50, 40, 20);
+        
+        ctx.fillStyle = '#000';
+        ctx.font = '12px Arial';
+        ctx.fillText('Bon', 70, 90);
+        ctx.fillText('Attention', 210, 90);
+        ctx.fillText('Risque', 340, 90);
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

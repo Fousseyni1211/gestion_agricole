@@ -1,0 +1,677 @@
+{% extends "admin/base_template.html" %}
+{% load static %}
+
+{% comment %} {% block page_title %}Ajouter une commande{% endblock %} {% endcomment %}
+
+{% block custom_css %}
+<style>
+  .order-form-card {
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  }
+  
+  .order-form-header {
+    background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
+    padding: 1.5rem;
+    color: white;
+  }
+  
+  .order-form-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  
+  .order-form-subtitle {
+    opacity: 0.8;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+  
+  .form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2E7D32;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .form-section-title i {
+    margin-right: 0.5rem;
+  }
+  
+  .form-floating {
+    margin-bottom: 1rem;
+  }
+  
+  .form-floating label {
+    color: #757575;
+  }
+  
+  .form-control:focus, .form-select:focus {
+    border-color: #2E7D32;
+    box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.25);
+  }
+  
+  .produit-row {
+    background-color: #f9f9f9;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .produit-row:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
+  }
+  
+  .produit-row .form-label {
+    font-weight: 500;
+    color: #424242;
+  }
+  
+  .remove-row {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #F44336;
+    color: white;
+    border: none;
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+  }
+  
+  .remove-row:hover {
+    background-color: #D32F2F;
+    transform: scale(1.1);
+  }
+  
+  .add-produit-btn {
+    background-color: #f5f5f5;
+    border: 2px dashed #2E7D32;
+    color: #2E7D32;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .add-produit-btn:hover {
+    background-color: #E8F5E9;
+    transform: translateY(-2px);
+  }
+  
+  .order-summary {
+    background-color: #E8F5E9;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  
+  .order-summary-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2E7D32;
+    margin-bottom: 1rem;
+  }
+  
+  .order-total {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2E7D32;
+    text-align: center;
+    margin-top: 1rem;
+  }
+  
+  .submit-btn {
+    background-color: #2E7D32;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+  
+  .submit-btn:hover {
+    background-color: #1B5E20;
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+
+  /* Elegant gradient action button */
+  .btn-gradient {
+    background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    letter-spacing: .2px;
+    box-shadow: 0 10px 20px rgba(46, 125, 50, 0.25);
+    transition: all .25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    text-decoration: none;
+  }
+
+  .btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(46, 125, 50, 0.35);
+    color: #fff;
+  }
+  
+  .client-select {
+    font-weight: 500;
+  }
+  
+  .client-select option {
+    font-weight: normal;
+  }
+  
+  .produit-price {
+    font-size: 0.85rem;
+    color: #757575;
+    margin-left: 0.5rem;
+  }
+  
+  .produit-subtotal {
+    font-weight: 600;
+    color: #2E7D32;
+    text-align: right;
+    padding-top: 0.5rem;
+  }
+  
+  .quantity-control {
+    display: flex;
+    align-items: center;
+  }
+  
+  .quantity-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .quantity-btn:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .quantity-input {
+    width: 60px;
+    text-align: center;
+    margin: 0 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block main_content %}
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card order-form-card">
+        <div class="order-form-header">
+          <h4 class="order-form-title"><i class="fas fa-shopping-cart me-2"></i>Nouvelle Commande</h4>
+          <p class="order-form-subtitle">Créez une nouvelle commande en sélectionnant un client et des produits</p>
+          
+          <!-- Note d'information -->
+          <div class="alert alert-info mt-3" style="background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3);">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Information importante :</strong> Les commandes créées par le gérant sont automatiquement validées et une notification est envoyée par email au client.
+          </div>
+        </div>
+        
+        <div class="card-body p-4">
+          <!-- Message de débogage -->
+          <div class="alert alert-info">
+            <h6><i class="fas fa-info-circle me-2"></i>Informations de débogage</h6>
+            <p class="mb-0"><strong>Nombre de clients disponibles:</strong> {{ clients.count }}</p>
+            {% if clients.count == 0 %}
+              <div class="alert alert-warning mt-2">
+                <strong>Attention:</strong> Aucun client trouvé dans la base de données. 
+                Vérifiez que des utilisateurs avec le rôle de client existent.
+              </div>
+            {% else %}
+              <div class="mt-2">
+                <strong>Clients trouvés:</strong>
+                <ul class="mb-0">
+                  {% for client in clients %}
+                    <li>ID: {{ client.id }} - {{ client.username }} (Role: '{{ client.role }}', User Type: '{{ client.user_type }}', Actif: {{ client.is_active }})</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+            
+            <div class="mt-3">
+              <small class="text-muted">
+                <strong>Note:</strong> Vérifiez la console du serveur pour voir les détails complets du débogage.
+              </small>
+            </div>
+          </div>
+          
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+          
+          <form method="POST" action="{% url 'ajouter_commande' %}" id="orderForm">
+            {% csrf_token %}
+            
+            <!-- Section Client -->
+            <div class="form-section">
+              <h5 class="form-section-title"><i class="fas fa-user"></i>Informations Client</h5>
+              
+              <div class="form-floating mb-4">
+                <select name="client" id="client" class="form-select client-select" required>
+                  <option value="">-- Sélectionner un client --</option>
+                  {% for client in clients %}
+                    <option value="{{ client.id }}">
+                      {% if client.get_full_name %}
+                        {{ client.get_full_name }}
+                      {% else %}
+                        {{ client.username }}
+                      {% endif %}
+                      {% if client.email %} ({{ client.email }}){% endif %}
+                    </option>
+                  {% endfor %}
+                </select>
+                <label for="client">Client</label>
+                <div class="mt-2 d-flex justify-content-end">
+                  <a href="{% url 'ajouter_client' %}" class="btn-gradient">
+                    <i class="fas fa-user-plus"></i>
+                    Nouveau client
+                  </a>
+                </div>
+              </div>
+              
+              <div class="row mt-3">
+                <div class="col-md-6">
+                  <div class="form-floating">
+                    <input type="datetime-local" name="date_commande" id="date_commande" class="form-control" required>
+                    <label for="date_commande">Date de commande</label>
+                  </div>
+                </div>
+                              <div class="col-md-6">
+                <div class="form-floating">
+                  <select name="statut" id="statut" class="form-select" required disabled>
+                    <option value="terminee" selected>Terminée (Auto-validée)</option>
+                  </select>
+                  <label for="statut">Statut</label>
+                  <small class="form-text text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Les commandes créées par le gérant sont automatiquement validées
+                  </small>
+                </div>
+              </div>
+              </div>
+              
+              <div id="client-details" class="d-none mt-3">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label text-muted">Email</label>
+                      <div id="client-email" class="fw-bold"></div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label text-muted">Téléphone</label>
+                      <div id="client-phone" class="fw-bold"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Section Produits -->
+            <div class="form-section">
+              <h5 class="form-section-title"><i class="fas fa-box"></i>Produits</h5>
+              
+              <div id="produits-container">
+                {% if produits %}
+                  <div class="produit-row">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <label class="form-label">Produit</label>
+                        <select name="produits[]" class="form-select produit-select" required>
+                          <option value="">-- Sélectionner un produit --</option>
+                          {% for produit in produits %}
+                            <option value="{{ produit.id }}" data-price="{{ produit.prix_unitaire }}" data-stock="{{ produit.quantite }}">
+                              {{ produit.nom_produit }} - {{ produit.prix_unitaire }} FCFA (Stock: {{ produit.quantite }})
+                            </option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                {% else %}
+                  <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Aucun produit disponible</strong>
+                    <p class="mb-0 mt-2">Il n'y a actuellement aucun produit disponible pour la commande. Veuillez d'abord ajouter des produits dans la gestion des produits.</p>
+                    <a href="{% url 'liste_produits' %}" class="btn btn-primary btn-sm mt-2">
+                      <i class="fas fa-plus me-1"></i>Gérer les produits
+                    </a>
+                  </div>
+                {% endif %}
+                    
+                    <div class="col-md-3">
+                      <label class="form-label">Quantité</label>
+                      <div class="quantity-control">
+                        <span class="quantity-btn minus">-</span>
+                        <input type="number" name="quantite[]" class="form-control quantity-input" min="1" value="1" required>
+                        <span class="quantity-btn plus">+</span>
+                      </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                      <label class="form-label">Sous-total</label>
+                      <div class="produit-subtotal">0 FCFA</div>
+                    </div>
+                  </div>
+                  
+                  <button type="button" class="remove-row">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="text-center mt-3">
+                <button type="button" class="add-produit-btn" id="add-produit">
+                  <i class="fas fa-plus me-2"></i>Ajouter un autre produit
+                </button>
+              </div>
+            </div>
+            
+            <!-- Résumé de la commande -->
+            <div class="order-summary">
+              <h5 class="order-summary-title">Résumé de la commande</h5>
+              
+              <div class="d-flex justify-content-between mb-2">
+                <span>Nombre de produits:</span>
+                <span id="product-count">1</span>
+              </div>
+              
+              <div class="d-flex justify-content-between mb-2">
+                <span>Quantité totale:</span>
+                <span id="total-quantity">0</span>
+              </div>
+              
+              <div class="order-total">
+                Total: <span id="order-total">0</span> FCFA
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <button type="submit" class="btn btn-success submit-btn" id="submitBtn" {% if not produits %}disabled{% endif %}>
+                <i class="fas fa-check me-2"></i>Créer et valider la commande
+              </button>
+              <small class="form-text text-muted d-block mt-2">
+                <i class="fas fa-envelope me-1"></i>
+                Une notification sera automatiquement envoyée au client
+              </small>
+              {% if not produits %}
+                <div class="alert alert-danger mt-2">
+                  <i class="fas fa-times-circle me-2"></i>
+                  Impossible de créer une commande sans produits disponibles
+                </div>
+              {% endif %}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  // Fonction pour calculer le sous-total d'une ligne
+  function calculateSubtotal(row) {
+    const select = row.querySelector('.produit-select');
+    const quantityInput = row.querySelector('.quantity-input');
+    const subtotalElement = row.querySelector('.produit-subtotal');
+    
+    if (select.value) {
+      const price = parseFloat(select.options[select.selectedIndex].dataset.price);
+      const quantity = parseInt(quantityInput.value);
+      const subtotal = price * quantity;
+      
+      subtotalElement.textContent = subtotal.toLocaleString() + ' FCFA';
+      return subtotal;
+    } else {
+      subtotalElement.textContent = '0 FCFA';
+      return 0;
+    }
+  }
+  
+  // Fonction pour calculer le total de la commande
+  function calculateTotal() {
+    const rows = document.querySelectorAll('.produit-row');
+    let total = 0;
+    let totalQuantity = 0;
+    
+    rows.forEach(row => {
+      total += calculateSubtotal(row);
+      totalQuantity += parseInt(row.querySelector('.quantity-input').value);
+    });
+    
+    document.getElementById('order-total').textContent = total.toLocaleString();
+    document.getElementById('product-count').textContent = rows.length;
+    document.getElementById('total-quantity').textContent = totalQuantity;
+  }
+  
+  // Ajouter une ligne de produit
+  document.getElementById('add-produit').addEventListener('click', function() {
+    const container = document.getElementById('produits-container');
+    const row = container.querySelector('.produit-row');
+    const clone = row.cloneNode(true);
+    
+    clone.querySelectorAll('input, select').forEach(el => el.value = '');
+    clone.querySelector('.quantity-input').value = 1;
+    clone.querySelector('.produit-subtotal').textContent = '0 FCFA';
+    
+    container.appendChild(clone);
+    calculateTotal();
+    
+    // Réattacher les événements
+    attachEventListeners(clone);
+  });
+  
+  // Supprimer une ligne de produit
+  function attachRemoveRowEvent() {
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('remove-row') || e.target.closest('.remove-row')) {
+        const rows = document.querySelectorAll('.produit-row');
+        if (rows.length > 1) {
+          const row = e.target.closest('.produit-row');
+          row.remove();
+          calculateTotal();
+        }
+      }
+    });
+  }
+  
+  // Gérer les boutons de quantité
+  function attachQuantityEvents(row) {
+    const minusBtn = row.querySelector('.minus');
+    const plusBtn = row.querySelector('.plus');
+    const input = row.querySelector('.quantity-input');
+    
+    minusBtn.addEventListener('click', function() {
+      const currentValue = parseInt(input.value);
+      if (currentValue > 1) {
+        input.value = currentValue - 1;
+        calculateSubtotal(row);
+        calculateTotal();
+      }
+    });
+    
+    plusBtn.addEventListener('click', function() {
+      const currentValue = parseInt(input.value);
+      input.value = currentValue + 1;
+      calculateSubtotal(row);
+      calculateTotal();
+    });
+    
+    input.addEventListener('change', function() {
+      if (parseInt(input.value) < 1) {
+        input.value = 1;
+      }
+      calculateSubtotal(row);
+      calculateTotal();
+    });
+  }
+  
+  // Gérer les changements de produit
+  function attachProductSelectEvents(row) {
+    const select = row.querySelector('.produit-select');
+    
+    select.addEventListener('change', function() {
+      calculateSubtotal(row);
+      calculateTotal();
+      
+      // Afficher des informations sur le stock
+      if (select.value) {
+        const selectedOption = select.options[select.selectedIndex];
+        const stock = parseInt(selectedOption.dataset.stock);
+        const quantityInput = row.querySelector('.quantity-input');
+        
+        // Mettre à jour la quantité maximale
+        quantityInput.max = stock;
+        
+        // Afficher un avertissement si le stock est faible
+        if (stock <= 5) {
+          showStockWarning(row, stock);
+        } else {
+          hideStockWarning(row);
+        }
+      }
+    });
+  }
+  
+  // Afficher un avertissement de stock faible
+  function showStockWarning(row, stock) {
+    let warning = row.querySelector('.stock-warning');
+    if (!warning) {
+      warning = document.createElement('div');
+      warning.className = 'alert alert-warning stock-warning mt-2';
+      warning.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>Stock faible : ${stock} unité(s) disponible(s)`;
+      row.appendChild(warning);
+    }
+  }
+  
+  // Masquer l'avertissement de stock
+  function hideStockWarning(row) {
+    const warning = row.querySelector('.stock-warning');
+    if (warning) {
+      warning.remove();
+    }
+  }
+  
+  // Attacher tous les événements à une ligne
+  function attachEventListeners(row) {
+    attachQuantityEvents(row);
+    attachProductSelectEvents(row);
+  }
+  
+  // Initialisation
+  document.addEventListener('DOMContentLoaded', function() {
+    // Attacher les événements à toutes les lignes existantes
+    document.querySelectorAll('.produit-row').forEach(row => {
+      attachEventListeners(row);
+    });
+    
+    // Attacher l'événement de suppression
+    attachRemoveRowEvent();
+    
+    // Calculer le total initial
+    calculateTotal();
+    
+    // Validation du formulaire
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+      const client = document.getElementById('client').value;
+      const products = document.querySelectorAll('.produit-select');
+      let valid = true;
+      let errorMessages = [];
+      
+      if (!client) {
+        errorMessages.push('Veuillez sélectionner un client');
+        valid = false;
+      }
+      
+      products.forEach((product, index) => {
+        if (!product.value) {
+          errorMessages.push(`Veuillez sélectionner un produit pour la ligne ${index + 1}`);
+          valid = false;
+        } else {
+          // Vérifier la quantité par rapport au stock
+          const selectedOption = product.options[product.selectedIndex];
+          const stock = parseInt(selectedOption.dataset.stock);
+          const quantity = parseInt(product.closest('.produit-row').querySelector('.quantity-input').value);
+          
+          if (quantity > stock) {
+            errorMessages.push(`La quantité demandée pour ${selectedOption.text} dépasse le stock disponible (${stock} unité(s))`);
+            valid = false;
+          }
+        }
+      });
+      
+      if (!valid) {
+        e.preventDefault();
+        // Afficher tous les messages d'erreur
+        Swal.fire({
+          title: 'Erreur de validation',
+          html: errorMessages.map(msg => `<p>• ${msg}</p>`).join(''),
+          icon: 'error',
+          confirmButtonText: 'Corriger',
+          confirmButtonColor: '#d33'
+        });
+        return false;
+      }
+      
+      // Afficher un indicateur de chargement
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Création en cours...';
+      
+      // Soumettre le formulaire normalement
+      return true;
+    });
+  });
+</script>
+{% endblock %}

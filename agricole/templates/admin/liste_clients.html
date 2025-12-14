@@ -1,0 +1,610 @@
+{% extends "admin/base_template.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<style>
+  .btn-pro {
+    background: linear-gradient(135deg, #6366f1 0%, #22c55e 100%);
+    color: #fff !important;
+    border: 0;
+    border-radius: 12px;
+    padding: 0.8rem 1.25rem;
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.25), 0 6px 6px rgba(34, 197, 94, 0.15);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-pro .icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    margin-right: 10px;
+  }
+  .btn-pro:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(99, 102, 241, 0.3), 0 10px 10px rgba(34, 197, 94, 0.2);
+  }
+  .btn-pro:active {
+    transform: translateY(0);
+  }
+  .btn-pro:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    .btn-pro {
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+    }
+  }
+</style>
+{% endblock %}
+
+{% block main_content %}
+<section class="content py-4">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="page-title">
+                        <h1 class="display-6 fw-bold text-primary mb-2">
+                            <i class="fas fa-users text-primary me-3"></i>
+                            Gestion des Clients
+                        </h1>
+                        <p class="text-muted mb-0">Gérez votre base de clients et analysez les données</p>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{% url 'ajouter_client' %}" id="addClientBtn" class="btn btn-lg btn-pro">
+                        <span class="icon-wrap"><i class="fas fa-user-plus"></i></span>
+                        <span>Ajouter un nouveau client</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Dashboard -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card stats-card bg-gradient-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-white-50">Total Clients</h6>
+                                <h3 class="mb-0" id="totalClients">{{ clients|length }}</h3>
+                                <small class="text-white-75">
+                                    <i class="fas fa-arrow-up me-1"></i>+12% ce mois
+                                </small>
+                            </div>
+                            <div class="stats-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card stats-card bg-gradient-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-white-50">Clients Actifs</h6>
+                                <h3 class="mb-0" id="activeClients">
+                                    {{ clients|length }}
+                                </h3>
+                                <small class="text-white-75">
+                                    <i class="fas fa-check-circle me-1"></i>Statut vérifié
+                                </small>
+                            </div>
+                            <div class="stats-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card stats-card bg-gradient-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-white-50">Clients Inactifs</h6>
+                                <h3 class="mb-0" id="inactiveClients">
+                                    0
+                                </h3>
+                                <small class="text-white-75">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>À réactiver
+                                </small>
+                            </div>
+                            <div class="stats-icon">
+                                <i class="fas fa-user-times"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card stats-card bg-gradient-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-white-50">Nouveaux (7j)</h6>
+                                <h3 class="mb-0">5</h3>
+                                <small class="text-white-75">
+                                    <i class="fas fa-calendar me-1"></i>Cette semaine
+                                </small>
+                            </div>
+                            <div class="stats-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row removed -->
+
+        <!-- Advanced Filters -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card modern-card shadow-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-4 mb-3 mb-md-0">
+                                <div class="search-container">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" id="clientSearch" class="form-control modern-input" placeholder="Rechercher un client...">
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3 mb-md-0">
+                                <select id="statusFilter" class="form-select modern-select">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="active">Actifs</option>
+                                    <option value="inactive">Inactifs</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3 mb-md-0">
+                                <select id="sortBy" class="form-select modern-select">
+                                    <option value="name">Trier par nom</option>
+                                    <option value="email">Trier par email</option>
+                                    <option value="status">Trier par statut</option>
+                                    <option value="date">Trier par date</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="exportBtn">
+                                        <i class="fas fa-download me-1"></i>Export
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clients Table -->
+        <div class="card modern-card shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="card-title mb-0 text-dark fw-semibold">
+                            <i class="fas fa-list me-2 text-primary"></i>
+                            Liste des Clients
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="gridViewBtn">
+                                <i class="fas fa-th me-1"></i>Grille
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm active" id="tableViewBtn">
+                                <i class="fas fa-list me-1"></i>Tableau
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <!-- Table View -->
+                <div id="tableView" class="table-responsive">
+                    <table class="table table-hover modern-table mb-0" id="clientsTable">
+                        <thead class="table-header">
+                            <tr>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted">
+                                    <div class="d-flex align-items-center">
+                                        <span>Client</span>
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    </div>
+                                </th>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted">
+                                    <div class="d-flex align-items-center">
+                                        <span>Contact</span>
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    </div>
+                                </th>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted">
+                                    <div class="d-flex align-items-center">
+                                        <span>Statut</span>
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    </div>
+                                </th>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted">
+                                    <div class="d-flex align-items-center">
+                                        <span>Dernière Activité</span>
+                                        <i class="fas fa-sort ms-1 text-muted"></i>
+                                    </div>
+                                </th>
+                                <th class="border-0 fw-semibold text-uppercase text-xs text-muted text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for client in clients %}
+                            <tr class="table-row" data-status="{% if client.is_active %}active{% else %}inactive{% endif %}">
+                                <td class="align-middle">
+                                    <div class="d-flex align-items-center">
+                                        <div class="client-avatar me-3">
+                                            <div class="avatar-circle">
+                                                {{ client.first_name|first|upper }}{{ client.last_name|first|upper }}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-semibold client-name">{{ client.first_name }} {{ client.last_name }}</h6>
+                                            <small class="text-muted client-username">@{{ client.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    <div>
+                                        <div class="fw-semibold client-email">{{ client.email }}</div>
+                                        <small class="text-muted">
+                                            <i class="fas fa-phone me-1"></i>+33 6 12 34 56 78
+                                        </small>
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    {% if client.is_active %}
+                                        <span class="status-badge status-active">
+                                            <i class="fas fa-check-circle"></i>
+                                            Actif
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge status-inactive">
+                                            <i class="fas fa-times-circle"></i>
+                                            Inactif
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="align-middle">
+                                    <div>
+                                        <span class="fw-semibold">Il y a 2 jours</span>
+                                        <br>
+                                        <small class="text-muted">Commande #1234</small>
+                                    </div>
+                                </td>
+                                <td class="align-middle text-center">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-primary" 
+                                                data-bs-toggle="tooltip" 
+                                                title="Voir profil"
+                                                data-client-id="{{ client.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-secondary" 
+                                                data-bs-toggle="tooltip" 
+                                                title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        {% if client.is_active %}
+                                            <a href="{% url 'desactiver_client' client.id %}" 
+                                               class="btn btn-sm btn-outline-warning" 
+                                               data-bs-toggle="tooltip" 
+                                               title="Désactiver">
+                                                <i class="fas fa-user-slash"></i>
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'activer_client' client.id %}" 
+                                               class="btn btn-sm btn-outline-success" 
+                                               data-bs-toggle="tooltip" 
+                                               title="Activer">
+                                                <i class="fas fa-user-check"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="fas fa-users text-muted mb-3" style="font-size: 3rem;"></i>
+                                        <h5 class="text-muted">Aucun client trouvé</h5>
+                                        <p class="text-muted mb-3">Commencez par ajouter votre premier client</p>
+                                        <a href="{% url 'ajouter_client' %}" class="btn btn-primary">
+                                            <i class="fas fa-user-plus me-2"></i>Ajouter un Client
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Grid View -->
+                <div id="gridView" class="p-4" style="display: none;">
+                    <div class="row" id="clientsGrid">
+                        {% for client in clients %}
+                        <div class="col-xl-3 col-lg-4 col-md-6 mb-4 client-card-item" data-status="{% if client.is_active %}active{% else %}inactive{% endif %}">
+                            <div class="card client-profile-card h-100">
+                                <div class="card-body text-center">
+                                    <div class="client-avatar-large mb-3">
+                                        {{ client.first_name|first|upper }}{{ client.last_name|first|upper }}
+                                    </div>
+                                    <h6 class="card-title mb-1">{{ client.first_name }} {{ client.last_name }}</h6>
+                                    <p class="text-muted small mb-2">@{{ client.username }}</p>
+                                    <p class="text-muted small mb-3">{{ client.email }}</p>
+                                    {% if client.is_active %}
+                                        <span class="badge bg-success mb-3">Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary mb-3">Inactif</span>
+                                    {% endif %}
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <button class="btn btn-sm btn-outline-primary" title="Voir">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal: Ajouter Client -->
+<div class="modal fade" id="ajouterClientModal" tabindex="-1" aria-labelledby="ajouterClientModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ajouterClientModalLabel"><i class="fas fa-user-plus me-2"></i>Ajouter un Client</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="ajouterClientModalBody">
+        <div class="text-center text-muted py-4">
+          <div class="spinner-border text-primary mb-2" role="status"></div>
+          <div>Chargement du formulaire...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+{% block custom_js %}
+<!-- Page-specific deps not provided by base_template -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<!-- ApexCharts removed -->
+
+<script>
+$(document).ready(function() {
+    // Initialize DataTable
+    var table = $('#clientsTable').DataTable({
+        responsive: true,
+        dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json',
+            search: "Rechercher:",
+            lengthMenu: "Afficher _MENU_ éléments par page",
+            info: "Affichage de _START_ à _END_ sur _TOTAL_ éléments"
+        },
+        pageLength: 10,
+        order: [[0, 'asc']],
+        columnDefs: [
+            { orderable: false, targets: [4] }
+        ]
+    });
+
+    // Initialize tooltips
+    $('[data-bs-toggle="tooltip"]').tooltip();
+
+    // View toggle functionality
+    $('#gridViewBtn').on('click', function() {
+        $('#tableView').hide();
+        $('#gridView').show();
+        $(this).addClass('active');
+        $('#tableViewBtn').removeClass('active');
+    });
+
+    $('#tableViewBtn').on('click', function() {
+        $('#gridView').hide();
+        $('#tableView').show();
+        $(this).addClass('active');
+        $('#gridViewBtn').removeClass('active');
+    });
+
+    // Custom search functionality
+    $('#clientSearch').on('keyup', function() {
+        table.search(this.value).draw();
+    });
+
+    // Status filter
+    $('#statusFilter').on('change', function() {
+        var status = $(this).val();
+        if (status === '') {
+            table.column(2).search('').draw();
+        } else {
+            table.column(2).search(status === 'active' ? 'Actif' : 'Inactif').draw();
+        }
+        
+        // Also filter grid view
+        $('.client-card-item').each(function() {
+            var cardStatus = $(this).data('status');
+            if (status === '' || cardStatus === status) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+    // Client profile view
+    $('[data-client-id]').on('click', function() {
+        var clientId = $(this).data('client-id');
+        Swal.fire({
+            title: 'Profil Client',
+            text: 'Fonctionnalité en développement - Client ID: ' + clientId,
+            icon: 'info',
+            confirmButtonText: 'OK'
+        });
+    });
+
+    // Export functionality
+    $('#exportBtn').on('click', function() {
+        Swal.fire({
+            title: 'Exporter les données',
+            text: 'Choisissez le format d\'exportation',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Excel',
+            cancelButtonText: 'PDF',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Export to Excel logic
+                Swal.fire('Exporté!', 'Données exportées en Excel', 'success');
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                // Export to PDF logic
+                Swal.fire('Exporté!', 'Données exportées en PDF', 'success');
+            }
+        });
+    });
+
+    // Animate statistics counters
+    function animateCounter(element, target) {
+        var current = 0;
+        var increment = target / 50;
+        var timer = setInterval(function() {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            $(element).text(Math.floor(current));
+        }, 20);
+    }
+
+    // Initialize counter animations
+    setTimeout(function() {
+        $('.stats-card h3').each(function() {
+            var $this = $(this);
+            var target = parseInt($this.text().replace(/[^\d]/g, ''));
+            if (target > 0) {
+                $this.text('0');
+                animateCounter($this, target);
+            }
+        });
+    }, 500);
+
+    // Charts removed
+
+    // Add Client button -> open modal and load form via AJAX
+    $('#addClientBtn').on('click', function(e) {
+        e.preventDefault();
+        var url = $(this).attr('href');
+        var modalEl = document.getElementById('ajouterClientModal');
+        var modal = new bootstrap.Modal(modalEl);
+        $('#ajouterClientModalBody').html('<div class="text-center text-muted py-4">\
+            <div class="spinner-border text-primary mb-2" role="status"></div>\
+            <div>Chargement du formulaire...</div>\
+        </div>');
+        modal.show();
+
+        $.ajax({
+            url: url,
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).done(function(resp) {
+            if (resp && resp.html) {
+                $('#ajouterClientModalBody').html(resp.html);
+            } else {
+                $('#ajouterClientModalBody').html('<div class="alert alert-danger">Impossible de charger le formulaire.</div>');
+            }
+        }).fail(function() {
+            $('#ajouterClientModalBody').html('<div class="alert alert-danger">Erreur de chargement du formulaire.</div>');
+        });
+    });
+
+    // CSRF helper
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Delegate submit inside modal
+    $(document).on('submit', '#ajouterClientForm', function(e) {
+        e.preventDefault();
+        var formEl = this;
+        var formData = new FormData(formEl);
+        $.ajax({
+            url: '{% url "ajouter_client" %}',
+            method: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        }).done(function(resp) {
+            if (resp && resp.success) {
+                Swal.fire('Succès', 'Client ajouté avec succès.', 'success').then(function(){
+                    // Recharger pour mettre à jour la liste et les compteurs
+                    window.location.reload();
+                });
+            } else if (resp && resp.html) {
+                // Erreurs de validation: recharger le formulaire avec erreurs
+                $('#ajouterClientModalBody').html(resp.html);
+            } else {
+                Swal.fire('Erreur', 'Réponse inattendue du serveur.', 'error');
+            }
+        }).fail(function(xhr) {
+            if (xhr.responseJSON && xhr.responseJSON.html) {
+                $('#ajouterClientModalBody').html(xhr.responseJSON.html);
+            } else {
+                Swal.fire('Erreur', 'Impossible d\'ajouter le client.', 'error');
+            }
+        });
+    });
+});
+
+// initializeApexCharts removed
+</script>
+{% endblock %}
+{% endblock main_content %}

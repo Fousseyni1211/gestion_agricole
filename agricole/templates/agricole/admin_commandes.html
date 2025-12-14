@@ -1,0 +1,292 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+
+{% block title %}Gestion des Commandes{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-bag-check"></i> Gestion des Commandes</h2>
+            <p class="text-muted">Gérez les commandes des clients</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'ajouter_commande' %}" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Nouvelle commande
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Rechercher...">
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="d-flex gap-2 justify-content-md-end">
+                        <a href="?statut=" class="btn btn-outline-primary {% if not request.GET.statut %}active{% endif %}">
+                            Toutes
+                        </a>
+                        <a href="?statut=en_attente" class="btn btn-outline-warning {% if request.GET.statut == 'en_attente' %}active{% endif %}">
+                            En attente
+                        </a>
+                        <a href="?statut=validee" class="btn btn-outline-success {% if request.GET.statut == 'validee' %}active{% endif %}">
+                            Validées
+                        </a>
+                        <a href="?statut=annulee" class="btn btn-outline-danger {% if request.GET.statut == 'annulee' %}active{% endif %}">
+                            Annulées
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if commandes %}
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="commandesTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Montant</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for commande in commandes %}
+                            <tr class="commande-row" data-status="{{ commande.statut }}">
+                                <td>{{ commande.id }}</td>
+                                <td>{{ commande.date_commande|date:"d/m/Y H:i" }}</td>
+                                <td>{{ commande.client.username }}</td>
+                                <td>{{ commande.total }} FCFA</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if commande.statut == 'en_attente' %}bg-warning
+                                        {% elif commande.statut == 'validee' %}bg-success
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ commande.get_statut_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-info view-details" 
+                                                data-bs-toggle="modal" data-bs-target="#detailsModal{{ commande.id }}">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <a href="{% url 'export_commande_pdf' commande.id %}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-file-pdf"></i>
+                                        </a>
+                                        {% if commande.statut == 'en_attente' %}
+                                        <button type="button" class="btn btn-sm btn-outline-success validate-btn" 
+                                                data-id="{{ commande.id }}">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger cancel-btn"
+                                                data-id="{{ commande.id }}">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals pour les détails de commande -->
+        {% for commande in commandes %}
+        <div class="modal fade" id="detailsModal{{ commande.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-info-circle"></i> Détails de la commande #{{ commande.id }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><strong>Date :</strong> {{ commande.date_commande|date:"d/m/Y H:i" }}</p>
+                                <p><strong>Client :</strong> {{ commande.client.username }}</p>
+                                <p><strong>Statut :</strong> 
+                                    <span class="badge 
+                                        {% if commande.statut == 'en_attente' %}bg-warning
+                                        {% elif commande.statut == 'validee' %}bg-success
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ commande.get_statut_display }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <p><strong>Total :</strong> {{ commande.total }} FCFA</p>
+                                <p><strong>Référence :</strong> CMD-{{ commande.id }}</p>
+                            </div>
+                        </div>
+                        
+                        <h6 class="border-bottom pb-2 mb-3">Produits commandés</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Produit</th>
+                                        <th class="text-center">Quantité</th>
+                                        <th class="text-end">Prix unitaire</th>
+                                        <th class="text-end">Sous-total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for detail in commande.details.all %}
+                                    <tr>
+                                        <td>{{ detail.produit.nom_produit }}</td>
+                                        <td class="text-center">{{ detail.quantite }}</td>
+                                        <td class="text-end">{{ detail.prix_unitaire }} FCFA</td>
+                                        <td class="text-end">{{ detail.sous_total }} FCFA</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">Aucun détail disponible</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="border-top">
+                                    <tr>
+                                        <th colspan="3" class="text-end">Total</th>
+                                        <th class="text-end">{{ commande.total }} FCFA</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <a href="{% url 'export_commande_pdf' commande.id %}" class="btn btn-primary">
+                            <i class="bi bi-file-pdf"></i> Télécharger PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+    {% else %}
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-bag-x fs-1 mb-3 text-muted"></i>
+                <h4>Aucune commande trouvée</h4>
+                <p class="text-muted">Aucune commande ne correspond aux critères de recherche</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Recherche dans le tableau
+        const searchInput = document.getElementById('searchInput');
+        const commandeRows = document.querySelectorAll('.commande-row');
+        
+        searchInput.addEventListener('keyup', function() {
+            const searchText = this.value.toLowerCase();
+            
+            commandeRows.forEach(row => {
+                const rowText = row.textContent.toLowerCase();
+                if (rowText.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Validation de commande
+        document.querySelectorAll('.validate-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const commandeId = this.getAttribute('data-id');
+                if (confirm('Êtes-vous sûr de vouloir valider cette commande ?')) {
+                    fetch(`/admin/commandes/${commandeId}/valider/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Commande validée avec succès !');
+                            location.reload();
+                        } else {
+                            alert('Erreur: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Une erreur est survenue lors de la validation.');
+                    });
+                }
+            });
+        });
+        
+        // Annulation de commande
+        document.querySelectorAll('.cancel-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const commandeId = this.getAttribute('data-id');
+                if (confirm('Êtes-vous sûr de vouloir annuler cette commande ?')) {
+                    fetch(`/admin/commandes/${commandeId}/annuler/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Commande annulée avec succès !');
+                            location.reload();
+                        } else {
+                            alert('Erreur: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Une erreur est survenue lors de l\'annulation.');
+                    });
+                }
+            });
+        });
+        
+        // Fonction pour récupérer le cookie CSRF
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+{% endblock %}

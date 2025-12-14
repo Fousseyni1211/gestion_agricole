@@ -1,0 +1,578 @@
+﻿{% load static %}
+
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+  <!-- Brand Logo -->
+  <a href="{% url 'gerant_home' %}" class="brand-link bg-success">
+    <img src="{% static 'dist/img/logo.avif' %}" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .9; margin-left: 0.8rem;">
+    <span class="brand-text font-weight-bold text-white"> Systeme FAMA</span>
+  </a>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <!-- User panel -->
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+      <div class="image">
+        <img src="{% static 'dist/img/credit/avatar.png' %}" class="img-circle elevation-2" alt="User Image" style="max-width:100%; margin-left: 0.5rem;">
+      </div>
+      <div class="info">
+        <a href="{% url 'gerant_profile' %}" class="d-block">
+          <span>{{ user.first_name }} {{ user.last_name }}</span>
+          <small class="d-block text-muted">Gerant</small>
+        </a>
+      </div>
+    </div>
+
+      {% comment %} <!-- Search Box -->
+      <div class="form-inline mt-2 mb-3">
+        <div class="input-group" data-widget="sidebar-search">
+          <input class="form-control form-control-sidebar" type="search" placeholder="Rechercher..." aria-label="Search">
+          <div class="input-group-append">
+            <button class="btn btn-sidebar">
+              <i class="fas fa-search fa-fw"></i>
+            </button>
+          </div>
+        </div>
+      </div> {% endcomment %}
+
+    <!-- Sidebar Menu -->
+    <nav class="mt-2">
+      <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent nav-compact" data-widget="treeview" role="menu" data-accordion="false">
+        
+        <!-- Dashboard -->
+        <li class="nav-item">
+          <a href="{% url 'gerant_home' %}" class="nav-link {% if request.path == admin_home %} active {% endif %}">
+            <i class="nav-icon fas fa-tachometer-alt"></i>
+            <p>Dashboard</p>
+          </a>
+        </li>
+
+        <!-- Gestion Financière -->
+        <li class="nav-header text-uppercase">
+          <i class="fas fa-chart-line nav-icon mr-1"></i> Gestion Financière
+        </li>
+        
+        <li class="nav-item">
+          <a href="{% url 'tableau_bord_financier' %}" class="nav-link {% if 'tableau_bord_financier' in request.path %} active {% endif %}">
+            <i class="nav-icon fas fa-chart-pie"></i>
+            <p>Tableau de Bord Financier</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="#" class="nav-link {% if 'depenses' in request.path %} active {% endif %}" data-bs-toggle="collapse" data-bs-target="#depenses-menu">
+            <i class="nav-icon fas fa-money-bill-wave text-danger"></i>
+            <p>
+              Dépenses
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview collapse {% if 'depenses' in request.path %} show {% endif %}" id="depenses-menu">
+            <li class="nav-item">
+              <a href="{% url 'liste_depenses' %}" class="nav-link {% if 'liste_depenses' in request.path %} active {% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Liste des dépenses</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'ajouter_depense' %}" class="nav-link {% if 'ajouter_depense' in request.path %} active {% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Ajouter une dépense</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'categories_depenses' %}" class="nav-link {% if 'categories_depenses' in request.path %} active {% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Catégories</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item">
+          <a href="#" class="nav-link {% if 'revenus' in request.path %} active {% endif %}" data-bs-toggle="collapse" data-bs-target="#revenus-menu">
+            <i class="nav-icon fas fa-coins text-success"></i>
+            <p>
+              Revenus
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview collapse {% if 'revenus' in request.path %} show {% endif %}" id="revenus-menu">
+            <li class="nav-item">
+              <a href="{% url 'liste_revenus' %}" class="nav-link {% if 'liste_revenus' in request.path %} active {% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Liste des revenus</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'ajouter_revenu' %}" class="nav-link {% if 'ajouter_revenu' in request.path %} active {% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Ajouter un revenu</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'categories_revenus' %}" class="nav-link {% if 'categories_revenus' in request.path %} active {% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Catégories</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item">
+          <a href="#" class="nav-link {% if 'factures' in request.path %} active {% endif %}" data-bs-toggle="collapse" data-bs-target="#factures-menu">
+            <i class="nav-icon fas fa-file-invoice text-primary"></i>
+            <p>
+              Factures & Paiements
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview collapse {% if 'factures' in request.path %} show {% endif %}" id="factures-menu">
+            <li class="nav-item">
+              <a href="{% url 'liste_factures' %}" class="nav-link {% if 'liste_factures' in request.path %} active {% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Liste des factures</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'ajouter_facture' %}" class="nav-link {% if 'ajouter_facture' in request.path %} active {% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Ajouter une facture</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item">
+          <a href="#" class="nav-link {% if 'soldes' in request.path or 'rapports' in request.path %} active {% endif %}" data-bs-toggle="collapse" data-bs-target="#rapports-menu">
+            <i class="nav-icon fas fa-chart-bar text-info"></i>
+            <p>
+              Rapports & Soldes
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview collapse {% if 'soldes' in request.path or 'rapports' in request.path %} show {% endif %}" id="rapports-menu">
+            <li class="nav-item">
+              <a href="{% url 'soldes_mensuels' %}" class="nav-link {% if 'soldes_mensuels' in request.path %} active {% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Soldes mensuels</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'liste_rapports_financiers' %}" class="nav-link {% if 'liste_rapports_financiers' in request.path %} active {% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Rapports financiers</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'generer_rapport_financier' %}" class="nav-link {% if 'generer_rapport_financier' in request.path %} active {% endif %}">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Générer un rapport</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {% comment %} <!-- Utilisateurs -->
+        <li class="nav-header text-uppercase">
+          <i class="fas fa-users nav-icon mr-1"></i> Utilisateurs
+        </li> {% endcomment %}
+
+        <li class="nav-item">
+          <a href="{% url 'liste_clients' %}" class="nav-link {% if 'liste_clients' in request.path %} active {% endif %}">
+            <i class="nav-icon fas fa-user-tag text-primary"></i>
+            <p>Clients</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="{% url 'liste_agriculteurs' %}" class="nav-link {% if 'liste_agriculteurs' in request.path %} active {% endif %}">
+            <i class="nav-icon fas fa-user-tag text-primary"></i>
+            <p>Agriculteurs</p>
+          </a>
+        </li>
+        {% comment %} <!-- Product Management -->
+        <li class="nav-header text-uppercase">
+          <i class="fas fa-boxes nav-icon mr-1"></i> Inventaire
+        </li> {% endcomment %}
+
+        <li class="nav-item">
+          <a href="{% url 'manage_produit' %}" class="nav-link {% if 'manage_produit' in request.path or 'add_produit' in request.path %} active {% endif %}">
+            <i class="nav-icon fas fa-seedling text-success"></i>
+            <p>Produits</p>
+          </a>
+        </li>
+
+        <!-- Gestion de Stock Améliorée -->
+        <li class="nav-item has-treeview {% if 'stock' in request.path %} menu-open {% endif %}">
+          <a href="#" class="nav-link" data-widget="treeview">
+            <i class="nav-icon fas fa-warehouse text-info"></i>
+            <p>
+              Gestion de Stock
+              <i class="fas fa-angle-left right"></i>
+              <span class="badge badge-warning right">4</span>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{% url 'tableau_bord_stock' %}" class="nav-link {% if 'tableau_bord_stock' in request.path %} active {% endif %}">
+                <i class="fas fa-tachometer-alt nav-icon"></i>
+                <p>Tableau de Bord</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'liste_stock_ameliore' %}" class="nav-link {% if 'liste_stock_ameliore' in request.path %} active {% endif %}">
+                <i class="fas fa-boxes nav-icon"></i>
+                <p>Gestion du Stock</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'ajouter_entree_stock' %}" class="nav-link {% if 'ajouter_entree_stock' in request.path %} active {% endif %}">
+                <i class="fas fa-plus-circle nav-icon"></i>
+                <p>Ajouter Entrée</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'mouvements_stock_ameliore' %}" class="nav-link {% if 'mouvements_stock_ameliore' in request.path %} active {% endif %}">
+                <i class="fas fa-history nav-icon"></i>
+                <p>Historique</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item has-treeview {% if 'materiels' in request.path or 'reservations' in request.path %} menu-open {% endif %}">
+          <a href="#" class="nav-link" data-widget="treeview">
+            <i class="nav-icon fas fa-tractor text-warning"></i>
+            <p>
+              Matériels Agricoles
+              <i class="fas fa-angle-left right"></i>
+              <span class="badge badge-info right">2</span>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{% url 'gerant_materiels_agricoles' %}" class="nav-link {% if 'gerant_materiels_agricoles' in request.path %} active {% endif %}">
+                <i class="fas fa-tools nav-icon"></i>
+                <p>Gestion Matériels</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'gerant_reservations_materiel' %}" class="nav-link {% if 'gerant_reservations_materiel' in request.path %} active {% endif %}">
+                <i class="fas fa-calendar-check nav-icon"></i>
+                <p>Réservations</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item has-treeview {% if 'agricole' in request.path or 'cultures' in request.path or 'parcelles' in request.path or 'itineraires' in request.path or 'activites' in request.path %} menu-open {% endif %}">
+          <a href="#" class="nav-link" data-widget="treeview">
+            <i class="nav-icon fas fa-seedling text-success"></i>
+            <p>
+              Gestion Agricole
+              <i class="fas fa-angle-left right"></i>
+              <span class="badge badge-info right">5</span>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{% url 'tableau_de_bord_agricole' %}" class="nav-link {% if 'tableau_de_bord_agricole' in request.path %} active {% endif %}">
+                <i class="fas fa-tachometer-alt nav-icon"></i>
+                <p>Tableau de Bord</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'liste_cultures' %}" class="nav-link {% if 'liste_cultures' in request.path %} active {% endif %}">
+                <i class="fas fa-leaf nav-icon"></i>
+                <p>Cultures</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'liste_parcelles' %}" class="nav-link {% if 'liste_parcelles' in request.path %} active {% endif %}">
+                <i class="fas fa-map nav-icon"></i>
+                <p>Parcelles</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'liste_itineraires_techniques' %}" class="nav-link {% if 'liste_itineraires_techniques' in request.path %} active {% endif %}">
+                <i class="fas fa-route nav-icon"></i>
+                <p>Itinéraires Techniques</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'liste_activites_agricoles' %}" class="nav-link {% if 'liste_activites_agricoles' in request.path %} active {% endif %}">
+                <i class="fas fa-tasks nav-icon"></i>
+                <p>Activités</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Panel Technicien Agronome -->
+        <li class="nav-item has-treeview {% if 'agronome' in request.path %} menu-open {% endif %}">
+          <a href="#" class="nav-link" data-widget="treeview">
+            <i class="nav-icon fas fa-user-tie text-success"></i>
+            <p>
+              Technicien Agronome
+              <i class="fas fa-angle-left right"></i>
+              <span class="badge badge-warning right">Expertise</span>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{% url 'tableau_de_bord_agronome' %}" class="nav-link {% if 'tableau_de_bord_agronome' in request.path %} active {% endif %}">
+                <i class="fas fa-tachometer-alt nav-icon"></i>
+                <p>Tableau de Bord</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'validation_arrosages' %}" class="nav-link {% if 'validation_arrosages' in request.path %} active {% endif %}">
+                <i class="fas fa-tint nav-icon"></i>
+                <p>Valider Arrosages</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'validation_traitements' %}" class="nav-link {% if 'validation_traitements' in request.path %} active {% endif %}">
+                <i class="fas fa-spray-can nav-icon"></i>
+                <p>Valider Traitements</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'validation_fertilisations' %}" class="nav-link {% if 'validation_fertilisations' in request.path %} active {% endif %}">
+                <i class="fas fa-seedling nav-icon"></i>
+                <p>Valider Fertilisations</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'verification_photos' %}" class="nav-link {% if 'verification_photos' in request.path %} active {% endif %}">
+                <i class="fas fa-camera nav-icon"></i>
+                <p>Vérifier Photos</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'suivi_sante_cultures' %}" class="nav-link {% if 'suivi_sante_cultures' in request.path %} active {% endif %}">
+                <i class="fas fa-heartbeat nav-icon"></i>
+                <p>Suivi Santé Cultures</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'liste_fiches_conseils' %}" class="nav-link {% if 'liste_fiches_conseils' in request.path %} active {% endif %}">
+                <i class="fas fa-book nav-icon"></i>
+                <p>Fiches-Conseils</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'creer_fiche_conseil' %}" class="nav-link {% if 'creer_fice_conseil' in request.path %} active {% endif %}">
+                <i class="fas fa-plus nav-icon"></i>
+                <p>Créer Fiche-Conseil</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item has-treeview {% if 'stock' in request.path or 'mouvement' in request.path %} menu-open {% endif %}">
+          <a href="#" class="nav-link" data-widget="treeview">
+            <i class="nav-icon fas fa-warehouse text-primary"></i>
+            <p>
+              Gestion des Stocks
+              <i class="fas fa-angle-left right"></i>
+              <span class="badge badge-info right">3</span>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="{% url 'liste_stock' %}" class="nav-link {% if 'liste_stock' in request.path %} active {% endif %}">
+                <i class="fas fa-boxes nav-icon"></i>
+                <p>Stock</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'ajouter_mouvements' %}" class="nav-link {% if 'ajouter_mouvements' in request.path %} active {% endif %}">
+                <i class="fas fa-plus-circle nav-icon"></i>
+                <p>Mouvement</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'stock_movement' %}" class="nav-link {% if 'stock_movement' in request.path %} active {% endif %}">
+                <i class="fas fa-exchange-alt nav-icon"></i>
+                <p>Historique Mouvements</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {% comment %} <!-- Commandes -->
+        <li class="nav-header text-uppercase">
+          <i class="fas fa-shopping-cart nav-icon mr-1"></i> Ventes
+        </li> {% endcomment %}
+
+        <li class="nav-item">
+          <a href="{% url 'notification_list' %}" 
+             class="nav-link {% if 'notifications' in request.path %} active {% endif %}">
+            <i class="nav-icon fas fa-bell text-warning"></i>
+            <p>
+              Notifications
+              <span class="badge badge-danger right notification-count">
+                {% if unread_count > 0 %}{{ unread_count }}{% endif %}
+              </span>
+            </p>
+          </a>
+        </li>
+        
+        <li class="nav-item">
+          <a href="{% url 'liste_commandes' %}" class="nav-link {% if 'commandes' in request.path and not 'demandes-service' in request.path %} active {% endif %}">
+            <i class="nav-icon fas fa-shopping-basket text-info"></i>
+            <p>Commandes</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="{% url 'gerant_liste_demandes_service' %}" class="nav-link {% if 'demandes-service' in request.path %} active {% endif %}">
+            <i class="nav-icon fas fa-concierge-bell text-danger"></i>
+            <p>Service</p>
+          </a>
+        </li>
+
+        {% comment %} <!-- Finances -->
+        <li class="nav-header text-uppercase">
+          <i class="fas fa-money-bill-wave nav-icon mr-1"></i> Finances
+        </li> {% endcomment %}
+
+        <li class="nav-item">
+          <a href="{% url 'page_paiement' %}" class="nav-link {% if 'page_paiement' in request.path %} active {% endif %}">
+            <i class="nav-icon fas fa-money-bill-wave text-info"></i>
+            <p>Effectuer un paiement</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="{% url 'liste_paiements_client' %}" class="nav-link {% if 'paiements' in request.path %} active {% endif %}">
+            <i class="nav-icon fas fa-credit-card text-success"></i>
+            <p>Liste des paiements validées</p>
+          </a>
+        </li>
+
+        {% comment %} <!-- Rapports -->
+        <li class="nav-header text-uppercase">
+          <i class="fas fa-chart-pie nav-icon mr-1"></i> Analyse
+        </li> {% endcomment %}
+      </ul>
+    </nav>
+    <!-- /.sidebar-menu -->
+  </div> 
+  <!-- /.sidebar -->
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer bg-dark p-3 text-center">
+    <small class="text-muted">AgriFAMA &copy; 2025</small>
+  </div>
+</aside>
+
+<style>
+  /* Custom Sidebar Styling */
+  .sidebar-dark-primary {
+    background: linear-gradient(180deg, #1e3c35 0%, #2d5949 100%);
+  }
+  
+  .nav-header {
+    color: #adb5bd;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.75rem 1rem 0.5rem;
+    margin-top: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .nav-sidebar .nav-item > .nav-link {
+    margin-bottom: 0.2rem;
+  }
+  
+  .nav-sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .nav-sidebar .nav-link.active {
+    background-color: #28a745 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  }
+  
+  .nav-sidebar .nav-treeview > .nav-item > .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: #fff;
+  }
+  
+  .user-panel {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .user-panel .info a {
+    transition: all 0.3s ease;
+  }
+  
+  .user-panel .info a:hover {
+    color: #fff;
+  }
+  
+  .sidebar-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Custom Icons Colors */
+  .text-success {
+    color: #28a745 !important;
+  }
+  
+  .text-primary {
+    color: #007bff !important;
+  }
+  
+  .text-warning {
+    color: #ffc107 !important;
+  }
+  
+  .text-info {
+    color: #17a2b8 !important;
+  }
+  
+  .text-danger {
+    color: #dc3545 !important;
+  }
+  
+  /* Animation for active menu */
+  .nav-link.active {
+    animation: pulse 1.5s;
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+  }
+</style>
+
+<script>
+$(document).ready(function() {
+  // Initialize treeview functionality
+  $('[data-widget="treeview"]').Treeview('init');
+  
+  // Manual treeview toggle for compatibility
+  $('.nav-item.has-treeview > .nav-link').click(function(e) {
+    e.preventDefault();
+    var $parent = $(this).parent();
+    var $submenu = $parent.find('.nav-treeview');
+    
+    if ($parent.hasClass('menu-open')) {
+      $parent.removeClass('menu-open');
+      $submenu.slideUp();
+    } else {
+      $parent.addClass('menu-open');
+      $submenu.slideDown();
+    }
+  });
+});
+</script>

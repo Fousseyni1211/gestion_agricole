@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4 text-center">🌤️ Météo actuelle à {{ weather.ville }}</h2>
+
+  {% if weather.error %}
+    <div class="alert alert-danger">{{ weather.error }}<br>{{ weather.details }}</div>
+  {% else %}
+    <div class="card shadow" style="max-width: 500px; margin: auto;">
+      <div class="card-body text-center">
+        <img src="http://openweathermap.org/img/wn/{{ weather.icone }}@2x.png" alt="Weather Icon">
+        <h3 class="card-title">{{ weather.temperature }}°C</h3>
+        <p class="card-text">{{ weather.description }}</p>
+        <p class="card-text">💧 Humidité : {{ weather.humidite }}%</p>
+        <p class="card-text">💨 Vent : {{ weather.vent }} m/s</p>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

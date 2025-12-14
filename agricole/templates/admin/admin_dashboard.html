@@ -1,0 +1,822 @@
+{% extends 'admin/base_template.html' %}
+{% load static %}
+
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block custom_css %}
+<style>
+  /* Styles généraux */
+  .dashboard-card {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border-radius: 1rem;
+    border: none;
+    height: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+  
+  .dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .card-header h5 {
+    font-weight: 600;
+    color: #2E7D32;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+  }
+  
+  .card-header h5 i {
+    font-size: 1.25rem;
+  }
+  
+  /* Cartes de statistiques */
+  .stats-card {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  
+  .stats-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  
+  .stats-card:hover::before {
+    opacity: 1;
+  }
+  
+  .card-icon {
+    font-size: 2.75rem;
+    margin-bottom: 0.75rem;
+    background: rgba(255, 255, 255, 0.2);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  
+  .card-title {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+    opacity: 0.8;
+  }
+  
+  /* Gradients de couleur */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
+    color: white;
+  }
+  
+  .bg-gradient-info {
+    background: linear-gradient(135deg, #0288D1 0%, #03A9F4 100%);
+    color: white;
+  }
+  
+  .bg-gradient-success {
+    background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%);
+    color: white;
+  }
+  
+  .bg-gradient-warning {
+    background: linear-gradient(135deg, #FFA000 0%, #FFC107 100%);
+    color: white;
+  }
+  
+  /* Conteneurs de graphiques */
+  .chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    padding: 1rem;
+  }
+  
+  /* Titres de section */
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f0f0f0;
+    color: #2E7D32;
+  }
+  
+  /* Activités récentes */
+  .activity-item {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+    background-color: #f9f9f9;
+  }
+  
+  .activity-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+  }
+  
+  .activity-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  .activity-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .activity-content {
+    flex: 1;
+  }
+  
+  .activity-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #212121;
+  }
+  
+  .activity-text {
+    color: #616161;
+    margin-bottom: 0.5rem;
+  }
+  
+  .activity-time {
+    font-size: 0.8rem;
+    color: #9e9e9e;
+    display: flex;
+    align-items: center;
+  }
+  
+  .activity-time i {
+    margin-right: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  /* Statistiques détaillées */
+  .stat-item {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+  }
+  
+  .stat-item:hover {
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    transform: translateX(5px);
+  }
+  
+  .stat-label {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    color: #424242;
+  }
+  
+  .stat-label i {
+    margin-right: 0.75rem;
+    color: #2E7D32;
+    font-size: 1.25rem;
+  }
+  
+  .stat-value {
+    padding: 0.5rem 1rem;
+    border-radius: 50rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    color: white;
+  }
+  
+  /* Badges et progress bars */
+  .badge {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  
+  .progress {
+    height: 10px;
+    border-radius: 50rem;
+    background-color: #e0e0e0;
+    margin: 1rem 0;
+    overflow: hidden;
+  }
+  
+  .progress-bar {
+    border-radius: 50rem;
+    background-image: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%);
+    transition: width 1s ease;
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease forwards;
+  }
+  
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.2s; }
+  .delay-3 { animation-delay: 0.3s; }
+  .delay-4 { animation-delay: 0.4s; }
+</style>
+{% endblock %}
+
+{% block main_content %}
+<!-- Élément décoratif -->
+<div class="dashboard-decoration"></div>
+
+<div class="container-fluid py-4">
+  <!-- En-tête du tableau de bord -->
+  <div class="d-flex justify-content-between align-items-center mb-4 animate-fade-in">
+    <div>
+      <h4 class="mb-0 text-success fw-bold">
+        <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord gérant
+      </h4>
+      <p class="text-muted mb-0">Bienvenue dans votre espace de gestion agricole</p>
+    </div>
+    <div class="d-flex align-items-center">
+      <div class="date-badge me-3 animate-fade-in delay-1">
+        <span class="badge bg-light text-dark shadow-sm px-3 py-2">
+          <i class="far fa-calendar-alt me-1"></i>{% now "d F Y" %}
+        </span>
+      </div>
+      <a href="{% url 'admin_logout' %}" class="btn btn-danger btn-sm shadow-sm animate-fade-in delay-2">
+        <i class="fas fa-sign-out-alt me-1"></i>Déconnexion
+      </a>
+    </div>
+  </div>
+
+  <!-- Statistiques principales -->
+  <div class="row mb-5">
+    <div class="col-xl-3 col-md-6 mb-4 animate-fade-in delay-1">
+      <div class="card dashboard-card stats-card bg-gradient-success text-white shadow">
+        <div class="card-body text-center p-4">
+          <div class="card-icon">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <div class="card-value">{{ total_commandes }}</div>
+          <div class="card-title">Commandes totales</div>
+          <div class="mt-3">
+            <a href="{% url 'liste_commandes' %}" class="btn btn-sm btn-light bg-white text-success fw-bold px-3 py-1 rounded-pill">
+              <i class="fas fa-arrow-right me-1"></i>Détails
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4 animate-fade-in delay-2">
+      <div class="card dashboard-card stats-card bg-gradient-primary text-white shadow">
+        <div class="card-body text-center p-4">
+          <div class="card-icon">
+            <i class="fas fa-money-bill-wave"></i>
+          </div>
+          <div class="card-value">{{ montant_total_commandes }} FCFA</div>
+          <div class="card-title">Chiffre d'affaires</div>
+          <div class="mt-3">
+            <a href="#" class="btn btn-sm btn-light bg-white text-primary fw-bold px-3 py-1 rounded-pill">
+              <i class="fas fa-chart-line me-1"></i>Rapport
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4 animate-fade-in delay-3">
+      <div class="card dashboard-card stats-card bg-gradient-info text-white shadow">
+        <div class="card-body text-center p-4">
+          <div class="card-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="card-value">{{ total_clients }}</div>
+          <div class="card-title">Clients actifs</div>
+          <div class="mt-3">
+            <a href="{% url 'liste_clients' %}" class="btn btn-sm btn-light bg-white text-info fw-bold px-3 py-1 rounded-pill">
+              <i class="fas fa-user-check me-1"></i>Voir tous
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4 animate-fade-in delay-4">
+      <div class="card dashboard-card stats-card bg-gradient-warning text-white shadow">
+        <div class="card-body text-center p-4">
+          <div class="card-icon">
+            <i class="fas fa-box"></i>
+          </div>
+          <div class="card-value">{{ stock_total }}</div>
+          <div class="card-title">Stock disponible</div>
+          <div class="mt-3">
+            <a href="#" class="btn btn-sm btn-light bg-white text-warning fw-bold px-3 py-1 rounded-pill">
+              <i class="fas fa-boxes me-1"></i>Inventaire
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Graphiques et statistiques détaillées -->
+  <div class="row mb-5">
+    <!-- Graphique des commandes -->
+    <div class="col-xl-8 col-lg-7 mb-4 animate-fade-in delay-1">
+      <div class="card dashboard-card shadow">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="card-title"><i class="fas fa-chart-line"></i>Évolution des commandes</h5>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="chartOptionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-cog me-1"></i>Options
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="chartOptionsDropdown">
+              <li><a class="dropdown-item" href="#"><i class="fas fa-calendar-alt me-2"></i>Mensuel</a></li>
+              <li><a class="dropdown-item" href="#"><i class="fas fa-calendar-week me-2"></i>Hebdomadaire</a></li>
+              <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i>Exporter</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-body p-4">
+          <div class="chart-container">
+            <canvas id="ordersChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Statistiques supplémentaires -->
+    <div class="col-xl-4 col-lg-5 mb-4 animate-fade-in delay-2">
+      <div class="card dashboard-card shadow">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="card-title"><i class="fas fa-chart-pie"></i>Statistiques détaillées</h5>
+          <button class="btn btn-sm btn-outline-success" type="button" data-bs-toggle="tooltip" title="Actualiser les données">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+        <div class="card-body p-4">
+          <div class="stat-item">
+            <div class="stat-label">
+              <i class="fas fa-cubes"></i>
+              <span>Quantité commandée</span>
+            </div>
+            <div class="stat-value bg-success shadow-sm">{{ quantite_commandee_totale }}</div>
+          </div>
+          
+          <div class="stat-item">
+            <div class="stat-label">
+              <i class="fas fa-check-circle"></i>
+              <span>Paiements validés</span>
+            </div>
+            <div class="stat-value bg-primary shadow-sm">{{ total_paiements_valides }} FCFA</div>
+          </div>
+          
+          <div class="stat-item">
+            <div class="stat-label">
+              <i class="fas fa-truck"></i>
+              <span>Total fournisseurs</span>
+            </div>
+            <div class="stat-value bg-info shadow-sm">{{ total_fournisseurs }}</div>
+          </div>
+          
+          <div class="stat-item">
+            <div class="stat-label">
+              <i class="fas fa-percentage"></i>
+              <span>Taux de conversion</span>
+            </div>
+            <div class="stat-value bg-warning shadow-sm">
+              {% with taux=total_paiements_valides|default:0|floatformat:0 %}
+              {% with total=montant_total_commandes|default:1|floatformat:0 %}
+              {% widthratio taux total 100 %}%
+              {% endwith %}
+              {% endwith %}
+            </div>
+          </div>
+          
+          <div class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-bold text-success">Progression des paiements</span>
+              <span class="badge bg-success shadow-sm">
+                {% with taux=total_paiements_valides|default:0|floatformat:0 %}
+                {% with total=montant_total_commandes|default:1|floatformat:0 %}
+                {% widthratio taux total 100 %}%
+                {% endwith %}
+                {% endwith %}
+              </span>
+            </div>
+            <div class="progress shadow-sm">
+              <div class="progress-bar" role="progressbar" style="width: {% with taux=total_paiements_valides|default:0|floatformat:0 %}{% with total=montant_total_commandes|default:1|floatformat:0 %}{% widthratio taux total 100 %}%{% endwith %}{% endwith %}"></div>
+            </div>
+            <small class="text-muted">Pourcentage des commandes payées sur le total</small>
+          </div>
+          
+          <div class="text-center mt-4">
+            <a href="#" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-file-export me-1"></i>Exporter les statistiques
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Produits populaires et activités récentes -->
+  <div class="row">
+    <!-- Produits populaires -->
+    <div class="col-xl-6 mb-4 animate-fade-in delay-3">
+      <div class="card dashboard-card shadow">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="card-title"><i class="fas fa-star"></i>Produits populaires</h5>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-outline-success" type="button" data-bs-toggle="tooltip" title="Ajouter un produit">
+              <i class="fas fa-plus"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="tooltip" title="Gérer les produits">
+              <i class="fas fa-cog"></i>
+            </button>
+          </div>
+        </div>
+        <div class="card-body p-4">
+          <div class="chart-container">
+            <canvas id="productsChart"></canvas>
+          </div>
+          <div class="text-center mt-3">
+            <a href="#" class="btn btn-sm btn-outline-success">
+              <i class="fas fa-list me-1"></i>Voir tous les produits
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Activités récentes -->
+    <div class="col-xl-6 mb-4 animate-fade-in delay-4">
+      <div class="card dashboard-card shadow">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="card-title"><i class="fas fa-history"></i>Activités récentes</h5>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="activityFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-filter me-1"></i>Filtrer
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="activityFilterDropdown">
+              <li><a class="dropdown-item" href="#"><i class="fas fa-shopping-cart me-2"></i>Commandes</a></li>
+              <li><a class="dropdown-item" href="#"><i class="fas fa-users me-2"></i>Clients</a></li>
+              <li><a class="dropdown-item" href="#"><i class="fas fa-money-bill-wave me-2"></i>Paiements</a></li>
+              <li><a class="dropdown-item" href="#"><i class="fas fa-truck me-2"></i>Livraisons</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-body p-4">
+          <div class="activity-item d-flex align-items-start">
+            <div class="activity-icon bg-success text-white shadow-sm">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Nouvelle commande #{{ total_commandes }}</div>
+              <div class="activity-text">Une nouvelle commande a été passée par <strong>Client Diallo</strong></div>
+              <div class="activity-time">
+                <i class="far fa-clock"></i>Il y a 2 heures
+              </div>
+            </div>
+          </div>
+          
+          <div class="activity-item d-flex align-items-start">
+            <div class="activity-icon bg-primary text-white shadow-sm">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Nouveau client</div>
+              <div class="activity-text">Un nouveau client <strong>Mamadou Keita</strong> s'est inscrit</div>
+              <div class="activity-time">
+                <i class="far fa-clock"></i>Il y a 5 heures
+              </div>
+            </div>
+          </div>
+          
+          <div class="activity-item d-flex align-items-start">
+            <div class="activity-icon bg-warning text-white shadow-sm">
+              <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Paiement reçu</div>
+              <div class="activity-text">Paiement de <strong>25,000 FCFA</strong> reçu pour la commande <strong>#{{ total_commandes|add:"-2" }}</strong></div>
+              <div class="activity-time">
+                <i class="far fa-clock"></i>Il y a 1 jour
+              </div>
+            </div>
+          </div>
+          
+          <div class="activity-item d-flex align-items-start">
+            <div class="activity-icon bg-info text-white shadow-sm">
+              <i class="fas fa-truck"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Livraison effectuée</div>
+              <div class="activity-text">Commande <strong>#{{ total_commandes|add:"-1" }}</strong> livrée avec succès à <strong>Bamako</strong></div>
+              <div class="activity-time">
+                <i class="far fa-clock"></i>Il y a 2 jours
+              </div>
+            </div>
+          </div>
+          
+          <div class="text-center mt-3">
+            <a href="#" class="btn btn-sm btn-outline-secondary">
+              <i class="fas fa-history me-1"></i>Voir toutes les activités
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Liens rapides -->
+  <div class="row mb-4">
+    <div class="col-12 animate-fade-in delay-5">
+      <div class="card dashboard-card shadow">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="card-title"><i class="fas fa-link"></i>Accès rapides</h5>
+          <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="tooltip" title="Personnaliser les accès">
+            <i class="fas fa-cog"></i>
+          </button>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-4">
+            <div class="col-md-3 col-sm-6">
+              <a href="{% url 'liste_clients' %}" class="quick-link btn btn-outline-success w-100 p-4 d-flex flex-column align-items-center shadow-sm">
+                <i class="fas fa-users mb-3" style="font-size: 2.5rem;"></i>
+                <span class="fw-bold">Gestion des clients</span>
+                <small class="text-muted mt-2">{{ total_clients }} clients actifs</small>
+              </a>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <a href="{% url 'liste_commandes' %}" class="quick-link btn btn-outline-primary w-100 p-4 d-flex flex-column align-items-center shadow-sm">
+                <i class="fas fa-shopping-cart mb-3" style="font-size: 2.5rem;"></i>
+                <span class="fw-bold">Gestion des commandes</span>
+                <small class="text-muted mt-2">{{ total_commandes }} commandes</small>
+              </a>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <a href="{% url 'liste_fournisseurs' %}" class="quick-link btn btn-outline-info w-100 p-4 d-flex flex-column align-items-center shadow-sm">
+                <i class="fas fa-truck mb-3" style="font-size: 2.5rem;"></i>
+                <span class="fw-bold">Gestion des fournisseurs</span>
+                <small class="text-muted mt-2">{{ total_fournisseurs }} fournisseurs</small>
+              </a>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <a href="{% url 'liste_agriculteurs' %}" class="quick-link btn btn-outline-warning w-100 p-4 d-flex flex-column align-items-center shadow-sm">
+                <i class="fas fa-tractor mb-3" style="font-size: 2.5rem;"></i>
+                <span class="fw-bold">Gestion des agriculteurs</span>
+                <small class="text-muted mt-2">Partenaires agricoles</small>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Pied de page du tableau de bord -->
+  <div class="text-center text-muted mb-4 animate-fade-in delay-6">
+    <p class="small mb-1">FAMA - Système de Gestion Agricole</p>
+    <p class="small">© {{ year|default:"2025" }} Tous droits réservés</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+  // Animation des cartes au chargement
+  document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.dashboard-card');
+    cards.forEach((card, index) => {
+      setTimeout(() => {
+        card.classList.add('show');
+      }, 100 * index);
+    });
+  });
+
+  // Données pour le graphique des commandes (exemple)
+  const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+  const currentMonth = new Date().getMonth();
+  
+  // Générer des données aléatoires pour les 6 derniers mois
+  const orderData = Array.from({length: 6}, () => Math.floor(Math.random() * ({{ total_commandes }} / 3) + 1));
+  const revenueData = orderData.map(value => value * ({{ montant_total_commandes }} / {{ total_commandes|default:1 }}));
+  
+  // Obtenir les 6 derniers mois
+  const lastSixMonths = Array.from({length: 6}, (_, i) => {
+    const monthIndex = (currentMonth - 5 + i + 12) % 12;
+    return months[monthIndex];
+  });
+  
+  // Graphique des commandes
+  const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+  const ordersChart = new Chart(ordersCtx, {
+    type: 'line',
+    data: {
+      labels: lastSixMonths,
+      datasets: [
+        {
+          label: 'Nombre de commandes',
+          data: orderData,
+          borderColor: '#4CAF50',
+          backgroundColor: 'rgba(76, 175, 80, 0.1)',
+          borderWidth: 2,
+          tension: 0.4,
+          fill: true
+        },
+        {
+          label: 'Chiffre d\'affaires (FCFA)',
+          data: revenueData,
+          borderColor: '#2196F3',
+          backgroundColor: 'rgba(33, 150, 243, 0.1)',
+          borderWidth: 2,
+          tension: 0.4,
+          fill: true,
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            usePointStyle: true,
+            padding: 20
+          }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          titleColor: '#333',
+          bodyColor: '#666',
+          borderColor: '#ddd',
+          borderWidth: 1,
+          padding: 12,
+          boxPadding: 6,
+          usePointStyle: true
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          },
+          ticks: {
+            padding: 10
+          },
+          title: {
+            display: true,
+            text: 'Nombre de commandes',
+            color: '#666',
+            font: {
+              weight: 'bold'
+            },
+            padding: {top: 10, bottom: 10}
+          }
+        },
+        y1: {
+          beginAtZero: true,
+          position: 'right',
+          grid: {
+            drawOnChartArea: false,
+            color: 'rgba(0, 0, 0, 0.05)'
+          },
+          ticks: {
+            padding: 10
+          },
+          title: {
+            display: true,
+            text: 'Chiffre d\'affaires (FCFA)',
+            color: '#666',
+            font: {
+              weight: 'bold'
+            },
+            padding: {top: 10, bottom: 10}
+          }
+        },
+        x: {
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          },
+          ticks: {
+            padding: 10
+          }
+        }
+      }
+    }
+  });
+  
+  // Données pour le graphique des produits (exemple)
+  const productNames = ['Tomates', 'Pommes de terre', 'Oignons', 'Maïs', 'Riz'];
+  const productData = Array.from({length: 5}, () => Math.floor(Math.random() * {{ quantite_commandee_totale }} / 5 + 1));
+  
+  // Graphique des produits
+  const productsCtx = document.getElementById('productsChart').getContext('2d');
+  const productsChart = new Chart(productsCtx, {
+    type: 'doughnut',
+    data: {
+      labels: productNames,
+      datasets: [{
+        data: productData,
+        backgroundColor: [
+          '#4CAF50',
+          '#2196F3',
+          '#FFC107',
+          '#9C27B0',
+          '#F44336'
+        ],
+        borderWidth: 2,
+        borderColor: '#fff',
+        hoverOffset: 10
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            usePointStyle: true,
+            padding: 20,
+            font: {
+              size: 12
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          titleColor: '#333',
+          bodyColor: '#666',
+          borderColor: '#ddd',
+          borderWidth: 1,
+          padding: 12,
+          boxPadding: 6,
+          usePointStyle: true,
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              const total = context.dataset.data.reduce((acc, data) => acc + data, 0);
+              const percentage = Math.round((value / total) * 100);
+              return `${label}: ${value} (${percentage}%)`;
+            }
+          }
+        }
+      },
+      animation: {
+        animateScale: true,
+        animateRotate: true
+      }
+    }
+  });
+</script>
+{% endblock %}

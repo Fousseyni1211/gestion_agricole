@@ -1,0 +1,577 @@
+<style>
+/* Agricultural Equipment Rental Styles */
+:root {
+  --primary-green: #2d5016;
+  --secondary-green: #4a7c59;
+  --accent-green: #6b8e23;
+  --light-green: #8fbc8f;
+  --earth-brown: #8b4513;
+  --warm-beige: #f5f5dc;
+  --soft-cream: #faf0e6;
+  --forest-dark: #1a3d0a;
+  --grain-gold: #daa520;
+  --harvest-orange: #ff8c00;
+}
+
+.equipment-rental {
+  background: linear-gradient(135deg, var(--soft-cream) 0%, var(--warm-beige) 50%, #e8f5e8 100%);
+  min-height: 100vh;
+  position: relative;
+}
+
+.equipment-rental::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(107, 142, 35, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(139, 69, 19, 0.02) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Header Styles */
+.rental-header {
+  background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 50%, var(--accent-green) 100%);
+  color: white;
+  padding: 4rem 2rem;
+  border-radius: 25px;
+  margin-bottom: 3rem;
+  box-shadow: 0 15px 40px rgba(45, 80, 22, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.rental-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 400px;
+  height: 400px;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20 20h60v60H20z" fill="%23ffffff" opacity="0.05"/><circle cx="30" cy="30" r="5" fill="%23ffffff" opacity="0.1"/><circle cx="70" cy="70" r="8" fill="%23ffffff" opacity="0.08"/></svg>') no-repeat;
+  animation: float 8s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-30px) rotate(10deg); }
+}
+
+.header-stats {
+  margin-top: 2rem;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  min-width: 120px;
+}
+
+.stat-number {
+  display: block;
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--grain-gold);
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* Filter Card */
+.filter-card {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+.filter-card .card-body {
+  padding: 2rem;
+}
+
+.form-select, .form-control {
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-select:focus, .form-control:focus {
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 0.2rem rgba(107, 142, 35, 0.25);
+}
+
+/* Equipment Cards */
+.equipment-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.equipment-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+
+.card-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-image-container img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.equipment-card:hover .card-image-container img {
+  transform: scale(1.05);
+}
+
+.availability-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+}
+
+.availability-badge.available {
+  background: rgba(40, 167, 69, 0.9);
+  color: white;
+}
+
+.availability-badge.rented {
+  background: rgba(255, 193, 7, 0.9);
+  color: #212529;
+}
+
+.power-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 2rem;
+}
+
+.equipment-header {
+  display: flex;
+  justify-content: between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--forest-dark);
+  margin-bottom: 0.5rem;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.rating i {
+  color: #ffc107;
+  font-size: 0.9rem;
+}
+
+.rating-text {
+  margin-left: 0.5rem;
+  font-weight: 600;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.card-text {
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.equipment-specs {
+  margin-bottom: 1.5rem;
+}
+
+.spec-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.spec-item i {
+  color: var(--accent-green);
+  width: 16px;
+  text-align: center;
+}
+
+.pricing {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+}
+
+.price-info {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-green);
+}
+
+.period {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.price-options {
+  font-size: 0.85rem;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 12px;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.3s ease;
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(45, 80, 22, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--forest-dark) 0%, var(--primary-green) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(45, 80, 22, 0.4);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--accent-green) 0%, var(--light-green) 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(107, 142, 35, 0.3);
+}
+
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(107, 142, 35, 0.4);
+}
+
+.btn-outline-primary {
+  border: 2px solid var(--primary-green);
+  color: var(--primary-green);
+  background: transparent;
+}
+
+.btn-outline-primary:hover {
+  background: var(--primary-green);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-outline-secondary {
+  border: 2px solid #6c757d;
+  color: #6c757d;
+  background: transparent;
+}
+
+/* CTA Section */
+.cta-section {
+  margin-top: 4rem;
+}
+
+.cta-card {
+  background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+  color: white;
+  padding: 3rem 2rem;
+  border-radius: 25px;
+  box-shadow: 0 15px 40px rgba(45, 80, 22, 0.3);
+}
+
+.cta-card h3 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.cta-card p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* Modal Styles */
+.modal-content {
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+  color: white;
+  border-radius: 20px 20px 0 0;
+  padding: 1.5rem 2rem;
+}
+
+.modal-title {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.btn-close {
+  filter: invert(1);
+}
+
+.modal-body {
+  padding: 2rem;
+}
+
+.pricing-summary {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 15px;
+  border: 2px solid rgba(45, 80, 22, 0.1);
+}
+
+.pricing-summary h6 {
+  color: var(--primary-green);
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .rental-header {
+    padding: 2rem 1rem;
+  }
+  
+  .header-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .stat-item {
+    min-width: auto;
+  }
+  
+  .filter-card .card-body {
+    padding: 1rem;
+  }
+  
+  .filters-section .row > div {
+    margin-bottom: 1rem;
+  }
+  
+  .equipment-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .cta-card {
+    padding: 2rem 1rem;
+  }
+  
+  .cta-card .d-flex {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.equipment-item {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.equipment-item:nth-child(1) { animation-delay: 0.1s; }
+.equipment-item:nth-child(2) { animation-delay: 0.2s; }
+.equipment-item:nth-child(3) { animation-delay: 0.3s; }
+.equipment-item:nth-child(4) { animation-delay: 0.4s; }
+.equipment-item:nth-child(5) { animation-delay: 0.5s; }
+.equipment-item:nth-child(6) { animation-delay: 0.6s; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Filter functionality
+  const categoryFilter = document.getElementById('categoryFilter');
+  const powerFilter = document.getElementById('powerFilter');
+  const dateFilter = document.getElementById('dateFilter');
+  const searchBtn = document.getElementById('searchBtn');
+  const equipmentItems = document.querySelectorAll('.equipment-item');
+
+  function filterEquipment() {
+    const categoryValue = categoryFilter.value;
+    const powerValue = powerFilter.value;
+    
+    equipmentItems.forEach(item => {
+      let showItem = true;
+      
+      // Category filter
+      if (categoryValue && item.dataset.category !== categoryValue) {
+        showItem = false;
+      }
+      
+      // Power filter
+      if (powerValue && showItem) {
+        const itemPower = parseInt(item.dataset.power);
+        if (powerValue === '50-100' && (itemPower < 50 || itemPower > 100)) {
+          showItem = false;
+        } else if (powerValue === '100-200' && (itemPower < 100 || itemPower > 200)) {
+          showItem = false;
+        } else if (powerValue === '200+' && itemPower < 200) {
+          showItem = false;
+        }
+      }
+      
+      // Equipment data with prices in CFA francs
+      const equipmentPrices = {
+        'Tracteur John Deere 6150R': 78000,
+        'Moissonneuse Claas Lexion 760': 229500,
+        'Semoir Amazone Cirrus 6003': 55750,
+        'Pulvérisateur Hardi Navigator 4000': 62300,
+        'Charrue Lemken Juwel 8': 42650,
+        'Épandeur Kuhn Axis 40.2': 36100
+      };
+
+      // Show/hide item with animation
+      if (showItem) {
+        item.style.display = 'block';
+        setTimeout(() => {
+          item.style.opacity = '1';
+          item.style.transform = 'translateY(0)';
+        }, 50);
+      } else {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+          item.style.display = 'none';
+        }, 300);
+      }
+    });
+  }
+
+  // Event listeners for filters
+  categoryFilter.addEventListener('change', filterEquipment);
+  powerFilter.addEventListener('change', filterEquipment);
+  searchBtn.addEventListener('click', filterEquipment);
+
+  // Reservation modal functionality
+  const reserveBtns = document.querySelectorAll('.reserve-btn');
+  const modal = new bootstrap.Modal(document.getElementById('reservationModal'));
+  const equipmentNameSpan = document.getElementById('equipmentName');
+
+  reserveBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const equipmentName = this.dataset.equipment;
+      equipmentNameSpan.textContent = equipmentName;
+      modal.show();
+    });
+  });
+
+  // Price calculation in modal
+  const startDateInput = document.querySelector('input[type="date"]:first-of-type');
+  const endDateInput = document.querySelector('input[type="date"]:last-of-type');
+  const deliverySelect = document.querySelector('select');
+  
+  function calculatePrice() {
+    const startDate = new Date(startDateInput.value);
+    const endDate = new Date(endDateInput.value);
+    const deliveryOption = deliverySelect.value;
+    const equipmentName = equipmentNameSpan.textContent;
+    
+    if (startDate && endDate && endDate > startDate) {
+      const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+      const dailyPrice = equipmentPrices[equipmentName] || 50000;
+      const deliveryPrice = deliveryOption === 'livraison' ? 32800 : 0;
+      const total = (dailyPrice * days) + deliveryPrice;
+      
+      document.getElementById('total-days').textContent = days;
+      document.getElementById('delivery-cost').textContent = deliveryPrice > 0 ? deliveryPrice.toLocaleString() + ' F CFA' : 'Gratuite';
+      document.getElementById('total-price').textContent = total.toLocaleString() + ' F CFA';
+      document.getElementById('daily-price').textContent = dailyPrice.toLocaleString() + ' F CFA';
+    }
+  }
+
+  if (startDateInput && endDateInput) {
+    startDateInput.addEventListener('change', calculatePrice);
+    endDateInput.addEventListener('change', calculatePrice);
+    deliverySelect.addEventListener('change', calculatePrice);
+  }
+
+  // Form submission
+  const reservationForm = document.getElementById('reservationForm');
+  if (reservationForm) {
+    reservationForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Here you would normally send the data to your backend
+      alert('Réservation envoyée avec succès! Nous vous contacterons sous peu.');
+      modal.hide();
+    });
+  }
+});
+</script>

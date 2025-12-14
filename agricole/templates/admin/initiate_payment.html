@@ -1,0 +1,108 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
+<style>
+    .module h2, .module caption, .inline-group h2 {
+        background: #79aec8;
+    }
+    .submit-row {
+        padding: 12px 14px;
+        margin: 0 0 20px;
+        background: #f8f8f8;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        text-align: right;
+        overflow: hidden;
+    }
+    .form-row {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    .form-row:last-child {
+        border-bottom: none;
+    }
+    .field-box {
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>{% if title %}{{ title }}{% else %}Initier un paiement{% endif %}</h1>
+    
+    <form method="post" id="payment_form" novalidate>
+        {% csrf_token %}
+        
+        <div class="module aligned">
+            <div class="form-row">
+                <div class="field-box">
+                    <label for="client">Client:</label>
+                    <select name="client" id="client" required>
+                        <option value="">Sélectionner un client</option>
+                        {% for client in clients %}
+                            <option value="{{ client.id }}">{{ client.get_full_name|default:client.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="field-box">
+                    <label for="montant">Montant (FCFA):</label>
+                    <input type="number" name="montant" id="montant" step="0.01" min="0" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="field-box">
+                    <label for="date_paiement">Date du paiement:</label>
+                    <input type="date" name="date_paiement" id="date_paiement" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="field-box">
+                    <label for="mode_paiement">Mode de paiement:</label>
+                    <select name="mode_paiement" id="mode_paiement" required>
+                        <option value="espece">Espèces</option>
+                        <option value="cheque">Chèque</option>
+                        <option value="virement">Virement bancaire</option>
+                        <option value="mobile_money">Mobile Money</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="field-box">
+                    <label for="reference">Référence (optionnel):</label>
+                    <input type="text" name="reference" id="reference">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="field-box">
+                    <label for="notes">Notes (optionnel):</label>
+                    <textarea name="notes" id="notes" rows="3" style="width: 100%;"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="submit-row">
+            <a href="{% url 'liste_paiements_client' %}" class="button cancel-link">Annuler</a>
+            <button type="submit" class="default" name="_save">Enregistrer le paiement</button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Définir la date du jour comme date de paiement par défaut
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date_paiement').value = today;
+});
+</script>
+{% endblock %}
