@@ -28,8 +28,8 @@ from .debug_views import debug_agriculteurs
 # Import des vues financières
 from . import financial_views
 
-# Import des vues de stock améliorées (test version)
-from . import stock_views_test as stock_views
+# Import des vues de stock améliorées
+from . import stock_views as stock_views
 urlpatterns = [
     # path('admin/', admin.site.urls),
     path('', views.home, name="home"),

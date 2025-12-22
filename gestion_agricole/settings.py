@@ -24,9 +24,9 @@ AUTH_USER_MODEL = 'agricole.CustomUser'
 SECRET_KEY = 'django-insecure-2fuqd)(+hntfza^r6pg=3132gnqtl+w=utsakjk8^1j25s!eai'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['."onrender.com"']
 
 DEFAULT_FROM_EMAIL = 'ton-email@gmail.com'
 ADMIN_EMAIL = 'admin@example.com'
@@ -75,20 +75,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-DEBUG = False
-
-ALLOWED_HOSTS = ['*']  # ou ton domaine render
-
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    ...
-]
-
-
-
 ROOT_URLCONF = 'gestion_agricole.urls'
 
 TEMPLATES = [
@@ -114,10 +100,11 @@ WSGI_APPLICATION = 'gestion_agricole.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
 
 
@@ -164,7 +151,8 @@ STATICFILES_DIRS = [
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

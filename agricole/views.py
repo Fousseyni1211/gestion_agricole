@@ -699,8 +699,9 @@ def admin_liste_commandes(request):
 @user_passes_test(is_admin)
 @require_POST
 def admin_valider_commande(request, commande_id):
-    """Valide une commande: vérifie stock et décrémente si OK."""
-    commande = get_object_or_404(Commande, id=commande_id, statut='en_attente')
+    """Valide une commande payée: vérifie stock et décrémente si OK."""
+    commande = get_object_or_404(Commande, id=commande_id, statut='payee_en_attente')
+    
     # Vérifier le stock pour chaque ligne
     insuffisances = []
     for ligne in commande.details.select_related('produit'):
@@ -729,10 +730,12 @@ def admin_valider_commande(request, commande_id):
     
     Notification.objects.create(
         user=client,
-        message=f"Votre commande #{commande.id} a été validée! Produits: {produits_text}"
+        message=f"Votre commande #{commande.id} a été validée et est en préparation."
     )
     
-    return JsonResponse({'success': True})
+    messages.success(request, f"Commande #{commande.id} validée avec succès.")
+    
+    return redirect('gerant_commandes')
 
 @user_passes_test(is_admin)
 @require_POST
@@ -1016,11 +1019,11 @@ def payment_webhook(request):
 
         if status == 'SUCCESS':
             paiement.statut = 'valide'
-            paiement.commande.statut = 'payee'
+            paiement.commande.statut = 'payee_en_attente'
             paiement.transaction_id = data.get('txnid', '')
             Notification.objects.create(
                 user=paiement.commande.client,
-                message=f"Paiement confirmé pour la commande #{paiement.commande.id}."
+                message=f"Paiement confirmé pour la commande #{paiement.commande.id}. En attente de validation par le gérant."
             )
         else:
             paiement.statut = 'echoue'
@@ -1116,7 +1119,7 @@ def gerant_valider_paiement(request, paiement_id):
         paiement.save()
         
         # Mettre à jour le statut de la commande
-        paiement.commande.statut = 'payee'
+        paiement.commande.statut = 'payee_en_attente'
         paiement.commande.save()
         
         # Créer une notification pour le client

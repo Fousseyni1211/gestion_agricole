@@ -156,7 +156,7 @@ class Commande(models.Model):
     STATUTS = [
         ('en_attente', 'En attente de validation'),
         ('en_attente_paiement', 'En attente de paiement'),
-        ('payee', 'Payée'),
+        ('payee_en_attente', 'Payée - En attente de validation gérant'),
         ('paiement_echoue', 'Paiement échoué'),
         ('validee', 'Validée et traitée'),
         ('livree', 'Livrée'),

@@ -46,10 +46,6 @@
           </a>
         </li>
 
-        <!-- Gestion Financière -->
-        <li class="nav-header text-uppercase">
-          <i class="fas fa-chart-line nav-icon mr-1"></i> Gestion Financière
-        </li>
         
         <li class="nav-item">
           <a href="{% url 'tableau_bord_financier' %}" class="nav-link {% if 'tableau_bord_financier' in request.path %} active {% endif %}">
@@ -58,65 +54,10 @@
           </a>
         </li>
 
-        <li class="nav-item">
-          <a href="#" class="nav-link {% if 'depenses' in request.path %} active {% endif %}" data-bs-toggle="collapse" data-bs-target="#depenses-menu">
-            <i class="nav-icon fas fa-money-bill-wave text-danger"></i>
-            <p>
-              Dépenses
-              <i class="right fas fa-angle-left"></i>
-            </p>
-          </a>
-          <ul class="nav nav-treeview collapse {% if 'depenses' in request.path %} show {% endif %}" id="depenses-menu">
-            <li class="nav-item">
-              <a href="{% url 'liste_depenses' %}" class="nav-link {% if 'liste_depenses' in request.path %} active {% endif %}">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Liste des dépenses</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="{% url 'ajouter_depense' %}" class="nav-link {% if 'ajouter_depense' in request.path %} active {% endif %}">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Ajouter une dépense</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="{% url 'categories_depenses' %}" class="nav-link {% if 'categories_depenses' in request.path %} active {% endif %}">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Catégories</p>
-              </a>
-            </li>
-          </ul>
-        </li>
+        
+           
 
-        <li class="nav-item">
-          <a href="#" class="nav-link {% if 'revenus' in request.path %} active {% endif %}" data-bs-toggle="collapse" data-bs-target="#revenus-menu">
-            <i class="nav-icon fas fa-coins text-success"></i>
-            <p>
-              Revenus
-              <i class="right fas fa-angle-left"></i>
-            </p>
-          </a>
-          <ul class="nav nav-treeview collapse {% if 'revenus' in request.path %} show {% endif %}" id="revenus-menu">
-            <li class="nav-item">
-              <a href="{% url 'liste_revenus' %}" class="nav-link {% if 'liste_revenus' in request.path %} active {% endif %}">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Liste des revenus</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="{% url 'ajouter_revenu' %}" class="nav-link {% if 'ajouter_revenu' in request.path %} active {% endif %}">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Ajouter un revenu</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="{% url 'categories_revenus' %}" class="nav-link {% if 'categories_revenus' in request.path %} active {% endif %}">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Catégories</p>
-              </a>
-            </li>
-          </ul>
-        </li>
+        
 
         <li class="nav-item">
           <a href="#" class="nav-link {% if 'factures' in request.path %} active {% endif %}" data-bs-toggle="collapse" data-bs-target="#factures-menu">

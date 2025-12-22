@@ -17,8 +17,26 @@ from django.template.loader import get_template
 import io
 
 def is_gérant(user):
-    """Vérifie si l'utilisateur est un gérant"""
-    return user.is_authenticated and (user.is_staff or user.is_superuser or getattr(user, 'user_type', None) == '1')
+    """Vérifie si l'utilisateur est un gérant ou a les permissions d'accès"""
+    if not user.is_authenticated:
+        return False
+    
+    # Vérifier les permissions standards (staff, superuser, user_type)
+    if user.is_staff or user.is_superuser or getattr(user, 'user_type', None) == '1':
+        return True
+    
+    # Permettre l'accès si l'utilisateur a des permissions de gestion de stock
+    # Cela permet d'accéder aux panels sans passer par Produit
+    if hasattr(user, 'has_perm') and (
+        user.has_perm('agricole.view_stock') or 
+        user.has_perm('agricole.add_stock') or
+        user.has_perm('agricole.change_stock')
+    ):
+        return True
+    
+    # Permettre aux utilisateurs authentifiés d'accéder aux panels de consultation
+    # pour une flexibilité maximale
+    return getattr(user, 'can_access_stock', False)
 
 @login_required
 @user_passes_test(is_gérant)
@@ -141,7 +159,7 @@ def ajouter_entree_stock(request):
         
         try:
             stock.augmenter_stock(quantite, commentaire or f"Entrée manuelle - {request.user.username}")
-            messages.success(request, f'Entrée de {quantite} {produit.unite} de {produit.nom_produit} ajoutée avec succès')
+            messages.success(request, f'Entrée de {quantite} unités de {produit.nom_produit} ajoutée avec succès')
         except ValueError as e:
             messages.error(request, str(e))
         
