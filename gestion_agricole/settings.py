@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,7 +28,7 @@ SECRET_KEY = 'django-insecure-2fuqd)(+hntfza^r6pg=3132gnqtl+w=utsakjk8^1j25s!eai
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['."onrender.com"']
+ALLOWED_HOSTS = ["gestion-agricole.onrender.com"]
 
 DEFAULT_FROM_EMAIL = 'ton-email@gmail.com'
 ADMIN_EMAIL = 'admin@example.com'
