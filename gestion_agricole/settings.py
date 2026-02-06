@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
-import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,17 +22,17 @@ AUTH_USER_MODEL = 'agricole.CustomUser'
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-2fuqd)(+hntfza^r6pg=3132gnqtl+w=utsakjk8^1j25s!eai'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-2fuqd)(+hntfza^r6pg=3132gnqtl+w=utsakjk8^1j25s!eai')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('1', 'true', 'yes', 'on')
 
-ALLOWED_HOSTS = ["gestion-agricole.onrender.com"]
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 DEFAULT_FROM_EMAIL = 'ton-email@gmail.com'
 ADMIN_EMAIL = 'admin@example.com'
 
-EMAIL_BACKEND = 'django.agricole.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
@@ -69,6 +68,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -101,13 +101,44 @@ WSGI_APPLICATION = 'gestion_agricole.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
+MYSQL_NAME = os.environ.get('MYSQL_NAME')
+MYSQL_USER = os.environ.get('MYSQL_USER')
+MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD')
+MYSQL_HOST = os.environ.get('MYSQL_HOST')
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if MYSQL_NAME and MYSQL_USER and MYSQL_PASSWORD and MYSQL_HOST:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': MYSQL_NAME,
+            'USER': MYSQL_USER,
+            'PASSWORD': MYSQL_PASSWORD,
+            'HOST': MYSQL_HOST,
+            'PORT': os.environ.get('MYSQL_PORT', '3306'),
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+            },
+        }
+    }
+elif DATABASE_URL:
+    import dj_database_url
+
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -156,6 +187,8 @@ STATICFILES_DIRS = [
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -166,6 +199,10 @@ SECURE_SSL_REDIRECT = False
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+]
 
 # settings.py
 X_FRAME_OPTIONS = 'DENY'
