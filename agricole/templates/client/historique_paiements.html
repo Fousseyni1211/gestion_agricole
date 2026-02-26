@@ -32,7 +32,7 @@
                         <tr>
                             <td>{{ paiement.payment_date|date:"d/m/Y H:i" }}</td>
                             <td>
-                                <a href="{% url 'detail_commande' paiement.commande.id %}" class="text-info">
+                                <a href="{% url 'client_detail_commande' paiement.commande.id %}" class="text-info">
                                     #{{ paiement.commande.id }}
                                 </a>
                             </td>

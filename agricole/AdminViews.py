@@ -1762,6 +1762,13 @@ def liste_commandes(request):
     commandes_terminees = commandes.filter(statut='terminee').count()
     revenus_totaux = commandes.filter(statut='terminee').aggregate(Sum('total'))['total__sum'] or 0
     
+    # Compter les notifications non lues pour l'admin
+    from agricole.models import Notification
+    notifications_count = Notification.objects.filter(
+        user=request.user,
+        is_read=False
+    ).count()
+    
     # Préparer les détails des produits pour chaque commande
     for commande in commandes_page:
         commande.produits_details = [
@@ -1782,6 +1789,7 @@ def liste_commandes(request):
         'commandes_en_attente': commandes_en_attente,
         'commandes_terminees': commandes_terminees,
         'revenus_totaux': revenus_totaux,
+        'notifications_count': notifications_count,
     }
     
     return render(request, 'admin/liste_commandes.html', context)
@@ -1921,12 +1929,107 @@ def ajouter_commande(request):
                 commande.save()
 
                 # Créer une notification pour le client
-                Notification.objects.create(
+                notification = Notification.objects.create(
                     user=client,
                     message=f"Votre commande #{commande.id} a été validée et est en cours de traitement.",
                     type='success',
                     url=f"/client/commande/{commande.id}/"
                 )
+
+                # Envoyer un email au client
+                try:
+                    from django.core.mail import send_mail
+                    from django.conf import settings
+                    
+                    sujet = f"Confirmation de votre commande #{commande.id} - Kayupe Agriculture"
+                    message_html = f"""
+                    <html>
+                    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                            <h1 style="margin: 0; font-size: 28px;">Kayupe Agriculture</h1>
+                            <p style="margin: 10px 0 0 0; opacity: 0.9;">Votre partenaire agricole de confiance</p>
+                        </div>
+                        
+                        <div style="background: white; padding: 40px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
+                            <h2 style="color: #1f2937; margin-bottom: 20px;">Confirmation de commande</h2>
+                            
+                            <p style="color: #6b7280; font-size: 16px; line-height: 1.6;">
+                                Bonjour {client.get_full_name() or client.username},
+                            </p>
+                            
+                            <p style="color: #6b7280; font-size: 16px; line-height: 1.6;">
+                                Nous vous confirmons que votre commande <strong>#{commande.id}</strong> a été validée 
+                                et est maintenant en cours de traitement.
+                            </p>
+                            
+                            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                                <h3 style="color: #1f2937; margin-top: 0; margin-bottom: 15px;">Détails de la commande :</h3>
+                                <ul style="color: #6b7280; line-height: 1.8; padding-left: 20px;">
+                                    <li><strong>Numéro de commande :</strong> #{commande.id}</li>
+                                    <li><strong>Date :</strong> {commande.date_commande.strftime('%d/%m/%Y à %H:%M')}</li>
+                                    <li><strong>Montant total :</strong> {commande.total:,} FCFA</li>
+                                    <li><strong>Statut :</strong> Validée</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="background: #ecfdf5; border-left: 4px solid #10b981; padding: 20px; margin: 25px 0;">
+                                <p style="color: #065f46; margin: 0;">
+                                    <strong>Produits commandés :</strong>
+                                </p>
+                                <ul style="color: #065f46; margin: 10px 0 0 20px;">
+                    """
+                    
+                    # Ajouter les produits de la commande
+                    for detail in commande.details.all():
+                        message_html += f"<li>{detail.quantite} x {detail.produit.nom_produit} - {detail.prix_unitaire:,} FCFA</li>"
+                    
+                    message_html += f"""
+                                </ul>
+                            </div>
+                            
+                            <p style="color: #6b7280; font-size: 16px; line-height: 1.6;">
+                                Vous pouvez suivre l'état de votre commande en vous connectant à votre espace client.
+                            </p>
+                            
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="{settings.SITE_URL if hasattr(settings, 'SITE_URL') else 'http://127.0.0.1:8000'}/client/commandes/" 
+                                   style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                                    Suivre ma commande
+                                </a>
+                            </div>
+                            
+                            <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px; text-align: center;">
+                                <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+                                    Merci de votre confiance !<br>
+                                    L'équipe Kayupe Agriculture
+                                </p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """
+                    
+                    send_mail(
+                        sujet,
+                        f"Votre commande #{commande.id} a été validée. Connectez-vous à votre espace client pour suivre son état.",
+                        settings.DEFAULT_FROM_EMAIL,
+                        [client.email],
+                        html_message=message_html,
+                        fail_silently=False,
+                    )
+                    
+                    # Notifier l'admin que l'email a été envoyé
+                    messages.info(
+                        request,
+                        f"Un email de confirmation a été envoyé à {client.email}."
+                    )
+                    
+                except Exception as e:
+                    # Si l'email échoue, on ne bloque pas le processus
+                    messages.warning(
+                        request,
+                        f"La commande a été créée mais l'email de confirmation n'a pas pu être envoyé: {str(e)}"
+                    )
 
                 messages.success(
                     request,

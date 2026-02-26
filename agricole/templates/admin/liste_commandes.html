@@ -32,6 +32,54 @@
     padding: 2rem 0;
   }
 
+  /* Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  .fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .pulse-on-hover:hover {
+    animation: pulse 0.3s ease-in-out;
+  }
+
+  /* Notification badge */
+  .notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--accent-red);
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
   /* Dashboard Header */
   .dashboard-header {
     background: var(--bg-white);
@@ -58,6 +106,46 @@
     margin-bottom: 1.5rem;
   }
 
+  /* Quick actions */
+  .quick-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: white;
+    position: relative;
+  }
+
+  .quick-action-btn.primary {
+    background: var(--gradient-primary);
+  }
+
+  .quick-action-btn.secondary {
+    background: var(--gradient-secondary);
+  }
+
+  .quick-action-btn.accent {
+    background: var(--gradient-accent);
+  }
+
+  .quick-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    color: white;
+  }
+
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -74,6 +162,7 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
   }
   
   .stat-card::before {
@@ -89,6 +178,11 @@
   .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
+  }
+
+  .stat-card.clickable:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: var(--shadow-xl);
   }
 
   .stat-icon {
@@ -591,9 +685,225 @@
 </style>
 {% endblock %}
 
+{% block custom_js %}
+<div class="modal fade" id="commandeDetailModal" tabindex="-1" role="dialog" aria-labelledby="commandeDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="commandeDetailModalLabel">Détails de la commande</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="commandeDetailModalBody">Chargement...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).on('click', '.js-commande-detail', function() {
+    const commandeId = $(this).data('commande-id');
+    const url = `{% url 'detail_commande_modal' 0 %}`.replace('/0/', `/${commandeId}/`);
+
+    $('#commandeDetailModalBody').text('Chargement...');
+    $('#commandeDetailModal').modal('show');
+
+    $.get(url)
+      .done(function(html) {
+        $('#commandeDetailModalBody').html(html);
+      })
+      .fail(function() {
+        $('#commandeDetailModalBody').text('Erreur lors du chargement des détails.');
+      });
+  });
+
+  // Fonctions pour les cartes de statistiques interactives
+  function filterOrders(status) {
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+      statusFilter.value = status === 'all' ? '' : status;
+      // Déclencher le changement pour appliquer le filtre
+      const event = new Event('change');
+      statusFilter.dispatchEvent(event);
+      
+      // Faire défiler jusqu'à la table des commandes
+      document.getElementById('ordersTable').scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  function showRevenueDetails() {
+    alert('Détails des revenus:\n\n• Total: {{ revenus_totaux|floatformat:0 }} FCFA\n• Commandes validées: {{ commandes_terminees }}\n• Moyenne par commande: {% if commandes_terminees > 0 %}{{ revenus_totaux|floatformat:0|div:commandes_terminees|floatformat:0 }}{% else %}0{% endif %} FCFA');
+  }
+
+  // Animation au chargement de la page
+  document.addEventListener('DOMContentLoaded', function() {
+    // Animer les cartes de statistiques
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+      setTimeout(() => {
+        card.classList.add('fade-in-up');
+      }, index * 100);
+    });
+
+    // Animation pour les lignes du tableau
+    const tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach((row, index) => {
+      row.style.opacity = '0';
+      row.style.transform = 'translateY(20px)';
+      setTimeout(() => {
+        row.style.transition = 'all 0.5s ease';
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+      }, 800 + (index * 50));
+    });
+  });
+
+  // Fonction d'export CSV améliorée
+  function exportOrdersCSV() {
+    const table = document.getElementById('ordersTable');
+    const rows = table.querySelectorAll('tr');
+    const csv = [];
+    
+    // En-tête
+    const headers = ['ID Commande', 'Client', 'Email', 'Date', 'Statut', 'Total', 'Produits'];
+    csv.push(headers.join(','));
+    
+    // Données
+    rows.forEach((row, idx) => {
+      if (idx === 0) return; // Skip header row
+      
+      const cells = row.querySelectorAll('td');
+      if (cells.length > 0) {
+        const rowData = [];
+        rowData.push('"' + row.dataset.id + '"');
+        rowData.push('"' + (row.dataset.clientName || '') + '"');
+        rowData.push('"' + (row.dataset.clientEmail || '') + '"');
+        rowData.push('"' + (row.dataset.datetime || '') + '"');
+        rowData.push('"' + (row.dataset.status || '') + '"');
+        rowData.push('"' + (row.dataset.total || '') + '"');
+        rowData.push('"' + (row.dataset.products || '') + '"');
+        csv.push(rowData.join(','));
+      }
+    });
+    
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'commandes_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Afficher une confirmation
+    showNotification('CSV exporté avec succès!', 'success');
+  }
+
+  // Système de notification
+  function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-suppression après 5 secondes
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 5000);
+  }
+
+  // Fonction pour basculer les filtres avancés
+  function toggleAdvancedFilters() {
+    const filtersDiv = document.getElementById('advancedFilters');
+    const button = event.target;
+    
+    if (filtersDiv.style.display === 'none') {
+      filtersDiv.style.display = 'block';
+      filtersDiv.classList.add('fade-in-up');
+      button.innerHTML = '<i class="bi bi-sliders"></i> Masquer les filtres';
+      button.classList.remove('btn-outline-primary');
+      button.classList.add('btn-primary');
+    } else {
+      filtersDiv.style.display = 'none';
+      button.innerHTML = '<i class="bi bi-sliders"></i> Filtres avancés';
+      button.classList.remove('btn-primary');
+      button.classList.add('btn-outline-primary');
+    }
+  }
+
+  // Recherche en temps réel
+  let searchTimeout;
+  document.getElementById('orderSearch')?.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    const searchValue = this.value.toLowerCase();
+    
+    searchTimeout = setTimeout(() => {
+      const table = document.getElementById('ordersTable');
+      const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+      
+      let visibleCount = 0;
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let found = false;
+        
+        for (let j = 0; j < cells.length; j++) {
+          const cellText = cells[j].textContent.toLowerCase();
+          if (cellText.indexOf(searchValue) > -1) {
+            found = true;
+            break;
+          }
+        }
+        
+        row.style.display = found ? '' : 'none';
+        if (found) visibleCount++;
+      }
+      
+      // Afficher le nombre de résultats
+      const resultCount = document.getElementById('searchResults');
+      if (resultCount) {
+        resultCount.textContent = `${visibleCount} résultat${visibleCount > 1 ? 's' : ''} trouvé${visibleCount > 1 ? 's' : ''}`;
+      }
+    }, 300);
+  });
+</script>
+{% endblock %}
+
 {% block main_content %}
 <div class="orders-dashboard">
-<div class="container-fluid">
+<div class="container-fluid fade-in-up">
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <a href="{% url 'ajouter_commande' %}" class="quick-action-btn primary pulse-on-hover">
+        <i class="bi bi-plus-lg"></i>
+        Nouvelle Commande
+      </a>
+      <a href="{% url 'export_commandes_pdf' %}?statut={{ statut_filtre }}&client={{ client_filtre }}&date_debut={{ date_debut }}&date_fin={{ date_fin }}&q={{ q }}" class="quick-action-btn secondary">
+        <i class="bi bi-filetype-pdf"></i>
+        Exporter PDF
+      </a>
+      <a href="{% url 'export_commandes_excel' %}?statut={{ statut_filtre }}&client={{ client_filtre }}&date_debut={{ date_debut }}&date_fin={{ date_fin }}&q={{ q }}" class="quick-action-btn accent">
+        <i class="bi bi-filetype-xls"></i>
+        Exporter Excel
+      </a>
+      <button type="button" class="quick-action-btn primary" onclick="exportOrdersCSV()">
+        <i class="bi bi-download"></i>
+        Exporter CSV
+      </button>
+      {% if notifications_count > 0 %}
+      <a href="{% url 'admin_notifications' %}" class="quick-action-btn secondary" style="position: relative;">
+        <i class="bi bi-bell"></i>
+        Notifications
+        <span class="notification-badge">{{ notifications_count }}</span>
+      </a>
+      {% endif %}
+    </div>
     <!-- Dashboard Header with Stats -->
     <div class="dashboard-header">
       <div class="row align-items-center">
@@ -631,9 +941,9 @@
       <!-- Statistics Grid -->
       <div class="stats-grid">
         <!-- Carte Commandes Total -->
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="filterOrders('all')">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="stat-icon" style="background-color: rgba(16, 185, 129, 0.1); color: #10b981; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+            <div class="stat-icon orders">
               <i class="bi bi-cart-check"></i>
             </div>
             <div class="text-end">
@@ -652,13 +962,16 @@
         </div>
 
         <!-- Carte Commandes en Attente -->
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="filterOrders('en_attente')">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="stat-icon" style="background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+            <div class="stat-icon pending">
               <i class="bi bi-hourglass-split"></i>
             </div>
             <div class="text-end">
               <span class="badge bg-warning bg-opacity-10 text-warning">En attente</span>
+              {% if commandes_en_attente > 0 %}
+              <span class="badge bg-danger ms-1">{{ commandes_en_attente }}</span>
+              {% endif %}
             </div>
           </div>
           <div class="d-flex justify-content-between align-items-end">
@@ -673,9 +986,9 @@
         </div>
 
         <!-- Carte Commandes Terminées -->
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="filterOrders('terminee')">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="stat-icon" style="background-color: rgba(16, 185, 129, 0.1); color: #10b981; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+            <div class="stat-icon completed">
               <i class="bi bi-check2-circle"></i>
             </div>
             <div class="text-end">
@@ -694,9 +1007,9 @@
         </div>
 
         <!-- Carte Revenus -->
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="showRevenueDetails()">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="stat-icon" style="background-color: rgba(99, 102, 241, 0.1); color: #6366f1; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+            <div class="stat-icon revenue">
               <i class="bi bi-cash-stack"></i>
             </div>
             <div class="text-end">
@@ -750,47 +1063,88 @@
     
       <!-- Filters Section -->
       <div class="filters-section">
-        <form method="get" class="row g-3 align-items-end">
-          <div class="col-lg-3">
-            <label class="form-label">Statut</label>
-            <select name="statut" class="form-select">
-              <option value="">Tous les statuts</option>
-              <option value="en_attente" {% if statut_filtre == 'en_attente' %}selected{% endif %}>En attente</option>
-              <option value="validee" {% if statut_filtre == 'validee' %}selected{% endif %}>Validée</option>
-              <option value="terminee" {% if statut_filtre == 'terminee' %}selected{% endif %}>Terminée</option>
-              <option value="annulee" {% if statut_filtre == 'annulee' %}selected{% endif %}>Annulée</option>
-            </select>
-          </div>
-          <div class="col-lg-3">
-            <label class="form-label">Client</label>
-            <select name="client" class="form-select">
-              <option value="">Tous les clients</option>
-              {% for c in clients %}
-                <option value="{{ c.id }}" {% if client_filtre|default:'' == c.id|stringformat:'s' %}selected{% endif %}>
-                  {% if c.get_full_name %}{{ c.get_full_name }}{% else %}{{ c.username }}{% endif %}
-                </option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="col-lg-2">
-            <label class="form-label">Date début</label>
-            <input type="date" name="date_debut" class="form-control" value="{{ date_debut }}">
-          </div>
-          <div class="col-lg-2">
-            <label class="form-label">Date fin</label>
-            <input type="date" name="date_fin" class="form-control" value="{{ date_fin }}">
-          </div>
-          <div class="col-lg-2">
-            <label class="form-label">Recherche</label>
-            <input type="text" name="q" class="form-control" placeholder="Commande, client..." value="{{ q }}">
-          </div>
-          <div class="col-12">
-            <button type="submit" class="btn-filter">
-              <i class="bi bi-funnel me-2"></i> Filtrer
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filtres et recherche</h5>
+          <div class="d-flex align-items-center gap-3">
+            <small class="text-muted" id="searchResults">{{ commandes|length }} résultat{{ commandes|length|pluralize }}</small>
+            <button class="btn btn-sm btn-outline-primary" onclick="toggleAdvancedFilters()">
+              <i class="bi bi-sliders"></i> Filtres avancés
             </button>
-            <a href="{% url 'liste_commandes' %}" class="btn btn-outline-secondary ms-2">Réinitialiser</a>
           </div>
-        </form>
+        </div>
+        
+        <!-- Recherche rapide -->
+        <div class="row mb-3">
+          <div class="col-lg-6">
+            <div class="search-container">
+              <i class="bi bi-search search-icon"></i>
+              <input type="text" id="orderSearch" class="form-control search-input" placeholder="Rechercher une commande, client, produit...">
+            </div>
+          </div>
+          <div class="col-lg-6 text-end">
+            <div class="btn-group" role="group">
+              <button type="button" class="btn btn-sm btn-outline-success" onclick="filterOrders('all')">
+                <i class="bi bi-list-ul"></i> Tout
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-warning" onclick="filterOrders('en_attente')">
+                <i class="bi bi-clock"></i> En attente
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-primary" onclick="filterOrders('validee')">
+                <i class="bi bi-check-circle"></i> Validées
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-success" onclick="filterOrders('terminee')">
+                <i class="bi bi-truck"></i> Terminées
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Filtres avancés (cachés par défaut) -->
+        <div id="advancedFilters" style="display: none;">
+          <form method="get" class="row g-3">
+            <div class="col-lg-3">
+              <label class="form-label">Statut détaillé</label>
+              <select name="statut" class="form-select">
+                <option value="">Tous les statuts</option>
+                <option value="en_attente" {% if statut_filtre == 'en_attente' %}selected{% endif %}>En attente</option>
+                <option value="validee" {% if statut_filtre == 'validee' %}selected{% endif %}>Validée</option>
+                <option value="terminee" {% if statut_filtre == 'terminee' %}selected{% endif %}>Terminée</option>
+                <option value="annulee" {% if statut_filtre == 'annulee' %}selected{% endif %}>Annulée</option>
+              </select>
+            </div>
+            <div class="col-lg-3">
+              <label class="form-label">Client</label>
+              <select name="client" class="form-select">
+                <option value="">Tous les clients</option>
+                {% for c in clients %}
+                  <option value="{{ c.id }}" {% if client_filtre|default:'' == c.id|stringformat:'s' %}selected{% endif %}>
+                    {% if c.get_full_name %}{{ c.get_full_name }}{% else %}{{ c.username }}{% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-lg-2">
+              <label class="form-label">Date début</label>
+              <input type="date" name="date_debut" class="form-control" value="{{ date_debut }}">
+            </div>
+            <div class="col-lg-2">
+              <label class="form-label">Date fin</label>
+              <input type="date" name="date_fin" class="form-control" value="{{ date_fin }}">
+            </div>
+            <div class="col-lg-2">
+              <label class="form-label">Recherche</label>
+              <input type="text" name="q" class="form-control" placeholder="Recherche..." value="{{ q }}">
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn-filter">
+                <i class="bi bi-funnel me-2"></i> Appliquer les filtres
+              </button>
+              <a href="{% url 'liste_commandes' %}" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-arrow-clockwise me-2"></i>Réinitialiser
+              </a>
+            </div>
+          </form>
+        </div>
       </div>
       
       <!-- Orders Table -->
@@ -885,10 +1239,10 @@
                       </div>
                       
                       <!-- PDF Invoice generation -->
-                      <a href="{% url 'generer_facture_pdf' commande.id %}" class="action-btn btn-pdf" title="Générer facture PDF" aria-label="Générer facture PDF">
-                        <i class="bi bi-file-pdf action-icon"></i>
-                        <span class="action-label">Facture</span>
-                      </a>
+                      <button type="button" class="action-btn btn-view js-commande-detail" title="Voir détails" aria-label="Voir détails" data-commande-id="{{ commande.id }}">
+                        <i class="bi bi-eye action-icon"></i>
+                        <span class="action-label">Détails</span>
+                      </button>
                       
                       <!-- Payment management -->
                       {% if commande.statut == 'en_attente_paiement' %}
@@ -922,10 +1276,10 @@
                       {% endif %}
                       
                       <!-- Order details -->
-                      <a href="{% url 'detail_commande' commande.id %}" class="action-btn btn-view" title="Voir détails" aria-label="Voir détails">
+                      <button type="button" class="action-btn btn-view js-commande-detail" title="Voir détails" aria-label="Voir détails" data-commande-id="{{ commande.id }}">
                         <i class="bi bi-eye action-icon"></i>
                         <span class="action-label">Détails</span>
-                      </a>
+                      </button>
                       
                       <!-- Delete order -->
                       {% if commande.statut in 'en_attente,annulee' %}
@@ -945,9 +1299,9 @@
                           <i class="bi bi-three-dots action-icon"></i>
                         </button>
                         <div class="more-menu">
-                          <a href="{% url 'detail_commande' commande.id %}" class="more-item more-view">
+                          <button type="button" class="more-item more-view js-commande-detail" data-commande-id="{{ commande.id }}">
                             <i class="bi bi-eye"></i> Voir détails
-                          </a>
+                          </button>
                           <a href="{% url 'generer_facture_pdf' commande.id %}" class="more-item more-pdf">
                             <i class="bi bi-file-pdf"></i> Générer facture
                           </a>
@@ -997,8 +1351,7 @@
   </div>
 </div>
 {% endblock %}
-
-{% block custom_js %}
+{{ block.super }}
 <script>
   // Search functionality
   document.getElementById('orderSearch').addEventListener('keyup', function() {
@@ -1190,31 +1543,6 @@
       });
     });
   });
-
-  // Export orders to CSV
-  function exportOrdersCSV() {
-    const table = document.getElementById('ordersTable');
-    const rows = table.querySelectorAll('tr');
-    const csv = [];
-    rows.forEach((row, idx) => {
-      const cells = row.querySelectorAll(idx === 0 ? 'th' : 'td');
-      const rowData = [];
-      cells.forEach((cell, ci) => {
-        if (idx > 0 && ci === cells.length - 1) return; // skip actions col
-        let text = cell.textContent.trim().replace(/\s+/g, ' ');
-        text = '"' + text.replace(/"/g, '""') + '"';
-        rowData.push(text);
-      });
-      if (rowData.length) csv.push(rowData.join(','));
-    });
-    const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'commandes_' + new Date().toISOString().slice(0,10) + '.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
 
   // Order details modal
   function openOrderDetails(row){
@@ -1444,7 +1772,6 @@
     });
   });
 </script>
-
 <!-- Modal: Détails Commande -->
 <div class="modal fade" id="orderDetailsModal" tabindex="-1" role="dialog" aria-labelledby="orderDetailsLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
@@ -1498,4 +1825,5 @@
     </div>
   </div>
 </div>
-{% endblock %}
+
+

@@ -131,6 +131,7 @@ urlpatterns = [
     
     path('commander/', views.passer_commande, name='passer_commande'),
     path('commande/<int:pk>/', views.detail_commande, name='detail_commande'),
+    path('commande/<int:pk>/modal/', views.detail_commande_modal, name='detail_commande_modal'),
     path('facture/<int:pk>/', views.facture_pdf, name='facture_pdf'),
     # Restauration de l'URL pour generer_facture_pdf
     path('facture/<int:commande_id>/', views.generer_facture_pdf, name='generer_facture_pdf'),
@@ -191,7 +192,7 @@ urlpatterns = [
     path('client/parametres/', ClientViews.parametres_client, name='parametres_client'),
     path('ajouter-commande/', ClientViews.passer_commande, name='passer_commande'),
     path('mes-commandes/', ClientViews.mes_commandes, name='mes_commandes'),
-    path('client/commande/<int:commande_id>/', ClientViews.detail_commande, name='detail_commande'),
+    path('client/commande/<int:commande_id>/', ClientViews.detail_commande, name='client_detail_commande'),
     path('commande/<int:commande_id>/supprimer/', ClientViews.supprimer_commande, name='supprimer_commande'),
     path('commande/<int:commande_id>/pdf/', ClientViews.export_pdf_commande, name='pdf_commande'),
     path('api/commande/<int:commande_id>/', ClientViews.api_detail_commande, name='api_detail_commande'),

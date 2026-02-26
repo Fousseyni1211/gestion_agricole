@@ -1,0 +1,35 @@
+<div>
+  <div class="mb-2">
+    <strong>Commande :</strong> #{{ commande.id }}<br>
+    <strong>Client :</strong> {{ commande.client.username }}<br>
+    <strong>Date :</strong> {{ commande.date_commande|date:"d/m/Y H:i" }}<br>
+    <strong>Total :</strong> {{ commande.total }} FCFA
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm mb-0">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Quantité</th>
+          <th>Prix unitaire</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in commande.details.all %}
+        <tr>
+          <td>{{ d.produit.nom_produit }}</td>
+          <td>{{ d.quantite }}</td>
+          <td>{{ d.produit.prix_unitaire }} FCFA</td>
+          <td>{{ d.sous_total }} FCFA</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center">Aucun détail</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

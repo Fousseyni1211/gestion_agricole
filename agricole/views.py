@@ -457,12 +457,22 @@ def suivi_commandes(request):
 
 @login_required
 def detail_commande(request, pk):
-    commande = get_object_or_404(
-        Commande.objects.prefetch_related('details__produit'),
-        pk=pk, client=request.user
-    )
+    qs = Commande.objects.prefetch_related('details__produit')
+    if request.user.is_staff or request.user.is_superuser:
+        commande = get_object_or_404(qs, pk=pk)
+    else:
+        commande = get_object_or_404(qs, pk=pk, client=request.user)
     return render(request, 'commande/detail_commande.html',
                   {'commande': commande})
+
+
+@staff_member_required
+def detail_commande_modal(request, pk):
+    commande = get_object_or_404(
+        Commande.objects.prefetch_related('details__produit'),
+        pk=pk,
+    )
+    return render(request, 'admin/partials/commande_detail_modal_content.html', {'commande': commande})
 DetailCommandeFormSet = modelformset_factory(
     DetailCommande,
     form=DetailCommandeForm,
