@@ -1762,6 +1762,9 @@ def liste_commandes(request):
     commandes_terminees = commandes.filter(statut='terminee').count()
     revenus_totaux = commandes.filter(statut='terminee').aggregate(Sum('total'))['total__sum'] or 0
     
+    # Calculer la moyenne par commande terminée
+    moyenne_par_commande = revenus_totaux / commandes_terminees if commandes_terminees > 0 else 0
+    
     # Compter les notifications non lues pour l'admin
     from agricole.models import Notification
     notifications_count = Notification.objects.filter(
@@ -1789,10 +1792,29 @@ def liste_commandes(request):
         'commandes_en_attente': commandes_en_attente,
         'commandes_terminees': commandes_terminees,
         'revenus_totaux': revenus_totaux,
+        'moyenne_par_commande': moyenne_par_commande,
         'notifications_count': notifications_count,
     }
     
     return render(request, 'admin/liste_commandes.html', context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
+def detail_commande_modal(request, commande_id):
+    """
+    Vue pour afficher les détails d'une commande dans un modal (AJAX).
+    Retourne un fragment HTML à afficher dans le modal.
+    """
+    commande = get_object_or_404(
+        Commande.objects.select_related('client').prefetch_related('details__produit'),
+        id=commande_id
+    )
+    
+    return render(request, 'admin/partials/commande_detail_modal_content.html', {
+        'commande': commande
+    })
+
 
 @login_required
 @user_passes_test(lambda u: u.is_staff or u.is_superuser)

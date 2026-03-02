@@ -732,7 +732,7 @@
   }
 
   function showRevenueDetails() {
-    alert('Détails des revenus:\n\n• Total: {{ revenus_totaux|floatformat:0 }} FCFA\n• Commandes validées: {{ commandes_terminees }}\n• Moyenne par commande: {% if commandes_terminees > 0 %}{{ revenus_totaux|floatformat:0|div:commandes_terminees|floatformat:0 }}{% else %}0{% endif %} FCFA');
+    alert('Détails des revenus:\n\n• Total: {{ revenus_totaux|floatformat:0 }} FCFA\n• Commandes validées: {{ commandes_terminees }}\n• Moyenne par commande: {{ moyenne_par_commande|floatformat:0 }} FCFA');
   }
 
   // Animation au chargement de la page
@@ -897,7 +897,7 @@
         Exporter CSV
       </button>
       {% if notifications_count > 0 %}
-      <a href="{% url 'admin_notifications' %}" class="quick-action-btn secondary" style="position: relative;">
+      <a href="{% url 'gerant_notifications' %}" class="quick-action-btn secondary" style="position: relative;">
         <i class="bi bi-bell"></i>
         Notifications
         <span class="notification-badge">{{ notifications_count }}</span>
@@ -1351,6 +1351,8 @@
   </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
 {{ block.super }}
 <script>
   // Search functionality
@@ -1587,13 +1589,13 @@
     } else {
       productsEl.innerHTML = '<span class="text-muted">Aucun produit</span>';
     }
-    // action links
+    // action links - utiliser des URL résolues correctement
     var linkDetail = document.getElementById('od-link-detail');
-    if (linkDetail) linkDetail.href = '{% url 'detail_commande' 0 %}'.replace('/0', '/' + id);
+    if (linkDetail) linkDetail.href = '/admin/commandes/' + id + '/detail/';
     var linkPdf = document.getElementById('od-link-pdf');
-    if (linkPdf) linkPdf.href = '{% url 'generer_facture_pdf' 0 %}'.replace('/0', '/' + id);
+    if (linkPdf) linkPdf.href = '/admin/commandes/' + id + '/pdf/';
     var linkPay = document.getElementById('od-link-pay');
-    if (linkPay) linkPay.href = '{% url 'initiate_payment' %}?commande_id=' + id;
+    if (linkPay) linkPay.href = '/paiements/initier/?commande_id=' + id;
     var btnPayInline = document.getElementById('od-btn-pay-inline');
     if (btnPayInline) {
       btnPayInline.onclick = function(){
@@ -1628,9 +1630,7 @@
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title" id="payModalOrdersLabel">Paiement de la commande #<span id="pm-id"></span></h5>
-        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="row g-3">
@@ -1778,9 +1778,7 @@
     <div class="modal-content">
       <div class="modal-header bg-success text-white">
         <h5 class="modal-title" id="orderDetailsLabel">Détails de la commande <span id="od-id"></span></h5>
-        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="row">
@@ -1820,10 +1818,10 @@
         <a id="od-link-pay" href="#" class="btn btn-success"><i class="bi bi-credit-card"></i> Enregistrer paiement</a>
         <a id="od-link-detail" href="#" class="btn btn-secondary"><i class="bi bi-eye"></i> Voir la fiche</a>
         <a id="od-link-pdf" href="#" class="btn btn-primary"><i class="bi bi-file-pdf"></i> PDF</a>
-        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Fermer</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
       </div>
     </div>
   </div>
 </div>
 
-
+{% endblock %}

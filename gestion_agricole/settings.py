@@ -10,7 +10,7 @@ SECRET_KEY = os.environ.get(
     'django-insecure-change-me'
 )
 SECRET_KEY = os.environ.get('SECRET_KEY', '5kik8aa1g86_i3q%d@1s&ufon&+36e4b!9s*$7-v8(o)3bun-0')
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # ⭐ IMPORTANT POUR RENDER
 ALLOWED_HOSTS = os.environ.get(

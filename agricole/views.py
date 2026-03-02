@@ -34,7 +34,7 @@ from django.http import HttpResponse
 from django.template.loader import get_template, render_to_string
 from django.db.models import Sum
 from django.conf import settings
-from xhtml2pdf import pisa
+# from xhtml2pdf import pisa
 from .forms import DetailCommandeForm
 from django.contrib.auth import get_user_model
 User = get_user_model()
