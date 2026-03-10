@@ -201,11 +201,13 @@ urlpatterns = [
     path('client/commande/nouvelle/', views.passer_commande, name='passer_commande'),
     path('client/commandes/', views.client_commandes, name='client_commandes'),
     path('gerant/commandes/', views.admin_liste_commandes, name='gerant_commandes'),
+    path('gerant/commandes-pro/', AdminViews.liste_commandes_pro, name='gerant_commandes_pro'),
     path('gerant/commandes/<int:commande_id>/valider/', views.admin_valider_commande, name='gerant_valider_commande'),
     path('gerant/commandes/<int:commande_id>/update_status/', views.admin_update_order_status, name='gerant_update_order_status'),
     path('gerant/commandes/<int:commande_id>/supprimer/', views.admin_supprimer_commande, name='gerant_supprimer_commande'),
     path('gerant/commandes/<int:commande_id>/annuler/', views.admin_annuler_commande, name='gerant_annuler_commande'),
     path('gerant/commandes/<int:commande_id>/detail-modal/', views.detail_commande_modal, name='detail_commande_modal'),
+    path('gerant/commandes/<int:commande_id>/renvoyer-email-paiement/', AdminViews.renvoyer_email_paiement, name='renvoyer_email_paiement'),
     path('commandes/<int:commande_id>/export_pdf/', views.export_commande_pdf, name='export_commande_pdf'),
 
     # Payment management for manager

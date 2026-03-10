@@ -710,7 +710,7 @@ def admin_liste_commandes(request):
 @require_POST
 def admin_valider_commande(request, commande_id):
     """Valide une commande payée: vérifie stock et décrémente si OK."""
-    commande = get_object_or_404(Commande, id=commande_id, statut='payee_en_attente')
+    commande = get_object_or_404(Commande, id=commande_id, statut='en_attente_paiement')
     
     # Vérifier le stock pour chaque ligne
     insuffisances = []

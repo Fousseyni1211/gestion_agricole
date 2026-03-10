@@ -1708,6 +1708,59 @@ def modifier_commande(request, commande_id):
         messages.error(request, f'Une erreur est survenue : {str(e)}')
         return redirect('liste_commandes')
 
+@login_required
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
+def liste_commandes_pro(request):
+    """
+    Vue pour le tableau de commandes professionnel moderne.
+    - Interface ultra-professionnelle 2025
+    - Compatible DataTables
+    - Actions intelligentes selon le statut
+    """
+    from django.db import models
+    
+    # Récupérer toutes les commandes avec leurs détails
+    commandes = Commande.objects.select_related('client').prefetch_related('details__produit').all().order_by('-date_commande')
+    
+    # Calculer les statistiques
+    stats = {
+        'total_commandes': commandes.count(),
+        'commandes_validees': commandes.filter(statut='validee').count(),
+        'commandes_en_attente': commandes.filter(statut='en_attente').count(),
+        'commandes_en_preparation': commandes.filter(statut='en_preparation').count(),
+        'commandes_annulees': commandes.filter(statut='annulee').count(),
+        'total_ventes': commandes.filter(statut__in=['validee', 'en_preparation', 'livree', 'payee']).aggregate(
+            total=models.Sum('total')
+        )['total'] or 0,
+    }
+    
+    # Filtrer par client si spécifié
+    client_id = request.GET.get('client')
+    if client_id:
+        commandes = commandes.filter(client_id=client_id)
+    
+    # Filtrer par statut si spécifié
+    statut = request.GET.get('statut')
+    if statut:
+        commandes = commandes.filter(statut=statut)
+    
+    # Filtrer par date si spécifié
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
+    if date_debut:
+        commandes = commandes.filter(date_commande__date__gte=date_debut)
+    if date_fin:
+        commandes = commandes.filter(date_commande__date__lte=date_fin)
+    
+    context = {
+        'commandes': commandes,
+        'stats': stats,
+        'clients': CustomUser.objects.filter(role='Client'),
+        'statuts_choices': Commande.STATUTS,
+    }
+    
+    return render(request, 'admin/liste_commandes_pro.html', context)
+
 def liste_commandes(request):
     """
     Affiche la liste de toutes les commandes avec les détails des produits.
@@ -1818,6 +1871,100 @@ def detail_commande_modal(request, commande_id):
 
 @login_required
 @user_passes_test(lambda u: u.is_staff or u.is_superuser)
+def renvoyer_email_paiement(request, commande_id):
+    """
+    Vue pour renvoyer l'email de paiement au client.
+    Accessible uniquement aux admins/superusers.
+    """
+    commande = get_object_or_404(Commande, id=commande_id)
+    
+    if commande.statut != 'en_attente_paiement':
+        messages.error(request, f"La commande #{commande.id} n'est pas en attente de paiement.")
+        return redirect('liste_commandes')
+    
+    try:
+        from django.core.mail import send_mail
+        from django.conf import settings
+        
+        client = commande.client
+        
+        sujet = f"Rappel : Paiement requis pour votre commande #{commande.id} - Kayupe Agriculture"
+        message_html = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="margin: 0; font-size: 28px;">Kayupe Agriculture</h1>
+                <p style="margin: 10px 0 0 0; opacity: 0.9;">Rappel de paiement</p>
+            </div>
+            
+            <div style="background: white; padding: 40px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
+                <h2 style="color: #1f2937; margin-bottom: 20px;">Rappel : Paiement requis</h2>
+                
+                <p style="color: #6b7280; font-size: 16px; line-height: 1.6;">
+                    Bonjour {client.get_full_name() or client.username},
+                </p>
+                
+                <p style="color: #6b7280; font-size: 16px; line-height: 1.6;">
+                    Ceci est un rappel concernant votre commande <strong>#{commande.id}</strong> qui est toujours en attente de paiement.
+                </p>
+                
+                <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 20px; margin: 25px 0;">
+                    <h3 style="color: #991b1b; margin-top: 0; margin-bottom: 15px;">Détails de la commande :</h3>
+                    <ul style="color: #991b1b; line-height: 1.8; padding-left: 20px;">
+                        <li><strong>Numéro de commande :</strong> #{commande.id}</li>
+                        <li><strong>Date :</strong> {commande.date_commande.strftime('%d/%m/%Y à %H:%M')}</li>
+                        <li><strong>Montant à payer :</strong> {commande.total:,} FCFA</li>
+                        <li><strong>Statut :</strong> En attente de paiement</li>
+                    </ul>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{settings.SITE_URL if hasattr(settings, 'SITE_URL') else 'http://127.0.0.1:8000'}/paiement/commande/{commande.id}/" 
+                       style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                        Payer ma commande maintenant
+                    </a>
+                </div>
+                
+                <p style="color: #6b7280; font-size: 16px; line-height: 1.6;">
+                    Une fois le paiement effectué, votre commande sera automatiquement validée et mise en préparation.
+                </p>
+                
+                <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px; text-align: center;">
+                    <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+                        Merci de votre confiance !<br>
+                        L'équipe Kayupe Agriculture
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        send_mail(
+            sujet,
+            f"Rappel : Votre commande #{commande.id} est en attente de paiement. Veuillez la régler pour finalisation.",
+            settings.DEFAULT_FROM_EMAIL,
+            [client.email],
+            html_message=message_html,
+            fail_silently=False,
+        )
+        
+        messages.success(
+            request,
+            f"L'email de rappel a été envoyé avec succès à {client.email}."
+        )
+        
+    except Exception as e:
+        messages.error(
+            request,
+            f"Erreur lors de l'envoi de l'email : {str(e)}"
+        )
+    
+    return redirect('liste_commandes')
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
 def ajouter_commande(request):
     """
     Vue pour ajouter une nouvelle commande côté administrateur.
@@ -1906,7 +2053,7 @@ def ajouter_commande(request):
                 commande = Commande.objects.create(
                     client=client,
                     date_commande=timezone.now() if not date_commande else timezone.now(),
-                    statut='validee'  # validée automatiquement
+                    statut='en_attente_paiement'  # en attente de paiement client
                 )
 
                 # Créer les détails de commande depuis les tableaux postés
@@ -1953,44 +2100,44 @@ def ajouter_commande(request):
                 # Créer une notification pour le client
                 notification = Notification.objects.create(
                     user=client,
-                    message=f"Votre commande #{commande.id} a été validée et est en cours de traitement.",
-                    type='success',
-                    url=f"/client/commande/{commande.id}/"
+                    message=f"Votre commande #{commande.id} est en attente de paiement. Veuillez la régler pour finalisation.",
+                    type='warning',
+                    url=f"/paiement/commande/{commande.id}/"
                 )
 
-                # Envoyer un email au client
+                # Envoyer un email au client pour paiement
                 try:
                     from django.core.mail import send_mail
                     from django.conf import settings
                     
-                    sujet = f"Confirmation de votre commande #{commande.id} - Kayupe Agriculture"
+                    sujet = f"Action requise : Paiement de votre commande #{commande.id} - Kayupe Agriculture"
                     message_html = f"""
                     <html>
                     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
                             <h1 style="margin: 0; font-size: 28px;">Kayupe Agriculture</h1>
                             <p style="margin: 10px 0 0 0; opacity: 0.9;">Votre partenaire agricole de confiance</p>
                         </div>
                         
                         <div style="background: white; padding: 40px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
-                            <h2 style="color: #1f2937; margin-bottom: 20px;">Confirmation de commande</h2>
+                            <h2 style="color: #1f2937; margin-bottom: 20px;">Action requise : Paiement de votre commande</h2>
                             
                             <p style="color: #6b7280; font-size: 16px; line-height: 1.6;">
                                 Bonjour {client.get_full_name() or client.username},
                             </p>
                             
                             <p style="color: #6b7280; font-size: 16px; line-height: 1.6;">
-                                Nous vous confirmons que votre commande <strong>#{commande.id}</strong> a été validée 
-                                et est maintenant en cours de traitement.
+                                Le gérant a créé votre commande <strong>#{commande.id}</strong>. 
+                                Pour finaliser votre commande, veuillez procéder au paiement.
                             </p>
                             
-                            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0;">
-                                <h3 style="color: #1f2937; margin-top: 0; margin-bottom: 15px;">Détails de la commande :</h3>
-                                <ul style="color: #6b7280; line-height: 1.8; padding-left: 20px;">
+                            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 25px 0;">
+                                <h3 style="color: #92400e; margin-top: 0; margin-bottom: 15px;">Détails de la commande :</h3>
+                                <ul style="color: #92400e; line-height: 1.8; padding-left: 20px;">
                                     <li><strong>Numéro de commande :</strong> #{commande.id}</li>
                                     <li><strong>Date :</strong> {commande.date_commande.strftime('%d/%m/%Y à %H:%M')}</li>
-                                    <li><strong>Montant total :</strong> {commande.total:,} FCFA</li>
-                                    <li><strong>Statut :</strong> Validée</li>
+                                    <li><strong>Montant à payer :</strong> {commande.total:,} FCFA</li>
+                                    <li><strong>Statut :</strong> En attente de paiement</li>
                                 </ul>
                             </div>
                             
@@ -2009,16 +2156,16 @@ def ajouter_commande(request):
                                 </ul>
                             </div>
                             
-                            <p style="color: #6b7280; font-size: 16px; line-height: 1.6;">
-                                Vous pouvez suivre l'état de votre commande en vous connectant à votre espace client.
-                            </p>
-                            
                             <div style="text-align: center; margin: 30px 0;">
-                                <a href="{settings.SITE_URL if hasattr(settings, 'SITE_URL') else 'http://127.0.0.1:8000'}/client/commandes/" 
-                                   style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                                    Suivre ma commande
+                                <a href="{settings.SITE_URL if hasattr(settings, 'SITE_URL') else 'http://127.0.0.1:8000'}/paiement/commande/{commande.id}/" 
+                                   style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                                    Payer ma commande maintenant
                                 </a>
                             </div>
+                            
+                            <p style="color: #6b7280; font-size: 16px; line-height: 1.6;">
+                                Une fois le paiement effectué, votre commande sera automatiquement validée et mise en préparation.
+                            </p>
                             
                             <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px; text-align: center;">
                                 <p style="color: #9ca3af; font-size: 14px; margin: 0;">
@@ -2033,7 +2180,7 @@ def ajouter_commande(request):
                     
                     send_mail(
                         sujet,
-                        f"Votre commande #{commande.id} a été validée. Connectez-vous à votre espace client pour suivre son état.",
+                        f"Votre commande #{commande.id} est en attente de paiement. Veuillez la régler pour finalisation.",
                         settings.DEFAULT_FROM_EMAIL,
                         [client.email],
                         html_message=message_html,
@@ -2043,20 +2190,21 @@ def ajouter_commande(request):
                     # Notifier l'admin que l'email a été envoyé
                     messages.info(
                         request,
-                        f"Un email de confirmation a été envoyé à {client.email}."
+                        f"Un email de demande de paiement a été envoyé à {client.email}."
                     )
                     
                 except Exception as e:
                     # Si l'email échoue, on ne bloque pas le processus
                     messages.warning(
                         request,
-                        f"La commande a été créée mais l'email de confirmation n'a pas pu être envoyé: {str(e)}"
+                        f"La commande a été créée mais l'email de demande de paiement n'a pas pu être envoyé: {str(e)}"
                     )
 
                 messages.success(
                     request,
-                    f"La commande #{commande.id} a été créée et validée avec succès. "
-                    f"Une notification a été envoyée au client {client.get_full_name()}."
+                    f"La commande #{commande.id} a été créée avec succès. "
+                    f"Le client {client.get_full_name()} a reçu un email pour procéder au paiement. "
+                    f"La commande sera validée automatiquement après paiement."
                 )
 
             return redirect('liste_commandes')
