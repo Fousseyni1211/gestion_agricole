@@ -9,7 +9,7 @@ from .forms import DepenseRevenuForm
 from io import BytesIO
 import openpyxl
 from django.template.loader import get_template
-from weasyprint import HTML
+from xhtml2pdf import pisa
 from .models import Culture, Commande, Paiement, Stock, Alerte, DepenseRevenu
 from django.contrib.auth import get_user_model
 from django.db.models import Prefetch

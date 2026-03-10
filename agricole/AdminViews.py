@@ -44,7 +44,7 @@ import pprint
 from openpyxl.utils import get_column_letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from weasyprint import HTML
+from xhtml2pdf import pisa
 
 from .models import (
     Produit, Commande, Paiement, Client, Agriculteur,

@@ -6,7 +6,7 @@ from django.template.loader import get_template
 from django.http import HttpResponse
 from datetime import datetime
 import requests
-from weasyprint import HTML
+from xhtml2pdf import pisa
 import os
 from django.conf import settings
 from django.contrib.staticfiles import finders

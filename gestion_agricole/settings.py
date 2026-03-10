@@ -13,11 +13,12 @@ SECRET_KEY = os.environ.get('SECRET_KEY', '5kik8aa1g86_i3q%d@1s&ufon&+36e4b!9s*$
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # ⭐ IMPORTANT POUR RENDER
+DEBUG = False
 ALLOWED_HOSTS = os.environ.get(
     'ALLOWED_HOSTS',
     '.onrender.com,localhost,127.0.0.1'
 ).split(',')
-
+CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 # Email
 DEFAULT_FROM_EMAIL = 'fousseynimoussaberthe@gmail.com'
 ADMIN_EMAIL = 'fousseynimoussaberthe@gmail.com'
