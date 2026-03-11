@@ -1,3 +1,14 @@
+{% load humanize %}
+{% if error %}
+<div class="alert alert-danger">
+  <h5><i class="fas fa-exclamation-triangle me-2"></i>Erreur détectée</h5>
+  <p>{{ error }}</p>
+  <hr>
+  <small class="text-muted">
+    Veuillez vérifier les logs du serveur pour plus de détails.
+  </small>
+</div>
+{% elif commande %}
 <div class="container-fluid">
   <!-- En-tête de la commande -->
   <div class="row mb-4">
@@ -247,3 +258,9 @@
     </div>
   </div>
 </div>
+{% else %}
+<div class="alert alert-warning">
+  <h5><i class="fas fa-exclamation-triangle me-2"></i>Aucune commande trouvée</h5>
+  <p>La commande demandée n'existe pas ou n'a pas pu être chargée.</p>
+</div>
+{% endif %}

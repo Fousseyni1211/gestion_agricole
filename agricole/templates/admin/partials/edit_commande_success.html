@@ -1,0 +1,18 @@
+{% load humanize %}
+<div class="container-fluid">
+  <div class="text-center py-4">
+    <div class="mb-3">
+      <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+    </div>
+    <h4 class="text-success mb-3">Modifications enregistrées !</h4>
+    <p class="text-muted mb-4">
+      La commande #{{ commande.id }} a été mise à jour avec succès.
+    </p>
+    <div class="alert alert-info">
+      <small>
+        <i class="fas fa-info-circle me-1"></i>
+        Cette fenêtre va se fermer automatiquement et la page va s'actualiser...
+      </small>
+    </div>
+  </div>
+</div>

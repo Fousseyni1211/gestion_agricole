@@ -1,0 +1,173 @@
+{% load humanize %}
+{% if error %}
+<div class="alert alert-danger">
+  <h5><i class="fas fa-exclamation-triangle me-2"></i>Erreur détectée</h5>
+  <p>{{ error }}</p>
+  <hr>
+  <small class="text-muted">
+    Veuillez vérifier les logs du serveur pour plus de détails.
+  </small>
+</div>
+{% elif commande %}
+<div class="container-fluid">
+  <!-- En-tête -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex align-items-center mb-3">
+        <div class="badge bg-warning fs-6 me-3">#{{ commande.id }}</div>
+        <h4 class="mb-0">Modifier la Commande</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire d'édition -->
+  <form id="editOrderForm" method="POST" action="/gerant/commandes/{{ commande.id }}/edit-modal/">
+    {% csrf_token %}
+    
+    <!-- Informations principales -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h6 class="card-title mb-3">
+              <i class="fas fa-info-circle text-primary me-2"></i>Informations générales
+            </h6>
+            
+            <div class="mb-3">
+              <label for="statut" class="form-label fw-bold">Statut de la commande</label>
+              <select name="statut" id="statut" class="form-select">
+                <option value="en_attente" {% if commande.statut == 'en_attente' %}selected{% endif %}>En attente</option>
+                <option value="validee" {% if commande.statut == 'validee' %}selected{% endif %}>Validée</option>
+                <option value="en_preparation" {% if commande.statut == 'en_preparation' %}selected{% endif %}>En préparation</option>
+                <option value="livree" {% if commande.statut == 'livree' %}selected{% endif %}>Livrée</option>
+                <option value="annulee" {% if commande.statut == 'annulee' %}selected{% endif %}>Annulée</option>
+                <option value="payee" {% if commande.statut == 'payee' %}selected{% endif %}>Payée</option>
+                <option value="en_attente_paiement" {% if commande.statut == 'en_attente_paiement' %}selected{% endif %}>En attente de paiement</option>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label for="notes" class="form-label fw-bold">Notes internes</label>
+              <textarea name="notes" id="notes" rows="3" class="form-control" placeholder="Ajoutez des notes sur cette commande...">{{ commande.notes|default:'' }}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h6 class="card-title mb-3">
+              <i class="fas fa-user text-info me-2"></i>Client
+            </h6>
+            <p class="mb-2"><strong>Nom :</strong> {{ commande.client.get_full_name|default:commande.client.username }}</p>
+            <p class="mb-2"><strong>Email :</strong> {{ commande.client.email }}</p>
+            <p class="mb-2"><strong>Téléphone :</strong> {{ commande.client.telephone|default:'Non renseigné' }}</p>
+            <p class="mb-0"><strong>Date commande :</strong> {{ commande.date_commande|date:"d/m/Y H:i" }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Récapitulatif des produits -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h6 class="card-title mb-3">
+              <i class="fas fa-shopping-cart text-success me-2"></i>Produits commandés
+            </h6>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Produit</th>
+                    <th class="text-center">Quantité</th>
+                    <th class="text-end">Prix unitaire</th>
+                    <th class="text-end">Sous-total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for detail in commande.details.all %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        {% if detail.produit.image_produit %}
+                          <img src="{{ detail.produit.image_produit.url }}" alt="{{ detail.produit.nom_produit }}" class="rounded me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                        {% endif %}
+                        <span>{{ detail.produit.nom_produit }}</span>
+                      </div>
+                    </td>
+                    <td class="text-center">{{ detail.quantite }}</td>
+                    <td class="text-end">{{ detail.produit.prix_unitaire|intcomma }} FCFA</td>
+                    <td class="text-end fw-bold">{{ detail.sous_total|intcomma }} FCFA</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot>
+                  <tr class="table-active">
+                    <th colspan="3" class="text-end">Total :</th>
+                    <th class="text-end text-success">{{ commande.total|intcomma }} FCFA</th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row">
+      <div class="col-12">
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Annuler
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i>Enregistrer les modifications
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+$(document).ready(function() {
+  $('#editOrderForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    var form = $(this);
+    var submitBtn = form.find('button[type="submit"]');
+    var originalText = submitBtn.html();
+    
+    submitBtn.html('<i class="fas fa-spinner fa-spin me-1"></i>Enregistrement...').prop('disabled', true);
+    
+    $.ajax({
+      url: form.attr('action'),
+      method: 'POST',
+      data: form.serialize(),
+      success: function(data) {
+        $('#editOrderContent').html(data);
+        if (data.includes('success')) {
+          setTimeout(function() {
+            $('#editOrderModal').modal('hide');
+            location.reload();
+          }, 2000);
+        }
+      },
+      error: function(xhr) {
+        $('#editOrderContent').html('<div class="alert alert-danger">Erreur lors de la sauvegarde.</div>');
+        submitBtn.html(originalText).prop('disabled', false);
+      }
+    });
+  });
+});
+</script>
+{% else %}
+<div class="alert alert-warning">
+  <h5><i class="fas fa-exclamation-triangle me-2"></i>Commande non trouvée</h5>
+  <p>La commande demandée n'existe pas ou n'a pas pu être chargée.</p>
+</div>
+{% endif %}

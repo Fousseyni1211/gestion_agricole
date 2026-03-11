@@ -1,86 +1,339 @@
 {% extends "admin/base_template.html" %}
 {% load static %}
 {% load humanize %}
+
 {% block custom_css %}
 <!-- DataTables CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- AOS Animation -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
 <style>
-/* Styles personnalisés pour les badges de statut */
-.status-badge {
+:root {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --success-gradient: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+  --warning-gradient: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+  --danger-gradient: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+  --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
+  
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --border-color: #e2e8f0;
+  --bg-light: #f7fafc;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: var(--text-primary);
+}
+
+/* Header Section */
+.hero-section {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 3rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-2xl);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-gradient);
+}
+
+.hero-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.hero-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+  font-weight: 400;
+  margin-bottom: 0;
+}
+
+/* Stats Cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 1.75rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-lg);
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-2xl);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary-gradient);
+}
+
+.stat-card.success::before { background: var(--success-gradient); }
+.stat-card.warning::before { background: var(--warning-gradient); }
+.stat-card.danger::before { background: var(--danger-gradient); }
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card.success .stat-icon { background: var(--success-gradient); }
+.stat-card.warning .stat-icon { background: var(--warning-gradient); }
+.stat-card.danger .stat-icon { background: var(--danger-gradient); }
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.stat-label {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-change {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
   padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(52, 211, 153, 0.1);
+  color: #10b981;
+}
+
+/* Main Table Card */
+.table-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  box-shadow: var(--shadow-2xl);
+  overflow: hidden;
+  position: relative;
+}
+
+.table-header {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-bottom: 1px solid var(--border-color);
+  padding: 2rem;
+}
+
+.table-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.table-title i {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Modern Table */
+.table-modern {
+  margin: 0;
+  background: transparent;
+}
+
+.table-modern thead th {
+  background: var(--bg-light);
+  border: none;
+  padding: 1.25rem 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.table-modern tbody td {
+  padding: 1.25rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.table-modern tbody tr {
+  transition: all 0.2s ease;
+}
+
+.table-modern tbody tr:hover {
+  background: rgba(102, 126, 234, 0.05);
+  transform: scale(1.01);
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  border: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .status-en_attente { 
-  background: #fef3c7; 
-  color: #92400e; 
-  border: 1px solid #fbbf24;
+  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+  color: #92400e;
+  box-shadow: 0 4px 6px rgba(251, 191, 36, 0.2);
 }
 
 .status-validee { 
-  background: #d1fae5; 
-  color: #065f46; 
-  border: 1px solid #34d399;
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+  box-shadow: 0 4px 6px rgba(52, 211, 153, 0.2);
 }
 
 .status-en_preparation { 
-  background: #dbeafe; 
-  color: #1e40af; 
-  border: 1px solid #60a5fa;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  box-shadow: 0 4px 6px rgba(96, 165, 250, 0.2);
 }
 
 .status-livree { 
-  background: #e0e7ff; 
-  color: #3730a3; 
-  border: 1px solid #818cf8;
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+  color: #3730a3;
+  box-shadow: 0 4px 6px rgba(129, 140, 248, 0.2);
 }
 
 .status-annulee { 
-  background: #fee2e2; 
-  color: #991b1b; 
-  border: 1px solid #f87171;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #991b1b;
+  box-shadow: 0 4px 6px rgba(248, 113, 113, 0.2);
 }
 
 .status-payee { 
-  background: #dcfce7; 
-  color: #166534; 
-  border: 1px solid #4ade80;
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #166534;
+  box-shadow: 0 4px 6px rgba(74, 222, 128, 0.2);
 }
 
 .status-en_attente_paiement { 
-  background: #fed7aa; 
-  color: #9a3412; 
-  border: 1px solid #fb923c;
+  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+  color: #9a3412;
+  box-shadow: 0 4px 6px rgba(251, 146, 60, 0.2);
 }
 
-/* Client info */
+/* Client Info */
 .client-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .client-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--primary-gradient);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 0.75rem;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+
+.client-avatar::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  background: #10b981;
+  border: 2px solid white;
+  border-radius: 50%;
 }
 
 .client-details {
@@ -90,138 +343,227 @@
 
 .client-name {
   font-weight: 600;
-  color: #1e293b;
-  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .client-email {
-  color: #64748b;
-  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
 }
 
-/* Loading spinner */
+/* Action Buttons */
+.btn-modern {
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  border: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-outline-primary-modern {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.btn-outline-primary-modern:hover {
+  background: #667eea;
+  color: white;
+}
+
+.btn-outline-secondary-modern {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+  border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.btn-outline-secondary-modern:hover {
+  background: #6b7280;
+  color: white;
+}
+
+/* Loading Spinner */
 .loading-spinner {
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(102, 126, 234, 0.2);
   border-radius: 50%;
-  border-top-color: white;
+  border-top-color: #667eea;
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-modern {
+    font-size: 0.875rem;
+  }
+  
+  .btn-group {
+    flex-wrap: wrap;
+  }
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.8s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 </style>
 {% endblock %}
 
 {% block main_content %}
-<!-- Header -->
-<div class="main-header">
-  <div class="container">
+<div class="container-fluid p-4">
+  <!-- Hero Section -->
+  <div class="hero-section fade-in" data-aos="fade-down">
     <div class="row align-items-center">
-      <div class="col-md-6">
-        <h1 class="h2 mb-0">
-          <i class="fas fa-shopping-cart me-2"></i>
-          Gestion des Commandes
+      <div class="col-lg-8">
+        <h1 class="hero-title">
+          <i class="fas fa-shopping-cart me-3"></i>
+          Centre de Commandes
         </h1>
+        <p class="hero-subtitle">
+          Gérez votre activité commerciale avec intelligence et précision
+        </p>
       </div>
-      <div class="col-md-6 text-md-end">
-        <div class="d-flex gap-2 justify-content-md-end">
-          <a href="{% url 'ajouter_commande' %}" class="btn btn-light btn-modern">
+      <div class="col-lg-4 text-lg-end">
+        <div class="d-flex gap-3 justify-content-lg-end">
+          <button class="btn-modern btn-outline-secondary-modern" onclick="refreshTable()">
+            <i class="fas fa-sync-alt"></i>
+            Actualiser
+          </button>
+          <a href="{% url 'ajouter_commande' %}" class="btn-modern" style="background: var(--primary-gradient); color: white;">
             <i class="fas fa-plus"></i>
             Nouvelle Commande
           </a>
-          <button class="btn btn-outline-light btn-modern" onclick="exportData()">
-            <i class="fas fa-download"></i>
-            Exporter
-          </button>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Statistiques -->
-<div class="container">
-  <div class="stats-grid">
+  <!-- Stats Cards -->
+  <div class="stats-grid" data-aos="fade-up" data-aos-delay="100">
+    <div class="stat-card success">
+      <div class="stat-icon">
+        <i class="fas fa-shopping-bag"></i>
+      </div>
+      <div class="stat-value">{{ stats.total_commandes|default:0|intcomma }}</div>
+      <div class="stat-label">Commandes Totales</div>
+      <div class="stat-change">
+        <i class="fas fa-arrow-up"></i> 12%
+      </div>
+    </div>
+
     <div class="stat-card">
-      <div class="stat-value">
-        {{ stats.total_commandes|default:0 }}
-        <small><i class="fas fa-shopping-cart"></i></small>
+      <div class="stat-icon">
+        <i class="fas fa-clock"></i>
       </div>
-      <div class="stat-label">Total Commandes</div>
-      <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
-    </div>
-    <div class="stat-card success">
-      <div class="stat-value">
-        {{ stats.commandes_validees|default:0 }}
-        <small><i class="fas fa-check-circle"></i></small>
-      </div>
-      <div class="stat-label">Validées</div>
-      <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-    </div>
-    <div class="stat-card warning">
-      <div class="stat-value">
-        {{ stats.commandes_en_attente|default:0 }}
-        <small><i class="fas fa-clock"></i></small>
-      </div>
+      <div class="stat-value">{{ stats.commandes_en_attente|default:0|intcomma }}</div>
       <div class="stat-label">En Attente</div>
-      <div class="stat-icon"><i class="fas fa-clock"></i></div>
-    </div>
-    <div class="stat-card info">
-      <div class="stat-value">
-        {{ stats.commandes_en_preparation|default:0 }}
-        <small><i class="fas fa-box"></i></small>
+      <div class="stat-change">
+        <i class="fas fa-minus"></i> 0%
       </div>
+    </div>
+
+    <div class="stat-card warning">
+      <div class="stat-icon">
+        <i class="fas fa-truck"></i>
+      </div>
+      <div class="stat-value">{{ stats.commandes_en_preparation|default:0|intcomma }}</div>
       <div class="stat-label">En Préparation</div>
-      <div class="stat-icon"><i class="fas fa-box"></i></div>
-    </div>
-    <div class="stat-card danger">
-      <div class="stat-value">
-        {{ stats.commandes_annulees|default:0 }}
-        <small><i class="fas fa-times-circle"></i></small>
+      <div class="stat-change">
+        <i class="fas fa-arrow-up"></i> 8%
       </div>
-      <div class="stat-label">Annulées</div>
-      <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
     </div>
-    <div class="stat-card success">
-      <div class="stat-value">
-        {{ stats.total_ventes|default:0|intcomma }} FCFA
-        <small><i class="fas fa-chart-line"></i></small>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-chart-line"></i>
       </div>
-      <div class="stat-label">Total Ventes</div>
-      <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+      <div class="stat-value">{{ stats.total_ventes|default:0|intcomma }} FCFA</div>
+      <div class="stat-label">Chiffre d'Affaires</div>
+      <div class="stat-change">
+        <i class="fas fa-arrow-up"></i> 24%
+      </div>
     </div>
   </div>
 
-  <!-- Tableau des commandes -->
-  <div class="card modern-card shadow-sm">
-    <div class="card-header bg-white border-0 py-3">
+  <!-- Table Section -->
+  <div class="table-card slide-in" data-aos="fade-up" data-aos-delay="200">
+    <div class="table-header">
       <div class="row align-items-center">
-        <div class="col">
-          <h5 class="card-title mb-0 text-dark fw-semibold">
-            <i class="fas fa-list me-2 text-primary"></i>
+        <div class="col-md-6">
+          <h5 class="table-title">
+            <i class="fas fa-list"></i>
             Liste des Commandes
           </h5>
         </div>
-        <div class="col-auto">
+        <div class="col-md-6 text-md-end">
           <div class="btn-group" role="group">
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="refreshTable()">
-              <i class="fas fa-sync-alt me-1"></i>Actualiser
-            </button>
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="exportData()">
+            <button type="button" class="btn-modern btn-outline-secondary-modern" onclick="exportData()">
               <i class="fas fa-download me-1"></i>Exporter
+            </button>
+            <button type="button" class="btn-modern btn-outline-secondary-modern" onclick="printTable()">
+              <i class="fas fa-print me-1"></i>Imprimer
             </button>
           </div>
         </div>
       </div>
     </div>
-    <div class="card-body">
+    
+    <div class="p-4">
       <div class="table-responsive">
-        <table id="commandesTable" class="table table-hover">
-          <thead class="table-light">
+        <table id="commandesTable" class="table table-modern">
+          <thead>
             <tr>
               <th>ID</th>
               <th>Client</th>
@@ -255,14 +597,19 @@
             <small class="text-muted">{{ commande.date_commande|time:"H:i" }}</small>
           </td>
           <td>
-            <div class="amount positive">
-              {{ commande.total|intcomma }} FCFA
-            </div>
+            <strong style="color: #10b981; font-size: 1.1rem;">{{ commande.total|intcomma }} FCFA</strong>
           </td>
           <td>
             <span class="status-badge status-{{ commande.statut }}">
               <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
-              {{ commande.get_statut_display }}
+              {% if commande.statut == 'en_attente' %}En attente
+              {% elif commande.statut == 'validee' %}Validée
+              {% elif commande.statut == 'en_preparation' %}En préparation
+              {% elif commande.statut == 'livree' %}Livrée
+              {% elif commande.statut == 'annulee' %}Annulée
+              {% elif commande.statut == 'payee' %}Payée
+              {% elif commande.statut == 'en_attente_paiement' %}Attente paiement
+              {% else %}{{ commande.statut }}{% endif %}
             </span>
           </td>
           <td>
@@ -284,8 +631,10 @@
             {% endif %}
           </td>
           <td>
-            <div class="d-flex align-items-center gap-1">
-              <span class="badge bg-primary">{{ commande.details.count }}</span>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge" style="background: var(--primary-gradient); color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600;">
+                {{ commande.details.count }}
+              </span>
               <small class="text-muted">produits</small>
             </div>
           </td>
@@ -387,16 +736,14 @@
 
               <!-- 📩 Envoyer -->
               {% if commande.statut == 'en_attente_paiement' %}
-              <form method="POST" action="{% url 'renvoyer_email_paiement' commande.id %}" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" 
+              <button type="button" 
                         class="btn btn-sm btn-outline-warning" 
                         data-bs-toggle="tooltip" 
                         data-bs-placement="top" 
-                        title="Renvoyer l'email de paiement">
+                        title="Renvoyer l'email de paiement"
+                        onclick="sendPaymentEmail({{ commande.id }})">
                   <i class="fas fa-envelope"></i>
                 </button>
-              </form>
               {% endif %}
             </div>
           </td>
@@ -434,7 +781,7 @@
 </div>
 
 <!-- Modal Modification Commande -->
-<div class="modal fade modal-modern" id="editOrderModal" tabindex="-1">
+<div class="modal fade" id="editOrderModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header bg-warning text-white">
@@ -450,18 +797,48 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
         <button type="button" class="btn btn-warning" onclick="saveOrderChanges()">
-          <i class="fas fa-save me-2"></i>
-          Enregistrer
+          <i class="fas fa-save me-1"></i>Enregistrer
         </button>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Modal Suppression Commande -->
+<div class="modal fade" id="deleteOrderModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-trash me-2"></i>
+          Supprimer la Commande
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir supprimer cette commande ?</p>
+        <p class="text-muted">Cette action est irréversible.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-danger" onclick="confirmDeleteOrder()">
+          <i class="fas fa-trash me-1"></i>Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
-{% block extra_js %}
-<!-- DataTables JS -->
+{% block custom_js %}
+<!-- jQuery (doit être chargé en premier) -->
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
@@ -470,42 +847,55 @@
 <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- AOS Animation -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
+<!-- Script principal -->
 <script>
 $(document).ready(function() {
+    // Initialiser AOS
+    AOS.init({
+        duration: 800,
+        once: true,
+        offset: 100
+    });
+
     // Initialiser DataTables
     $('#commandesTable').DataTable({
         responsive: true,
         pageLength: 25,
         language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/French.json'
+            search: "Rechercher:",
+            lengthMenu: "Afficher _MENU_ commandes",
+            info: "Affichage de _START_ à _END_ sur _TOTAL_ commandes",
+            paginate: {
+                first: "Premier",
+                last: "Dernier",
+                next: "Suivant",
+                previous: "Précédent"
+            }
         },
         dom: 'Bfrtip',
         buttons: [
             {
                 extend: 'excel',
                 text: '<i class="fas fa-file-excel"></i> Excel',
-                className: 'btn btn-success btn-modern'
+                className: 'btn btn-success btn-sm'
             },
             {
                 extend: 'pdf',
                 text: '<i class="fas fa-file-pdf"></i> PDF',
-                className: 'btn btn-danger btn-modern'
+                className: 'btn btn-danger btn-sm'
             },
             {
                 extend: 'print',
                 text: '<i class="fas fa-print"></i> Imprimer',
-                className: 'btn btn-info btn-modern'
+                className: 'btn btn-info btn-sm'
             }
-        ],
-        order: [[0, 'desc']],
-        columnDefs: [
-            { targets: [7], orderable: false }
         ]
     });
 
-    // Initialiser les tooltips Bootstrap 5
+    // Initialiser les tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
@@ -514,61 +904,129 @@ $(document).ready(function() {
 
 // Fonctions pour les actions
 function viewOrder(orderId) {
+    console.log('DEBUG: viewOrder appelé avec orderId:', orderId);
+    
     var modal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
     modal.show();
     
     $('#orderDetailContent').html('<div class="text-center"><div class="loading-spinner"></div> Chargement...</div>');
     
-    $.get('/gerant/commandes/' + orderId + '/detail-modal/', function(data) {
+    var url = '/gerant/commandes/' + orderId + '/detail-modal/';
+    console.log('DEBUG: URL appelée:', url);
+    
+    $.get(url, function(data) {
+        console.log('DEBUG: Réponse reçue, longueur:', data.length);
+        console.log('DEBUG: Début de la réponse:', data.substring(0, 200));
         $('#orderDetailContent').html(data);
-    }).fail(function() {
-        $('#orderDetailContent').html('<div class="alert alert-danger">Erreur lors du chargement des détails.</div>');
+    }).fail(function(xhr, status, error) {
+        console.log('DEBUG: Erreur AJAX');
+        console.log('DEBUG: Status:', status);
+        console.log('DEBUG: Error:', error);
+        console.log('DEBUG: Response:', xhr.responseText);
+        
+        var errorMsg = 'Erreur lors du chargement des détails.';
+        if (xhr.status === 404) {
+            errorMsg = 'Commande non trouvée (404).';
+        } else if (xhr.status === 403) {
+            errorMsg = 'Accès non autorisé (403).';
+        } else if (xhr.status === 500) {
+            errorMsg = 'Erreur serveur (500). Vérifiez les logs.';
+        }
+        
+        $('#orderDetailContent').html('<div class="alert alert-danger"><strong>Erreur:</strong> ' + errorMsg + '<br><small>URL: ' + url + '</small></div>');
     });
 }
 
 function editOrder(orderId) {
-    alert('Fonction d\'édition en cours de développement.');
+    console.log('DEBUG: editOrder appelé avec orderId:', orderId);
+    
+    var modal = new bootstrap.Modal(document.getElementById('editOrderModal'));
+    modal.show();
+    
+    $('#editOrderContent').html('<div class="text-center"><div class="loading-spinner"></div> Chargement...</div>');
+    
+    var url = '/gerant/commandes/' + orderId + '/edit-modal/';
+    console.log('DEBUG: URL appelée:', url);
+    
+    $.get(url, function(data) {
+        console.log('DEBUG: Réponse reçue, longueur:', data.length);
+        $('#editOrderContent').html(data);
+    }).fail(function(xhr, status, error) {
+        console.log('DEBUG: Erreur AJAX');
+        console.log('DEBUG: Status:', status);
+        console.log('DEBUG: Error:', error);
+        console.log('DEBUG: Response:', xhr.responseText);
+        
+        var errorMsg = 'Erreur lors du chargement du formulaire d\'édition.';
+        if (xhr.status === 404) {
+            errorMsg = 'Commande non trouvée (404).';
+        } else if (xhr.status === 403) {
+            errorMsg = 'Accès non autorisé (403).';
+        } else if (xhr.status === 500) {
+            errorMsg = 'Erreur serveur (500). Vérifiez les logs.';
+        }
+        
+        $('#editOrderContent').html('<div class="alert alert-danger"><strong>Erreur:</strong> ' + errorMsg + '<br><small>URL: ' + url + '</small></div>');
+    });
 }
 
 function deleteOrder(orderId) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')) {
-        $.post('/gerant/commandes/' + orderId + '/supprimer/', {
-            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
-        }, function(data) {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Erreur: ' + data.error);
-            }
-        }).fail(function() {
-            alert('Erreur lors de la suppression.');
-        });
+    window.currentOrderId = orderId;
+    var modal = new bootstrap.Modal(document.getElementById('deleteOrderModal'));
+    modal.show();
+}
+
+function confirmDeleteOrder() {
+    if (window.currentOrderId) {
+        window.location.href = '/gerant/commandes/' + window.currentOrderId + '/supprimer/';
     }
 }
 
 function updateStatus(orderId, newStatus) {
-    $.post('/gerant/commandes/' + orderId + '/update_status/', {
-        'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val(),
-        'statut': newStatus
-    }, function(data) {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Erreur: ' + data.error);
-        }
-    }).fail(function() {
-        alert('Erreur lors de la mise à jour du statut.');
-    });
+    console.log('DEBUG: updateStatus appelé avec orderId:', orderId, 'newStatus:', newStatus);
+    
+    if (confirm('Êtes-vous sûr de vouloir changer le statut de cette commande ?')) {
+        $.ajax({
+            url: '/gerant/commandes/' + orderId + '/update_status/',
+            method: 'POST',
+            data: {
+                'statut': newStatus,  // Corrigé: 'status' -> 'statut'
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+            },
+            success: function(data) {
+                console.log('DEBUG: Réponse succès:', data);
+                if (data.success) {
+                    // Afficher un message de succès
+                    alert(data.message || 'Statut mis à jour avec succès!');
+                    // Recharger la page pour voir les changements
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + (data.error || 'Erreur inconnue'));
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log('DEBUG: Erreur AJAX:', status, error);
+                console.log('DEBUG: Response:', xhr.responseText);
+                alert('Erreur lors de la mise à jour du statut: ' + (xhr.responseJSON?.error || error));
+            }
+        });
+    }
 }
 
 function confirmPayment(orderId) {
     if (confirm('Confirmer que cette commande a été payée ?')) {
-        updateStatus(orderId, 'payee');
+        $.post('/gerant/commandes/' + orderId + '/confirm_payment/', {
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+        }, function(data) {
+            location.reload();
+        }).fail(function() {
+            alert('Erreur lors de la confirmation du paiement.');
+        });
     }
 }
 
 function downloadInvoice(orderId) {
-    window.open('/commandes/' + orderId + '/export_pdf/', '_blank');
+    window.open('/facture/' + orderId + '/', '_blank');
 }
 
 function refreshTable() {
@@ -576,25 +1034,60 @@ function refreshTable() {
 }
 
 function exportData() {
-    alert('Exportation en cours de développement.');
+    $('#commandesTable').DataTable().button().add(0, {
+        extend: 'excel',
+        text: 'Exporter vers Excel'
+    });
+    $('#commandesTable').DataTable().button(0).trigger();
 }
 
-function toggleFilters() {
-    alert('Filtres avancés en cours de développement.');
+function printTable() {
+    window.print();
+}
+
+function saveOrderChanges() {
+    // TODO: Implémenter la sauvegarde
+    alert('Fonction de sauvegarde en cours de développement.');
+}
+
+function sendPaymentEmail(orderId) {
+    console.log('DEBUG: sendPaymentEmail appelé avec orderId:', orderId);
+    
+    if (confirm('Êtes-vous sûr de vouloir renvoyer l\'email de paiement au client ?')) {
+        $.ajax({
+            url: '/gerant/commandes/' + orderId + '/renvoyer-email-paiement/',
+            method: 'POST',
+            data: {
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+            },
+            beforeSend: function() {
+                // Afficher un indicateur de chargement
+                $(`button[onclick="sendPaymentEmail(${orderId})"]`).html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+            },
+            success: function(data) {
+                console.log('DEBUG: Réponse succès:', data);
+                if (data.success) {
+                    // Afficher une notification de succès
+                    alert('✅ ' + data.message);
+                    // Optionnel: recharger la page pour voir les changements de statut
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    alert('❌ Erreur: ' + (data.error || 'Erreur inconnue'));
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log('DEBUG: Erreur AJAX:', status, error);
+                console.log('DEBUG: Response:', xhr.responseText);
+                alert('❌ Erreur lors de l\'envoi de l\'email: ' + (xhr.responseJSON?.error || error));
+            },
+            complete: function() {
+                // Restaurer le bouton
+                $(`button[onclick="sendPaymentEmail(${orderId})"]`).html('<i class="fas fa-envelope"></i>').prop('disabled', false);
+            }
+        });
+    }
 }
 </script>
-{% endblock %}
-
-{% block custom_js %}
-<!-- DataTables JS -->
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

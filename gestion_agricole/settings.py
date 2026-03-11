@@ -23,12 +23,13 @@ CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 DEFAULT_FROM_EMAIL = 'fousseynimoussaberthe@gmail.com'
 ADMIN_EMAIL = 'fousseynimoussaberthe@gmail.com'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Réactivé pour envoyer de vrais emails
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'fousseynimoussaberthe@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'ENTREZ_VOTRE_MOT_DE_PASSE_GMAIL_ICI')
+# IMPORTANT: Collez ici votre NOUVEAU mot de passe d'application Gmail (16 caractères, sans espaces)
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'lamcypzdmpidgfcm')
 
 LOGIN_URL = '/login'
 LOGOUT_REDIRECT_URL = 'login'

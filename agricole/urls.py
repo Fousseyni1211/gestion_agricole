@@ -207,7 +207,8 @@ urlpatterns = [
     path('gerant/commandes/<int:commande_id>/supprimer/', views.admin_supprimer_commande, name='gerant_supprimer_commande'),
     path('gerant/commandes/<int:commande_id>/annuler/', views.admin_annuler_commande, name='gerant_annuler_commande'),
     path('gerant/commandes/<int:commande_id>/detail-modal/', views.detail_commande_modal, name='detail_commande_modal'),
-    path('gerant/commandes/<int:commande_id>/renvoyer-email-paiement/', AdminViews.renvoyer_email_paiement, name='renvoyer_email_paiement'),
+    path('gerant/commandes/<int:commande_id>/edit-modal/', views.edit_commande_modal, name='edit_commande_modal'),
+    path('gerant/commandes/<int:commande_id>/renvoyer-email-paiement/', views.renvoyer_email_paiement_gerant, name='renvoyer_email_paiement'),
     path('commandes/<int:commande_id>/export_pdf/', views.export_commande_pdf, name='export_commande_pdf'),
 
     # Payment management for manager

@@ -23,6 +23,7 @@ import json
 import time
 from django.views.decorators.csrf import csrf_exempt
 from .orange_money import OrangeMoneyAPI
+from xhtml2pdf import pisa
 
 from django.forms import modelformset_factory
 from django.forms import inlineformset_factory
@@ -465,13 +466,67 @@ def detail_commande(request, pk):
                   {'commande': commande})
 
 
-@staff_member_required
-def detail_commande_modal(request, pk):
-    commande = get_object_or_404(
-        Commande.objects.prefetch_related('details__produit'),
-        pk=pk,
-    )
-    return render(request, 'admin/partials/commande_detail_modal_content.html', {'commande': commande})
+@login_required
+def detail_commande_modal(request, commande_id):
+    try:
+        print(f"DEBUG: Requête reçue pour commande_id: {commande_id}")
+        print(f"DEBUG: Utilisateur: {request.user.username}, staff: {request.user.is_staff}")
+        
+        commande = get_object_or_404(
+            Commande.objects.select_related('client').prefetch_related('details__produit'),
+            id=commande_id
+        )
+        
+        print(f"DEBUG: Commande trouvée: {commande.id}")
+        print(f"DEBUG: Template: admin/partials/commande_detail_modal_content.html")
+        
+        response = render(request, 'admin/partials/commande_detail_modal_content.html', {'commande': commande})
+        print(f"DEBUG: Response status: {response.status_code}")
+        return response
+        
+    except Exception as e:
+        print(f"DEBUG: Erreur dans detail_commande_modal: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return render(request, 'admin/partials/commande_detail_modal_content.html', 
+                     {'error': f'Erreur: {str(e)}', 'commande': None})
+
+@login_required
+def edit_commande_modal(request, commande_id):
+    try:
+        commande = get_object_or_404(
+            Commande.objects.select_related('client').prefetch_related('details__produit'),
+            id=commande_id
+        )
+        
+        if request.method == 'POST':
+            # Traitement du formulaire d'édition
+            statut = request.POST.get('statut')
+            notes = request.POST.get('notes', '')
+            
+            # Mettre à jour le statut si fourni
+            if statut:
+                commande.statut = statut
+            
+            # Ajouter des notes si fournies
+            if notes:
+                commande.notes = notes
+            
+            commande.save()
+            
+            return render(request, 'admin/partials/edit_commande_success.html', 
+                         {'commande': commande, 'success': True})
+        
+        # GET - afficher le formulaire
+        return render(request, 'admin/partials/edit_commande_modal_content.html', 
+                     {'commande': commande})
+        
+    except Exception as e:
+        print(f"DEBUG: Erreur dans edit_commande_modal: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return render(request, 'admin/partials/edit_commande_modal_content.html', 
+                     {'error': f'Erreur: {str(e)}', 'commande': None})
 DetailCommandeFormSet = modelformset_factory(
     DetailCommande,
     form=DetailCommandeForm,
@@ -746,37 +801,233 @@ def admin_valider_commande(request, commande_id):
     
     return redirect('gerant_commandes')
 
-@user_passes_test(is_admin)
+@login_required
 @require_POST
 def admin_update_order_status(request, commande_id):
-    """Met à jour le statut d'une commande."""
+    """Met à jour le statut d'une commande via AJAX."""
     try:
-        commande = Commande.objects.get(id=commande_id)
+        commande = get_object_or_404(Commande, id=commande_id)
         nouveau_statut = request.POST.get('statut')
+        
+        print(f"DEBUG: Mise à jour statut commande {commande_id} -> {nouveau_statut}")
+        print(f"DEBUG: Utilisateur: {request.user.username}")
 
-        if nouveau_statut in [choix[0] for choix in Commande.STATUTS]:
+        # Vérifier que le statut est valide
+        statuts_valides = ['en_attente', 'validee', 'en_preparation', 'livree', 'annulee', 'payee', 'en_attente_paiement']
+        
+        if nouveau_statut in statuts_valides:
             commande.statut = nouveau_statut
             commande.save()
-            messages.success(request, f"Le statut de la commande #{commande.id} a été mis à jour.")
-            # Notifier le client si la commande est prête à être payée
-            if nouveau_statut == 'en_attente_paiement':
+            
+            # Créer une notification pour le client
+            if nouveau_statut == 'en_preparation':
                 Notification.objects.create(
                     user=commande.client,
-                    message=f"Votre commande #{commande.id} a été validée. Vous pouvez maintenant procéder au paiement."
+                    message=f"Votre commande #{commande.id} est en cours de préparation."
                 )
-            # Réponse AJAX
+            elif nouveau_statut == 'livree':
+                Notification.objects.create(
+                    user=commande.client,
+                    message=f"Votre commande #{commande.id} a été livrée."
+                )
+            
+            print(f"DEBUG: Statut mis à jour avec succès")
+            
+            # Retourner une réponse JSON pour AJAX
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({'success': True})
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Le statut de la commande #{commande.id} a été mis à jour.',
+                    'new_status': nouveau_statut
+                })
+            
+            messages.success(request, f"Le statut de la commande #{commande.id} a été mis à jour.")
+            
         else:
-            messages.error(request, "Statut invalide.")
+            print(f"DEBUG: Statut invalide: {nouveau_statut}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({'success': False, 'error': 'Statut invalide.'})
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Statut invalide.'
+                })
+            messages.error(request, "Statut invalide.")
+
     except Commande.DoesNotExist:
-        messages.error(request, "Commande non trouvée.")
+        print(f"DEBUG: Commande {commande_id} non trouvée")
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'success': False, 'error': 'Commande non trouvée.'})
-    # Redirection non-AJAX: revenir à la page précédente ou racine
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+            return JsonResponse({
+                'success': False,
+                'error': 'Commande non trouvée.'
+            })
+        messages.error(request, "Commande non trouvée.")
+    
+    except Exception as e:
+        print(f"DEBUG: Erreur lors de la mise à jour: {str(e)}")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'error': f'Erreur: {str(e)}'
+            })
+        messages.error(request, f"Erreur lors de la mise à jour du statut: {str(e)}")
+    
+    # Redirection pour les requêtes non-AJAX
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        return redirect('gerant_commandes')
+
+@login_required
+def renvoyer_email_paiement_gerant(request, commande_id):
+    """Envoie un email de paiement au client avec gestion AJAX."""
+    try:
+        commande = get_object_or_404(Commande, id=commande_id)
+        client = commande.client
+        
+        print(f"DEBUG: Envoi email paiement pour commande {commande_id} à {client.email}")
+        
+        # Vérifier si la commande peut être payée
+        statuts_payables = ['en_attente', 'validee', 'en_attente_paiement']
+        if commande.statut not in statuts_payables:
+            error_msg = f"La commande #{commande.id} ne peut pas être payée (statut: {commande.statut})"
+            print(f"DEBUG: {error_msg}")
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'error': error_msg
+                })
+            messages.error(request, error_msg)
+            return redirect('gerant_commandes')
+        
+        # Mettre à jour le statut si nécessaire
+        if commande.statut != 'en_attente_paiement':
+            commande.statut = 'en_attente_paiement'
+            commande.save()
+            print(f"DEBUG: Statut mis à jour vers 'en_attente_paiement'")
+        
+        # Créer l'URL de paiement
+        site_url = getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')
+        paiement_url = f"{site_url}/paiement/commande/{commande.id}/"
+        
+        # Préparer l'email
+        sujet = f"🔔 Rappel : Paiement requis pour votre commande #{commande.id} - Kayupe Agriculture"
+        
+        message_html = f"""
+        <html>
+        <body style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc;">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
+                <div style="font-size: 36px; margin-bottom: 10px;">🌾</div>
+                <h1 style="margin: 0; font-size: 28px; font-weight: 700;">Kayupe Agriculture</h1>
+                <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 16px;">Rappel de paiement</p>
+            </div>
+            
+            <!-- Contenu principal -->
+            <div style="background: white; padding: 40px 30px; border: 1px solid #e5e7eb; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                
+                <h2 style="color: #1f2937; margin-bottom: 20px; font-size: 24px;">💳 Paiement requis</h2>
+                
+                <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+                    Bonjour <strong>{client.get_full_name() or client.username}</strong>,
+                </p>
+                
+                <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+                    Votre commande <strong>#{commande.id}</strong> est prête et attend votre finalisation.
+                </p>
+                
+                <!-- Détails de la commande -->
+                <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-left: 4px solid #10b981; padding: 25px; margin: 30px 0; border-radius: 8px;">
+                    <h3 style="color: #065f46; margin-top: 0; margin-bottom: 15px; font-size: 18px;">📋 Détails de votre commande :</h3>
+                    <ul style="color: #065f46; line-height: 1.8; padding-left: 20px; font-size: 15px;">
+                        <li><strong>Commande n°</strong> #{commande.id}</li>
+                        <li><strong>Date</strong> {commande.date_commande.strftime('%d/%m/%Y à %H:%M')}</li>
+                        <li><strong>Montant</strong> <span style="font-size: 18px; color: #059669; font-weight: bold;">{commande.total:,} FCFA</span></li>
+                        <li><strong>Statut</strong> <span style="background: #fbbf24; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">En attente de paiement</span></li>
+                    </ul>
+                </div>
+                
+                <!-- Bouton de paiement -->
+                <div style="text-align: center; margin: 35px 0;">
+                    <a href="{paiement_url}" 
+                       style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 18px 35px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); transition: all 0.3s ease;">
+                        💳 Payer ma commande maintenant
+                    </a>
+                </div>
+                
+                <!-- Instructions -->
+                <div style="background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px; padding: 20px; margin: 25px 0;">
+                    <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.5;">
+                        <strong>⏰ Important :</strong> Une fois le paiement effectué, votre commande sera automatiquement validée et la préparation commencera dans les plus brefs délais.
+                    </p>
+                </div>
+                
+                <!-- Footer -->
+                <div style="border-top: 1px solid #e5e7eb; padding-top: 25px; margin-top: 35px; text-align: center;">
+                    <p style="color: #6b7280; font-size: 14px; margin: 0;">
+                        Merci de votre confiance !<br>
+                        <strong>L'équipe Kayupe Agriculture</strong><br>
+                        <span style="font-size: 12px;">🌱 Qualité • Fraîcheur • Service</span>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Footer externe -->
+            <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
+                <p>Cet email a été envoyé automatiquement. Si vous avez des questions, contactez notre support.</p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Envoyer l'email
+        send_mail(
+            sujet,
+            f"Rappel : Votre commande #{commande.id} est en attente de paiement. Accédez à votre espace client pour la régler : {paiement_url}",
+            settings.DEFAULT_FROM_EMAIL,
+            [client.email],
+            html_message=message_html,
+            fail_silently=False,
+        )
+        
+        # Créer une notification pour le client
+        Notification.objects.create(
+            user=client,
+            message=f"Un email de rappel de paiement a été envoyé pour votre commande #{commande.id}.",
+            type='paiement'
+        )
+        
+        print(f"DEBUG: Email envoyé avec succès à {client.email}")
+        
+        # Réponse AJAX
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': f"L'email de paiement a été envoyé avec succès à {client.email}"
+            })
+        
+        messages.success(
+            request,
+            f"✅ L'email de rappel a été envoyé avec succès à {client.email}"
+        )
+        
+    except Exception as e:
+        print(f"DEBUG: Erreur lors de l'envoi de l'email: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'error': f"Erreur lors de l'envoi de l'email : {str(e)}"
+            })
+        
+        messages.error(
+            request,
+            f"❌ Erreur lors de l'envoi de l'email : {str(e)}"
+        )
+    
+    # Redirection pour les requêtes non-AJAX
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        return redirect('gerant_commandes')
 
 @user_passes_test(is_admin)
 @require_POST
@@ -793,84 +1044,6 @@ def admin_supprimer_commande(request, commande_id):
             return JsonResponse({'success': False, 'error': str(e)})
         messages.error(request, f"Suppression impossible: {e}")
     return redirect(request.META.get('HTTP_REFERER', '/'))
-
-@user_passes_test(is_admin)
-@require_POST
-def admin_update_order_status(request, commande_id):
-    """Met à jour le statut d'une commande."""
-    try:
-        commande = Commande.objects.get(id=commande_id)
-        nouveau_statut = request.POST.get('statut')
-
-        if nouveau_statut in [choix[0] for choix in Commande.STATUTS]:
-            commande.statut = nouveau_statut
-            commande.save()
-            messages.success(request, f"Le statut de la commande #{commande.id} a été mis à jour.")
-            # Notifier le client si la commande est prête à être payée
-            if nouveau_statut == 'en_attente_paiement':
-                Notification.objects.create(
-                    user=commande.client,
-                    message=f"Votre commande #{commande.id} a été validée. Vous pouvez maintenant procéder au paiement."
-                )
-        else:
-            messages.error(request, "Statut invalide.")
-
-    except Commande.DoesNotExist:
-        messages.error(request, "Commande non trouvée.")
-    
-    return redirect('admin_commandes')
-
-@user_passes_test(is_admin)
-@require_POST
-def admin_update_order_status(request, commande_id):
-    """Met à jour le statut d'une commande."""
-    try:
-        commande = Commande.objects.get(id=commande_id)
-        nouveau_statut = request.POST.get('statut')
-
-        if nouveau_statut in [choix[0] for choix in Commande.STATUTS]:
-            commande.statut = nouveau_statut
-            commande.save()
-            messages.success(request, f"Le statut de la commande #{commande.id} a été mis à jour.")
-            # Notifier le client si la commande est prête à être payée
-            if nouveau_statut == 'en_attente_paiement':
-                Notification.objects.create(
-                    user=commande.client,
-                    message=f"Votre commande #{commande.id} a été validée. Vous pouvez maintenant procéder au paiement."
-                )
-        else:
-            messages.error(request, "Statut invalide.")
-
-    except Commande.DoesNotExist:
-        messages.error(request, "Commande non trouvée.")
-    
-    return redirect('admin_commandes')
-
-@user_passes_test(is_admin)
-@require_POST
-def admin_update_order_status(request, commande_id):
-    """Met à jour le statut d'une commande."""
-    try:
-        commande = Commande.objects.get(id=commande_id)
-        nouveau_statut = request.POST.get('statut')
-
-        if nouveau_statut in [choix[0] for choix in Commande.STATUTS]:
-            commande.statut = nouveau_statut
-            commande.save()
-            messages.success(request, f"Le statut de la commande #{commande.id} a été mis à jour.")
-            # Notifier le client si la commande est prête à être payée
-            if nouveau_statut == 'en_attente_paiement':
-                Notification.objects.create(
-                    user=commande.client,
-                    message=f"Votre commande #{commande.id} a été validée. Vous pouvez maintenant procéder au paiement."
-                )
-        else:
-            messages.error(request, "Statut invalide.")
-
-    except Commande.DoesNotExist:
-        messages.error(request, "Commande non trouvée.")
-    
-    return redirect('admin_commandes')
 
 @user_passes_test(is_admin)
 @require_POST
