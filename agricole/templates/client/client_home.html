@@ -1,239 +1,106 @@
 {% extends 'client/base_dashboard.html' %}
 {% load static %}
 
-{% block title %}Tableau de Bord - Kayupe Agriculture{% endblock %}
+{% block title %}Tableau de Bord - FAMA{% endblock %}
 
 {% block extra_css %}
 <!-- Bootstrap 5 Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- ApexCharts -->
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <!-- AOS Animation -->
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
     :root {
-        --primary-color: #1e7e34;
-        --primary-dark: #155724;
-        --primary-light: #28a745;
-        --secondary-color: #fd7e14;
-        --accent-color: #6610f2;
-        --success-color: #28a745;
-        --warning-color: #ffc107;
-        --danger-color: #dc3545;
-        --info-color: #17a2b8;
-        --light-color: #f8f9fa;
-        --dark-color: #343a40;
-        --gray-100: #f8f9fa;
-        --gray-200: #e9ecef;
-        --gray-300: #dee2e6;
-        --gray-400: #ced4da;
-        --gray-500: #adb5bd;
-        --gray-600: #6c757d;
-        --gray-700: #495057;
-        --gray-800: #343a40;
-        --gray-900: #212529;
-        
-        --gradient-primary: linear-gradient(135deg, #1e7e34 0%, #28a745 100%);
-        --gradient-secondary: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
-        --gradient-info: linear-gradient(135deg, #17a2b8 0%, #6610f2 100%);
-        --gradient-success: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        
-        --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
-        --shadow-xl: 0 2rem 4rem rgba(0, 0, 0, 0.2);
-        
-        --border-radius: 0.375rem;
-        --border-radius-lg: 0.5rem;
-        --border-radius-xl: 1rem;
-        
-        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+        --primary-gradient: linear-gradient(135deg, #1e7e34 0%, #28a745 100%);
+        --secondary-gradient: linear-gradient(135deg, #fd7e14 0%, #ff9800 100%);
+        --info-gradient: linear-gradient(135deg, #0dcaf0 0%, #0097a7 100%);
+        --danger-gradient: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --shadow-glow: 0 10px 30px rgba(30, 126, 52, 0.15);
     }
 
     body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        min-height: 100vh;
-        color: var(--gray-800);
-        line-height: 1.6;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: #f0f2f5;
+        color: #1a202c;
     }
 
-    /* Professional Header */
-    .dashboard-header {
-        background: white;
-        border-radius: var(--border-radius-xl);
-        padding: 2rem;
+    .hero-header {
+        background: var(--glass-bg);
+        backdrop-filter: blur(15px);
+        border-radius: 24px;
+        padding: 2.5rem;
         margin-bottom: 2rem;
-        box-shadow: var(--shadow);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        border: 1px solid var(--glass-border);
         position: relative;
         overflow: hidden;
     }
 
-    .dashboard-header::before {
+    .hero-header::after {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 5px;
-        background: var(--gradient-primary);
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(30, 126, 52, 0.05) 0%, transparent 70%);
+        border-radius: 50%;
     }
 
-    .header-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-    }
-
-    .header-title h1 {
+    .hero-title h1 {
+        font-family: 'Space Grotesk', sans-serif;
         font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--primary-color);
+        font-weight: 800;
+        color: #1a202c;
         margin-bottom: 0.5rem;
         letter-spacing: -0.02em;
     }
 
-    .header-subtitle {
-        color: var(--gray-600);
-        font-size: 1.125rem;
-        font-weight: 400;
-    }
-
-    .header-actions {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-    }
-
-    .user-profile {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 0.75rem 1.5rem;
-        background: var(--gradient-primary);
+    .btn-primary-modern {
+        background: var(--primary-gradient);
         color: white;
-        border-radius: 50px;
-        font-weight: 500;
-        box-shadow: var(--shadow);
-        transition: var(--transition);
-    }
-
-    .user-profile:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .user-avatar {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        background: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        border: none;
+        padding: 0.8rem 1.8rem;
+        border-radius: 14px;
         font-weight: 600;
-        color: var(--primary-color);
-        font-size: 1.125rem;
-    }
-
-    /* Professional Stats Grid */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .stat-card {
-        background: white;
-        border-radius: var(--border-radius-xl);
-        padding: 1.75rem;
-        box-shadow: var(--shadow);
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-        border: 1px solid var(--gray-200);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 100%;
-        background: var(--gradient-primary);
-    }
-
-    .stat-card.success::before { background: var(--gradient-success); }
-    .stat-card.warning::before { background: var(--gradient-secondary); }
-    .stat-card.info::before { background: var(--gradient-info); }
-    .stat-card.danger::before { background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%); }
-
-    .stat-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 1.5rem;
-    }
-
-    .stat-info h6 {
-        color: var(--gray-600);
-        font-size: 0.875rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.5rem;
-    }
-
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--gray-900);
-        line-height: 1;
-        margin-bottom: 0.5rem;
-    }
-
-    .stat-change {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
         display: inline-flex;
         align-items: center;
-        gap: 0.25rem;
-        padding: 0.25rem 0.75rem;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 600;
+        gap: 0.6rem;
+        box-shadow: var(--shadow-glow);
     }
 
-    .stat-change.positive {
-        background: rgba(40, 167, 69, 0.1);
-        color: var(--success-color);
+    .btn-primary-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(30, 126, 52, 0.25);
+        color: white;
     }
 
-    .stat-change.negative {
-        background: rgba(220, 53, 69, 0.1);
-        color: var(--danger-color);
+    .stat-card-modern {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
     }
 
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: var(--border-radius-lg);
+    .stat-card-modern:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    }
+
+    .stat-icon-modern {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -241,594 +108,205 @@
         color: white;
     }
 
-    .stat-icon.success { background: var(--gradient-success); }
-    .stat-icon.warning { background: var(--gradient-secondary); }
-    .stat-icon.info { background: var(--gradient-info); }
-    .stat-icon.danger { background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%); }
+    .stat-icon-modern.success { background: var(--primary-gradient); }
+    .stat-icon-modern.warning { background: var(--secondary-gradient); }
+    .stat-icon-modern.info { background: var(--info-gradient); }
 
-    /* Professional Quick Actions */
-    .quick-actions {
+    .stat-value-modern {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin-top: 0.5rem;
+    }
+
+    .action-card-modern {
         background: white;
-        border-radius: var(--border-radius-xl);
-        padding: 2rem;
-        box-shadow: var(--shadow);
-        margin-bottom: 2rem;
-    }
-
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-    }
-
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--gray-900);
-        margin-bottom: 0.25rem;
-    }
-
-    .section-subtitle {
-        color: var(--gray-600);
-        font-size: 0.875rem;
-    }
-
-    .actions-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-    }
-
-    .action-card {
-        background: var(--gray-50);
-        border: 2px solid var(--gray-200);
-        border-radius: var(--border-radius-lg);
+        border-radius: 20px;
         padding: 1.5rem;
         text-align: center;
         text-decoration: none;
-        color: var(--gray-800);
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
+        color: #1a202c;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        display: block;
     }
 
-    .action-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: var(--gradient-primary);
-        opacity: 0;
-        transition: var(--transition);
+    .action-card-modern:hover {
+        background: var(--primary-gradient);
+        color: white !important;
+        transform: translateY(-5px);
     }
 
-    .action-card:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--shadow);
-        border-color: var(--primary-color);
-        color: white;
-    }
-
-    .action-card:hover::before {
-        opacity: 1;
-    }
-
-    .action-card:hover * {
-        position: relative;
-        z-index: 1;
-    }
-
-    .action-icon {
-        width: 60px;
-        height: 60px;
+    .action-icon-modern {
+        width: 64px;
+        height: 64px;
         margin: 0 auto 1rem;
-        border-radius: var(--border-radius-lg);
-        background: white;
+        border-radius: 16px;
+        background: #f0fdf4;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.75rem;
-        color: var(--primary-color);
-        transition: var(--transition);
+        color: #1e7e34;
+        transition: all 0.3s ease;
     }
 
-    .action-card:hover .action-icon {
-        background: rgba(255, 255, 255, 0.2);
+    .action-card-modern:hover .action-icon-modern {
+        background: rgba(255,255,255,0.2);
         color: white;
     }
 
-    .action-title {
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .action-desc {
-        font-size: 0.875rem;
-        color: var(--gray-600);
-    }
-
-    .action-card:hover .action-desc {
-        color: rgba(255, 255, 255, 0.9);
-    }
-
-    /* Professional Charts Section */
-    .charts-section {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .chart-card {
+    .chart-card-modern {
         background: white;
-        border-radius: var(--border-radius-xl);
+        border-radius: 24px;
         padding: 2rem;
-        box-shadow: var(--shadow);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        border: 1px solid rgba(0,0,0,0.05);
     }
 
-    .chart-container {
-        height: 350px;
-        position: relative;
-    }
-
-    /* Professional Activity Timeline */
-    .activity-timeline {
-        position: relative;
-        padding-left: 2rem;
-    }
-
-    .activity-timeline::before {
-        content: '';
-        position: absolute;
-        left: 0.75rem;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: var(--gradient-primary);
-    }
-
-    .activity-item {
-        position: relative;
-        margin-bottom: 1.5rem;
-        padding: 1.25rem;
-        background: var(--gray-50);
-        border-radius: var(--border-radius-lg);
-        border-left: 3px solid var(--primary-color);
-        transition: var(--transition);
-    }
-
-    .activity-item:hover {
-        background: white;
-        box-shadow: var(--shadow);
-        transform: translateX(5px);
-    }
-
-    .activity-item::before {
-        content: '';
-        position: absolute;
-        left: -2.25rem;
-        top: 1.5rem;
-        width: 12px;
-        height: 12px;
-        background: var(--primary-color);
-        border: 3px solid white;
-        border-radius: 50%;
-        box-shadow: 0 0 0 3px var(--gray-200);
-    }
-
-    .activity-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 0.5rem;
-    }
-
-    .activity-title {
-        font-weight: 600;
-        color: var(--gray-900);
-        margin-bottom: 0.25rem;
-    }
-
-    .activity-desc {
-        color: var(--gray-600);
-        font-size: 0.875rem;
-    }
-
-    .activity-time {
-        color: var(--gray-500);
-        font-size: 0.75rem;
-        white-space: nowrap;
-    }
-
-    /* Professional Market Prices */
-    .market-prices {
-        background: white;
-        border-radius: var(--border-radius-xl);
-        padding: 2rem;
-        box-shadow: var(--shadow);
-    }
-
-    .price-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-    }
-
-    .price-card {
-        background: var(--gray-50);
-        border-radius: var(--border-radius-lg);
+    .price-card-modern {
+        background: #f8fafc;
+        border-radius: 16px;
         padding: 1.25rem;
         text-align: center;
-        transition: var(--transition);
-        border: 1px solid var(--gray-200);
+        border: 1px solid rgba(0,0,0,0.03);
     }
 
-    .price-card:hover {
-        background: white;
-        box-shadow: var(--shadow);
-        transform: translateY(-2px);
-    }
-
-    .price-icon {
-        width: 50px;
-        height: 50px;
-        margin: 0 auto 1rem;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        color: white;
-    }
-
-    .price-icon.maize { background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); }
-    .price-icon.rice { background: linear-gradient(135deg, #8bc34a 0%, #4caf50 100%); }
-    .price-icon.cassava { background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%); }
-    .price-icon.cocoa { background: linear-gradient(135deg, #795548 0%, #5d4037 100%); }
-
-    .price-name {
-        font-weight: 600;
-        color: var(--gray-900);
-        margin-bottom: 0.5rem;
-    }
-
-    .price-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary-color);
-        margin-bottom: 0.5rem;
-    }
-
-    .price-trend {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding: 0.25rem 0.5rem;
-        border-radius: var(--border-radius);
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-
-    .price-trend.up {
-        background: rgba(40, 167, 69, 0.1);
-        color: var(--success-color);
-    }
-
-    .price-trend.down {
-        background: rgba(220, 53, 69, 0.1);
-        color: var(--danger-color);
-    }
-
-    /* Responsive Design */
     @media (max-width: 768px) {
-        .header-content {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .header-title h1 {
-            font-size: 2rem;
-        }
-
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .charts-section {
-            grid-template-columns: 1fr;
-        }
-
-        .actions-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .price-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    /* Loading Animation */
-    .loading-spinner {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 1s ease-in-out infinite;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: var(--gray-100);
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: var(--primary-color);
-        border-radius: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: var(--primary-dark);
+        .hero-title h1 { font-size: 2rem; }
+        .hero-header { padding: 1.5rem; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Professional Dashboard Header -->
-<div class="dashboard-header" data-aos="fade-down">
-    <div class="header-content">
-        <div class="header-title">
-            <h1>Tableau de Bord</h1>
-            <p class="header-subtitle">Bienvenue {{ user.get_full_name|default:user.username }}, gérez vos activités agricoles</p>
+<div class="container-fluid py-4">
+    <!-- Hero Header -->
+    <div class="hero-header" data-aos="fade-down">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="hero-title">
+                    <h1>Bienvenue, {{ user.get_full_name|default:user.username }}</h1>
+                    <p class="text-muted fs-5">Gérez votre exploitation avec Kayupe Agriculture.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a href="{% url 'passer_commande' %}" class="btn-primary-modern">
+                    <i class="bi bi-plus-lg"></i> Nouvelle Commande
+                </a>
+            </div>
         </div>
-        <div class="header-actions">
-            <a href="{% url 'passer_commande' %}" class="btn btn-success btn-lg">
-                <i class="bi bi-plus-circle me-2"></i>Nouvelle Commande
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="stat-card-modern">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small fw-bold mb-0">COMMANDES</p>
+                        <div class="stat-value-modern">{{ nb_commandes|default:0 }}</div>
+                    </div>
+                    <div class="stat-icon-modern success">
+                        <i class="bi bi-cart-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="stat-card-modern">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small fw-bold mb-0">DEPENSES</p>
+                        <div class="stat-value-modern">{{ total_paiements|default:0|floatformat:0 }} <small class="fs-6">FCFA</small></div>
+                    </div>
+                    <div class="stat-icon-modern warning">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="stat-card-modern">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small fw-bold mb-0">RESERVATIONS</p>
+                        <div class="stat-value-modern">{{ nb_reservations|default:0 }}</div>
+                    </div>
+                    <div class="stat-icon-modern info">
+                        <i class="bi bi-calendar-event"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Actions -->
+    <div class="row g-4 mb-5">
+        <div class="col-6 col-lg-3" data-aos="zoom-in" data-aos-delay="100">
+            <a href="{% url 'passer_commande' %}" class="action-card-modern">
+                <div class="action-icon-modern"><i class="bi bi-shop"></i></div>
+                <h6 class="fw-bold mb-0">Boutique</h6>
             </a>
-            <div class="user-profile">
-                <div class="user-avatar">
-                    {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
+        </div>
+        <div class="col-6 col-lg-3" data-aos="zoom-in" data-aos-delay="200">
+            <a href="{% url 'location_materiel' %}" class="action-card-modern">
+                <div class="action-icon-modern"><i class="bi bi-truck"></i></div>
+                <h6 class="fw-bold mb-0">Location</h6>
+            </a>
+        </div>
+        <div class="col-6 col-lg-3" data-aos="zoom-in" data-aos-delay="300">
+            <a href="{% url 'mes_commandes' %}" class="action-card-modern">
+                <div class="action-icon-modern"><i class="bi bi-box-seam"></i></div>
+                <h6 class="fw-bold mb-0">Commandes</h6>
+            </a>
+        </div>
+        <div class="col-6 col-lg-3" data-aos="zoom-in" data-aos-delay="400">
+            <a href="{% url 'factures_client' %}" class="action-card-modern">
+                <div class="action-icon-modern"><i class="bi bi-file-earmark-text"></i></div>
+                <h6 class="fw-bold mb-0">Factures</h6>
+            </a>
+        </div>
+    </div>
+
+    <!-- Charts and Recent Activity -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8" data-aos="fade-right">
+            <div class="chart-card-modern">
+                <h5 class="fw-bold mb-4">Evolution des Dépenses</h5>
+                <div style="height: 300px;">
+                    <canvas id="activityChart"></canvas>
                 </div>
-                <span>{{ user.get_full_name|default:user.username }}</span>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Professional Stats Grid -->
-<div class="stats-grid" data-aos="fade-up" data-aos-delay="100">
-    <div class="stat-card success">
-        <div class="stat-header">
-            <div class="stat-info">
-                <h6>Commandes Totales</h6>
-                <div class="stat-value">{{ nb_commandes|default:0 }}</div>
-                <span class="stat-change positive">
-                    <i class="bi bi-arrow-up"></i> +12% ce mois
-                </span>
-            </div>
-            <div class="stat-icon success">
-                <i class="bi bi-cart-check"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card warning">
-        <div class="stat-header">
-            <div class="stat-info">
-                <h6>Montant Total</h6>
-                <div class="stat-value">{{ total_paiements|default:0|floatformat:0 }} FCFA</div>
-                <span class="stat-change positive">
-                    <i class="bi bi-arrow-up"></i> +8% ce mois
-                </span>
-            </div>
-            <div class="stat-icon warning">
-                <i class="bi bi-currency-dollar"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card info">
-        <div class="stat-header">
-            <div class="stat-info">
-                <h6>Réservations</h6>
-                <div class="stat-value">{{ nb_reservations|default:0 }}</div>
-                <span class="stat-change positive">
-                    <i class="bi bi-circle"></i> {{ nb_reservations_actives|default:0 }} actives
-                </span>
-            </div>
-            <div class="stat-icon info">
-                <i class="bi bi-calendar-check"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card danger">
-        <div class="stat-header">
-            <div class="stat-info">
-                <h6>Points Fidélité</h6>
-                <div class="stat-value">{{ user.points_fidelite|default:0 }}</div>
-                <span class="stat-change positive">
-                    <i class="bi bi-gift"></i> Récompenses
-                </span>
-            </div>
-            <div class="stat-icon danger">
-                <i class="bi bi-star"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Professional Quick Actions -->
-<div class="quick-actions" data-aos="fade-up" data-aos-delay="200">
-    <div class="section-header">
-        <div>
-            <h2 class="section-title">Actions Rapides</h2>
-            <p class="section-subtitle">Accédez rapidement aux fonctionnalités principales</p>
-        </div>
-    </div>
-    <div class="actions-grid">
-        <a href="{% url 'passer_commande' %}" class="action-card">
-            <div class="action-icon">
-                <i class="bi bi-plus-circle"></i>
-            </div>
-            <h6 class="action-title">Passer Commande</h6>
-            <p class="action-desc">Commandez des produits</p>
-        </a>
-
-        <a href="{% url 'location_materiel' %}" class="action-card">
-            <div class="action-icon">
-                <i class="bi bi-truck"></i>
-            </div>
-            <h6 class="action-title">Louer Matériel</h6>
-            <p class="action-desc">Tracteurs, outils</p>
-        </a>
-
-        <a href="{% url 'mes_commandes' %}" class="action-card">
-            <div class="action-icon">
-                <i class="bi bi-list-check"></i>
-            </div>
-            <h6 class="action-title">Mes Commandes</h6>
-            <p class="action-desc">Suivre vos commandes</p>
-        </a>
-
-        <a href="{% url 'factures_client' %}" class="action-card">
-            <div class="action-icon">
-                <i class="bi bi-file-text"></i>
-            </div>
-            <h6 class="action-title">Factures</h6>
-            <p class="action-desc">Gérer les paiements</p>
-        </a>
-    </div>
-</div>
-
-<!-- Charts Section -->
-<div class="charts-section" data-aos="fade-up" data-aos-delay="300">
-    <div class="chart-card">
-        <div class="section-header">
-            <div>
-                <h2 class="section-title">Activités Récentes</h2>
-                <p class="section-subtitle">Vos commandes et paiements des 6 derniers mois</p>
-            </div>
-        </div>
-        <div class="chart-container">
-            <canvas id="activityChart"></canvas>
-        </div>
-    </div>
-
-    <div class="chart-card">
-        <div class="section-header">
-            <div>
-                <h2 class="section-title">Dernières Activités</h2>
-                <p class="section-subtitle">Vos actions récentes</p>
-            </div>
-        </div>
-        <div class="activity-timeline">
-            <div class="activity-item">
-                <div class="activity-header">
-                    <div>
-                        <div class="activity-title">Nouvelle commande</div>
-                        <div class="activity-desc">Commande #1234 - En attente</div>
+        <div class="col-lg-4" data-aos="fade-left">
+            <div class="chart-card-modern">
+                <h5 class="fw-bold mb-4">Prix du Marché</h5>
+                <div class="d-flex flex-column gap-3">
+                    <div class="price-card-modern d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon-modern success" style="width:40px;height:40px;font-size:1rem;"><i class="bi bi-flower1"></i></div>
+                            <span class="fw-bold">Maïs</span>
+                        </div>
+                        <span class="fw-bold text-success">250 FCFA/kg</span>
                     </div>
-                    <div class="activity-time">Il y a 2h</div>
-                </div>
-            </div>
-
-            <div class="activity-item">
-                <div class="activity-header">
-                    <div>
-                        <div class="activity-title">Paiement effectué</div>
-                        <div class="activity-desc">50,000 FCFA - Facture #567</div>
+                    <div class="price-card-modern d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon-modern warning" style="width:40px;height:40px;font-size:1rem;"><i class="bi bi-flower2"></i></div>
+                            <span class="fw-bold">Riz</span>
+                        </div>
+                        <span class="fw-bold text-success">350 FCFA/kg</span>
                     </div>
-                    <div class="activity-time">Hier</div>
-                </div>
-            </div>
-
-            <div class="activity-item">
-                <div class="activity-header">
-                    <div>
-                        <div class="activity-title">Réservation confirmée</div>
-                        <div class="activity-desc">Tracteur - 3 jours</div>
+                    <div class="price-card-modern d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon-modern info" style="width:40px;height:40px;font-size:1rem;"><i class="bi bi-flower3"></i></div>
+                            <span class="fw-bold">Manioc</span>
+                        </div>
+                        <span class="fw-bold text-success">150 FCFA/kg</span>
                     </div>
-                    <div class="activity-time">Il y a 3 jours</div>
                 </div>
             </div>
-
-            <div class="activity-item">
-                <div class="activity-header">
-                    <div>
-                        <div class="activity-title">Commande livrée</div>
-                        <div class="activity-desc">Commande #1232 - Terminée</div>
-                    </div>
-                    <div class="activity-time">Il y a 5 jours</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Market Prices -->
-<div class="market-prices" data-aos="fade-up" data-aos-delay="400">
-    <div class="section-header">
-        <div>
-            <h2 class="section-title">Prix du Marché</h2>
-            <p class="section-subtitle">Tendances actuelles des produits agricoles</p>
-        </div>
-    </div>
-    <div class="price-grid">
-        <div class="price-card">
-            <div class="price-icon maize">
-                <i class="bi bi-flower1"></i>
-            </div>
-            <h6 class="price-name">Maïs</h6>
-            <div class="price-value">250 FCFA/kg</div>
-            <span class="price-trend up">
-                <i class="bi bi-arrow-up"></i> +5%
-            </span>
-        </div>
-
-        <div class="price-card">
-            <div class="price-icon rice">
-                <i class="bi bi-flower2"></i>
-            </div>
-            <h6 class="price-name">Riz</h6>
-            <div class="price-value">350 FCFA/kg</div>
-            <span class="price-trend down">
-                <i class="bi bi-arrow-down"></i> -2%
-            </span>
-        </div>
-
-        <div class="price-card">
-            <div class="price-icon cassava">
-                <i class="bi bi-flower3"></i>
-            </div>
-            <h6 class="price-name">Manioc</h6>
-            <div class="price-value">150 FCFA/kg</div>
-            <span class="price-trend up">
-                <i class="bi bi-arrow-up"></i> +8%
-            </span>
-        </div>
-
-        <div class="price-card">
-            <div class="price-icon cocoa">
-                <i class="bi bi-tree"></i>
-            </div>
-            <h6 class="price-name">Cacao</h6>
-            <div class="price-value">1,200 FCFA/kg</div>
-            <span class="price-trend up">
-                <i class="bi bi-arrow-up"></i> +12%
-            </span>
         </div>
     </div>
 </div>
@@ -837,168 +315,32 @@
 {% block extra_js %}
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-    // Initialize AOS
-    AOS.init({
-        duration: 800,
-        easing: 'ease-in-out',
-        once: true,
-        offset: 100
-    });
+    AOS.init({ duration: 800, once: true });
 
-    // Initialize Activity Chart
-    const ctx = document.getElementById('activityChart');
-    if (ctx) {
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin'],
-                datasets: [{
-                    label: 'Commandes',
-                    data: [12, 19, 15, 25, 22, 30],
-                    borderColor: '#1e7e34',
-                    backgroundColor: 'rgba(30, 126, 52, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#1e7e34',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8
-                }, {
-                    label: 'Paiements (k FCFA)',
-                    data: [45, 62, 48, 85, 72, 95],
-                    borderColor: '#fd7e14',
-                    backgroundColor: 'rgba(253, 126, 20, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#fd7e14',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20,
-                            font: {
-                                family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
-                                size: 12,
-                                weight: '500'
-                            }
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        padding: 12,
-                        cornerRadius: 8,
-                        titleFont: {
-                            family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
-                            size: 14,
-                            weight: '600'
-                        },
-                        bodyFont: {
-                            family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
-                            size: 12
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            font: {
-                                family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
-                                size: 11
-                            },
-                            color: '#6c757d'
-                        }
-                    },
-                    y: {
-                        grid: {
-                            borderDash: [5, 5],
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        },
-                        ticks: {
-                            font: {
-                                family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
-                                size: 11
-                            },
-                            color: '#6c757d'
-                        }
-                    }
-                },
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                }
+    const ctx = document.getElementById('activityChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+            datasets: [{
+                label: 'Dépenses',
+                data: [30000, 45000, 35000, 60000, 50000, 75000],
+                borderColor: '#1e7e34',
+                backgroundColor: 'rgba(30, 126, 52, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [5, 5], drawBorder: false } },
+                x: { grid: { display: false } }
             }
-        });
-    }
-
-    // Add interactive effects
-    document.querySelectorAll('.action-card').forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-5px) scale(1.02)';
-        });
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-        });
+        }
     });
-
-    // Add loading animation for buttons
-    document.querySelectorAll('.btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-            if (!this.classList.contains('loading')) {
-                this.classList.add('loading');
-                const originalContent = this.innerHTML;
-                this.innerHTML = '<span class="loading-spinner"></span> Chargement...';
-                
-                // Simulate loading (remove this in production)
-                setTimeout(() => {
-                    this.classList.remove('loading');
-                    this.innerHTML = originalContent;
-                }, 2000);
-            }
-        });
-    });
-
-    // Add number animation for stats
-    function animateValue(element, start, end, duration) {
-        const range = end - start;
-        const increment = range / (duration / 16);
-        let current = start;
-        
-        const timer = setInterval(() => {
-            current += increment;
-            if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
-                element.textContent = end.toLocaleString();
-                clearInterval(timer);
-            } else {
-                element.textContent = Math.round(current).toLocaleString();
-            }
-        }, 16);
-    }
-
-    // Animate stats on page load
-    window.addEventListener('load', () => {
-        document.querySelectorAll('.stat-value').forEach(element => {
-            const value = parseInt(element.textContent.replace(/[^0-9]/g, '')) || 0;
-            animateValue(element, 0, value, 1500);
-        });
-    });
-
-    console.log('🌾 Tableau de Bord Professionnel - Chargé avec succès!');
 </script>
 {% endblock %}

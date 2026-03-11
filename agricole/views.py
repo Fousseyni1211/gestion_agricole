@@ -709,7 +709,7 @@ def passer_commande(request):
                 message=f"Nouvelle commande #{commande.id} de {client.username}: {produits_text}"
             )
         
-        return JsonResponse({'success': True, 'redirect_url': reverse('client_commandes')})
+        return JsonResponse({'success': True, 'redirect_url': reverse('paiement_commande')})
 
     # GET
     return render(request, 'commande/passer_commande.html', {
@@ -875,13 +875,22 @@ def admin_update_order_status(request, commande_id):
         return redirect('gerant_commandes')
 
 @login_required
+@require_POST
 def renvoyer_email_paiement_gerant(request, commande_id):
     """Envoie un email de paiement au client avec gestion AJAX."""
+    print(f"DEBUG: Début fonction renvoyer_email_paiement_gerant")
+    print(f"DEBUG: Utilisateur: {request.user.username}")
+    print(f"DEBUG: Commande ID: {commande_id}")
+    print(f"DEBUG: Méthode: {request.method}")
+    print(f"DEBUG: Headers AJAX: {request.headers.get('X-Requested-With')}")
+    
     try:
         commande = get_object_or_404(Commande, id=commande_id)
         client = commande.client
         
-        print(f"DEBUG: Envoi email paiement pour commande {commande_id} à {client.email}")
+        print(f"DEBUG: Commande trouvée: {commande.id}")
+        print(f"DEBUG: Client: {client.email}")
+        print(f"DEBUG: Statut: {commande.statut}")
         
         # Vérifier si la commande peut être payée
         statuts_payables = ['en_attente', 'validee', 'en_attente_paiement']
@@ -978,8 +987,13 @@ def renvoyer_email_paiement_gerant(request, commande_id):
         </html>
         """
         
+        print(f"DEBUG: Préparation envoi email à {client.email}")
+        print(f"DEBUG: Sujet: {sujet}")
+        print(f"DEBUG: From: {settings.DEFAULT_FROM_EMAIL}")
+        
         # Envoyer l'email
-        send_mail(
+        print(f"DEBUG: Appel de send_mail...")
+        result = send_mail(
             sujet,
             f"Rappel : Votre commande #{commande.id} est en attente de paiement. Accédez à votre espace client pour la régler : {paiement_url}",
             settings.DEFAULT_FROM_EMAIL,
@@ -987,6 +1001,9 @@ def renvoyer_email_paiement_gerant(request, commande_id):
             html_message=message_html,
             fail_silently=False,
         )
+        
+        print(f"DEBUG: send_mail retourné: {result}")
+        print(f"DEBUG: Email envoyé avec succès à {client.email}")
         
         # Créer une notification pour le client
         Notification.objects.create(
@@ -1109,6 +1126,20 @@ def demande_service(request):
             return redirect('services')
 
 # --- Vues pour le Paiement Orange Money ---
+
+@login_required
+def paiement_commande(request):
+    """Affiche la page de paiement générale."""
+    # Récupérer la dernière commande du client en attente de paiement
+    commande = Commande.objects.filter(
+        client=request.user,
+        statut='en_attente'
+    ).order_by('-date_commande').first()
+    
+    context = {
+        'commande': commande
+    }
+    return render(request, 'client/paiement_commande.html', context)
 
 @login_required
 def pay_for_order(request, commande_id):

@@ -1,114 +1,645 @@
-{% extends 'client/base.html' %}
+{% extends 'client/base_dashboard.html' %}
 {% load static %}
 {% load widget_tweaks %}
-{% block title %}Passer une commande{% endblock %}
+
+{% block title %}Passer une Commande - Kayupe Agriculture{% endblock %}
+
+{% block extra_css %}
+<!-- Bootstrap 5 Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<!-- AOS Animation -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #1e7e34 0%, #28a745 100%);
+        --secondary-gradient: linear-gradient(135deg, #fd7e14 0%, #ff9800 100%);
+        --info-gradient: linear-gradient(135deg, #0dcaf0 0%, #0097a7 100%);
+        --danger-gradient: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+        --success-gradient: linear-gradient(135deg, #198754 0%, #20c997 100%);
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --shadow-glow: 0 10px 30px rgba(30, 126, 52, 0.15);
+        --shadow-soft: 0 10px 25px rgba(0,0,0,0.03);
+        --shadow-hover: 0 15px 35px rgba(0,0,0,0.08);
+    }
+
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: #f0f2f5;
+        color: #1a202c;
+    }
+
+    .commande-header {
+        background: var(--glass-bg);
+        backdrop-filter: blur(15px);
+        border-radius: 24px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid var(--glass-border);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .commande-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(30, 126, 52, 0.05) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .commande-title h1 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1a202c;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .commande-card {
+        background: white;
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .produit-card {
+        background: #f8fafc;
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(0,0,0,0.03);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .produit-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .produit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .produit-number {
+        background: var(--primary-gradient);
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+    }
+
+    .form-control-modern {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.875rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .form-control-modern:focus {
+        border-color: #1e7e34;
+        box-shadow: 0 0 0 3px rgba(30, 126, 52, 0.1);
+        outline: none;
+    }
+
+    .btn-modern {
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary-modern {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: var(--shadow-glow);
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(30, 126, 52, 0.25);
+        color: white;
+    }
+
+    .btn-success-modern {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .btn-success-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(25, 135, 84, 0.2);
+        color: white;
+    }
+
+    .btn-danger-modern {
+        background: var(--danger-gradient);
+        color: white;
+    }
+
+    .btn-danger-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(220, 53, 69, 0.2);
+        color: white;
+    }
+
+    .btn-outline-modern {
+        background: transparent;
+        border: 2px solid #e2e8f0;
+        color: #64748b;
+    }
+
+    .btn-outline-modern:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #475569;
+    }
+
+    .summary-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        border: 1px solid rgba(0,0,0,0.03);
+        position: sticky;
+        top: 2rem;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+        border-top: 2px solid #e2e8f0;
+    }
+
+    .summary-total {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e7e34;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #94a3b8;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .product-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .product-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .quantity-badge {
+        background: #f0fdf4;
+        color: #1e7e34;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .step-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .step-indicator::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #e2e8f0;
+        z-index: 0;
+    }
+
+    .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s ease;
+    }
+
+    .step.active {
+        background: var(--primary-gradient);
+        border-color: #1e7e34;
+        color: white;
+    }
+
+    .step.completed {
+        background: var(--success-gradient);
+        border-color: #198754;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .commande-title h1 { font-size: 2rem; }
+        .commande-header { padding: 1.5rem; }
+        .commande-card { padding: 1.5rem; }
+        .summary-card { position: static; margin-top: 2rem; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2 class="text-white"><i class="bi bi-cart-plus"></i> Passer une commande</h2>
-            <p class="text-muted">Sélectionnez les produits que vous souhaitez commander</p>
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="commande-header" data-aos="fade-down">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="commande-title">
+                    <h1>Nouvelle Commande</h1>
+                    <p class="text-muted fs-5">Sélectionnez les produits pour votre exploitation agricole</p>
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a href="{% url 'client_home' %}" class="btn-outline-modern btn-modern">
+                    <i class="bi bi-arrow-left"></i> Retour
+                </a>
+            </div>
         </div>
     </div>
 
-    <div class="card bg-dark text-white shadow-sm mb-4">
-        <div class="card-body">
-            <form method="post" id="commande-form">
-                {% csrf_token %}
-                
-                <div class="alert alert-info mb-4">
-                    <i class="bi bi-info-circle"></i> Vous passez commande en tant que <strong>{{ user.username }}</strong>
-                </div>
+    <!-- Step Indicator -->
+    <div class="step-indicator mb-4" data-aos="fade-up">
+        <div class="step active">1</div>
+        <div class="step">2</div>
+        <div class="step">3</div>
+    </div>
 
-                <h5 class="mb-3 border-bottom pb-2">Produits disponibles</h5>
+    <div class="row g-4">
+        <!-- Command Form -->
+        <div class="col-lg-8">
+            <div class="commande-card" data-aos="fade-right">
+                <form method="post" id="commande-form">
+                    {% csrf_token %}
+                    
+                    <div class="alert alert-info border-0 bg-light rounded-3 p-4 mb-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                <i class="bi bi-person-circle"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 fw-bold">Commande pour : {{ user.get_full_name|default:user.username }}</h6>
+                                <p class="mb-0 text-muted small">Vous êtes connecté en tant que client</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                        <i class="bi bi-cart-plus text-primary"></i>
+                        Produits à commander
+                    </h5>
+                    
+                    <div id="produits-container">
+                        <div class="produit-card" data-produit-id="1">
+                            <div class="produit-header">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="produit-number">1</div>
+                                    <h6 class="mb-0 fw-bold">Produit #1</h6>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-danger-modern btn-modern remove-produit" style="display: none;">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Produit</label>
+                                    <select name="produits[]" class="form-control form-control-modern produit-select" required>
+                                        <option value="">Choisissez un produit</option>
+                                        {% for produit in produits %}
+                                            <option value="{{ produit.id }}" data-prix="{{ produit.prix_unitaire }}" data-stock="{{ produit.quantite }}">
+                                                {{ produit.nom_produit }} - {{ produit.prix_unitaire }} FCFA (Stock: {{ produit.quantite }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Quantité</label>
+                                    <input type="number" name="quantite[]" class="form-control form-control-modern quantite-input" min="1" placeholder="0" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label fw-bold">Total</label>
+                                    <div class="form-control form-control-modern bg-light text-end fw-bold produit-total">
+                                        0 FCFA
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 mt-4">
+                        <button type="button" class="btn-success-modern btn-modern" id="add-produit">
+                            <i class="bi bi-plus-circle"></i> Ajouter un produit
+                        </button>
+                        <button type="submit" class="btn-primary-modern btn-modern flex-grow-1">
+                            <i class="bi bi-check-circle"></i> Continuer vers le paiement
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="col-lg-4">
+            <div class="summary-card" data-aos="fade-left">
+                <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                    <i class="bi bi-receipt text-primary"></i>
+                    Récapitulatif
+                </h5>
                 
-                <div id="produits-container">
-                    <div class="produit-ligne row g-3 mb-3 align-items-end">
-                        <div class="col-md-6">
-                            <label class="form-label">Produit</label>
-                            <select name="produits[]" class="form-control bg-dark text-white border-secondary produit-select" required>
-                                <option value="">Sélectionnez un produit</option>
-                                {% for produit in produits %}
-                                    <option value="{{ produit.id }}">{{ produit.nom_produit }} - {{ produit.prix_unitaire }} € (Stock: {{ produit.quantite }})</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Quantité</label>
-                            <input type="number" name="quantite[]" class="form-control bg-dark text-white border-secondary" min="1" required>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="button" class="btn btn-success" id="add-produit">
-                                <i class="bi bi-plus"></i>
-                            </button>
-                        </div>
+                <div id="summary-content">
+                    <div class="empty-state">
+                        <i class="bi bi-cart-x"></i>
+                        <p class="mb-0">Aucun produit sélectionné</p>
                     </div>
                 </div>
 
-                <div class="d-grid gap-2 mt-4">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"></i> Valider la commande
+                <div class="mt-4" id="payment-section" style="display: none;">
+                    <div class="summary-item">
+                        <span class="fw-bold">Sous-total</span>
+                        <span id="subtotal">0 FCFA</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="text-muted">Livraison</span>
+                        <span class="text-success">Gratuite</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="fw-bold summary-total">Total</span>
+                        <span class="fw-bold summary-total" id="total-amount">0 FCFA</span>
+                    </div>
+
+                    <div class="alert alert-soft-success bg-success bg-opacity-10 border-0 rounded-3 p-3 mt-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-shield-check text-success"></i>
+                            <span class="fw-bold text-success">Paiement Sécurisé</span>
+                        </div>
+                        <p class="mb-0 small text-muted">Vos informations bancaires sont protégées par cryptage SSL</p>
+                    </div>
+
+                    <button type="button" class="btn-primary-modern btn-modern w-100" id="proceed-payment">
+                        <i class="bi bi-credit-card"></i> Procéder au paiement
                     </button>
-                    <a href="{% url 'client_home' %}" class="btn btn-outline-secondary">Annuler</a>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
+    AOS.init({ duration: 800, once: true });
+
     document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('produits-container');
         const addButton = document.getElementById('add-produit');
         const form = document.getElementById('commande-form');
+        let produitCounter = 1;
+        
+        function updateSummary() {
+            const produits = document.querySelectorAll('.produit-card');
+            const summaryContent = document.getElementById('summary-content');
+            const paymentSection = document.getElementById('payment-section');
+            let totalAmount = 0;
+            let hasProducts = false;
+            
+            if (produits.length === 0 || !Array.from(produits).some(p => p.querySelector('.produit-select').value)) {
+                summaryContent.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-cart-x"></i>
+                        <p class="mb-0">Aucun produit sélectionné</p>
+                    </div>
+                `;
+                paymentSection.style.display = 'none';
+                return;
+            }
+            
+            let summaryHTML = '<div class="products-list">';
+            
+            produits.forEach((produitCard, index) => {
+                const select = produitCard.querySelector('.produit-select');
+                const quantite = produitCard.querySelector('.quantite-input');
+                
+                if (select.value && quantite.value) {
+                    hasProducts = true;
+                    const option = select.options[select.selectedIndex];
+                    const prix = parseFloat(option.dataset.prix) || 0;
+                    const qty = parseInt(quantite.value) || 0;
+                    const subtotal = prix * qty;
+                    totalAmount += subtotal;
+                    
+                    summaryHTML += `
+                        <div class="product-item">
+                            <div class="product-info">
+                                <div class="product-icon">
+                                    <i class="bi bi-box-seedling"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">${option.text.split(' - ')[0]}</div>
+                                    <div class="text-muted small">${prix} FCFA × ${qty}</div>
+                                </div>
+                            </div>
+                            <div class="fw-bold">${subtotal.toLocaleString()} FCFA</div>
+                        </div>
+                    `;
+                }
+            });
+            
+            summaryHTML += '</div>';
+            summaryContent.innerHTML = summaryHTML;
+            
+            if (hasProducts) {
+                paymentSection.style.display = 'block';
+                document.getElementById('subtotal').textContent = totalAmount.toLocaleString() + ' FCFA';
+                document.getElementById('total-amount').textContent = totalAmount.toLocaleString() + ' FCFA';
+            } else {
+                paymentSection.style.display = 'none';
+            }
+        }
+        
+        function calculateTotal(produitCard) {
+            const select = produitCard.querySelector('.produit-select');
+            const quantite = produitCard.querySelector('.quantite-input');
+            const totalDiv = produitCard.querySelector('.produit-total');
+            
+            if (select.value && quantite.value) {
+                const option = select.options[select.selectedIndex];
+                const prix = parseFloat(option.dataset.prix) || 0;
+                const qty = parseInt(quantite.value) || 0;
+                const total = prix * qty;
+                totalDiv.textContent = total.toLocaleString() + ' FCFA';
+            } else {
+                totalDiv.textContent = '0 FCFA';
+            }
+            
+            updateSummary();
+        }
         
         // Ajouter une nouvelle ligne de produit
         addButton.addEventListener('click', function() {
-            const newLine = document.createElement('div');
-            newLine.className = 'produit-ligne row g-3 mb-3 align-items-end';
+            produitCounter++;
+            const newCard = document.createElement('div');
+            newCard.className = 'produit-card';
+            newCard.dataset.produitId = produitCounter;
             
-            newLine.innerHTML = `
-                <div class="col-md-6">
-                    <label class="form-label">Produit</label>
-                    <select name="produits[]" class="form-control bg-dark text-white border-secondary produit-select" required>
-                        <option value="">Sélectionnez un produit</option>
-                        {% for produit in produits %}
-                            <option value="{{ produit.id }}">{{ produit.nom_produit }} - {{ produit.prix_unitaire }} € (Stock: {{ produit.quantite }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Quantité</label>
-                    <input type="number" name="quantite[]" class="form-control bg-dark text-white border-secondary" min="1" required>
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-danger remove-produit">
+            newCard.innerHTML = `
+                <div class="produit-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="produit-number">${produitCounter}</div>
+                        <h6 class="mb-0 fw-bold">Produit #${produitCounter}</h6>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-danger-modern btn-modern remove-produit">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Produit</label>
+                        <select name="produits[]" class="form-control form-control-modern produit-select" required>
+                            <option value="">Choisissez un produit</option>
+                            {% for produit in produits %}
+                                <option value="{{ produit.id }}" data-prix="{{ produit.prix_unitaire }}" data-stock="{{ produit.quantite }}">
+                                    {{ produit.nom_produit }} - {{ produit.prix_unitaire }} FCFA (Stock: {{ produit.quantite }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Quantité</label>
+                        <input type="number" name="quantite[]" class="form-control form-control-modern quantite-input" min="1" placeholder="0" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Total</label>
+                        <div class="form-control form-control-modern bg-light text-end fw-bold produit-total">
+                            0 FCFA
+                        </div>
+                    </div>
+                </div>
             `;
             
-            container.appendChild(newLine);
+            container.appendChild(newCard);
             
-            // Ajouter l'événement de suppression au nouveau bouton
-            const removeButton = newLine.querySelector('.remove-produit');
+            // Ajouter les événements
+            const select = newCard.querySelector('.produit-select');
+            const quantite = newCard.querySelector('.quantite-input');
+            const removeButton = newCard.querySelector('.remove-produit');
+            
+            select.addEventListener('change', () => calculateTotal(newCard));
+            quantite.addEventListener('input', () => calculateTotal(newCard));
+            
             removeButton.addEventListener('click', function() {
-                this.closest('.produit-ligne').remove();
+                newCard.remove();
+                updateProductNumbers();
+                updateSummary();
             });
+            
+            // Afficher le bouton de suppression sur la première carte
+            const firstCard = container.querySelector('.produit-card');
+            if (firstCard) {
+                firstCard.querySelector('.remove-produit').style.display = 'block';
+            }
         });
+        
+        function updateProductNumbers() {
+            const cards = container.querySelectorAll('.produit-card');
+            cards.forEach((card, index) => {
+                card.querySelector('.produit-number').textContent = index + 1;
+                card.querySelector('h6').textContent = `Produit #${index + 1}`;
+            });
+        }
+        
+        // Événements pour la première carte
+        const firstCard = container.querySelector('.produit-card');
+        const firstSelect = firstCard.querySelector('.produit-select');
+        const firstQuantite = firstCard.querySelector('.quantite-input');
+        
+        firstSelect.addEventListener('change', () => calculateTotal(firstCard));
+        firstQuantite.addEventListener('input', () => calculateTotal(firstCard));
         
         // Gérer la soumission du formulaire
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Vérifier qu'au moins un produit est sélectionné
             const produits = document.querySelectorAll('select[name="produits[]"]');
             const quantites = document.querySelectorAll('input[name="quantite[]"]');
             
             let valid = true;
             
-            // Vérifier que tous les champs sont remplis
             produits.forEach((select, index) => {
                 if (!select.value) {
                     valid = false;
@@ -127,62 +658,16 @@
             });
             
             if (valid) {
-                // Créer un objet FormData à partir du formulaire
-                const formData = new FormData(this);
-                
-                // Afficher un message de chargement
-                const loadingAlert = document.createElement('div');
-                loadingAlert.className = 'alert alert-info mt-3';
-                loadingAlert.innerHTML = '<i class="bi bi-hourglass-split"></i> Traitement de votre commande en cours...';
-                form.appendChild(loadingAlert);
-                
-                // Soumettre le formulaire via AJAX
-                fetch(form.action || window.location.href, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Supprimer le message de chargement
-                    loadingAlert.remove();
-                    
-                    if (data.success) {
-                        // Afficher un message de succès
-                        const successAlert = document.createElement('div');
-                        successAlert.className = 'alert alert-success mt-3';
-                        successAlert.innerHTML = '<i class="bi bi-check-circle"></i> Commande enregistrée avec succès! Redirection en cours...';
-                        form.appendChild(successAlert);
-                        
-                        // Rediriger vers la page indiquée
-                        setTimeout(() => {
-                            window.location.href = data.redirect_url;
-                        }, 1500);
-                    } else {
-                        // Afficher un message d'erreur
-                        const errorAlert = document.createElement('div');
-                        errorAlert.className = 'alert alert-danger mt-3';
-                        errorAlert.innerHTML = `<i class="bi bi-exclamation-triangle"></i> Erreur: ${data.error}`;
-                        form.appendChild(errorAlert);
-                    }
-                })
-                .catch(error => {
-                    // Supprimer le message de chargement
-                    loadingAlert.remove();
-                    
-                    // Afficher un message d'erreur
-                    const errorAlert = document.createElement('div');
-                    errorAlert.className = 'alert alert-danger mt-3';
-                    errorAlert.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Une erreur est survenue lors de la communication avec le serveur.';
-                    form.appendChild(errorAlert);
-                    console.error('Erreur:', error);
-                });
+                // Rediriger vers la page de paiement
+                window.location.href = '{% url "paiement_commande" %}';
             } else {
-                // Afficher un message d'erreur
                 alert('Veuillez remplir tous les champs correctement.');
             }
+        });
+        
+        // Bouton procéder au paiement
+        document.getElementById('proceed-payment').addEventListener('click', function() {
+            window.location.href = '{% url "paiement_commande" %}';
         });
     });
 </script>

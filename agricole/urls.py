@@ -243,6 +243,7 @@ urlpatterns = [
     # URL pour la page de paiement
     path('paiement/commande/<int:commande_id>/', views.pay_for_order, name='paiement'),
     path('paiement/confirmation/<int:commande_id>/', views.confirmation_paiement, name='confirmation_paiement'),
+    path('paiement/commande/', views.paiement_commande, name='paiement_commande'),
     
     # URL de débogage pour les agriculteurs
     path('debug/agriculteurs/', debug_agriculteurs, name='debug_agriculteurs'),
