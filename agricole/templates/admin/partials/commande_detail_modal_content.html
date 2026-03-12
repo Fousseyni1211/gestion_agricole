@@ -237,9 +237,12 @@
             {% endif %}
             
             {% if commande.statut == 'en_attente_paiement' %}
-            <a href="{% url 'renvoyer_email_paiement' commande.id %}" class="btn btn-warning btn-sm">
-              <i class="fas fa-envelope me-1"></i>Rappeler paiement
-            </a>
+            <form method="POST" action="{% url 'renvoyer_email_paiement' commande.id %}" style="display: inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Envoyer un email de rappel de paiement à ce client ?')">
+                <i class="fas fa-envelope me-1"></i>Rappeler paiement
+              </button>
+            </form>
             {% endif %}
             
             <a href="{% url 'generer_facture_pdf' commande.id %}" class="btn btn-primary btn-sm">
