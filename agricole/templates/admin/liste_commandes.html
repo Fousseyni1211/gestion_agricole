@@ -1053,13 +1053,31 @@ function saveOrderChanges() {
 function sendPaymentEmail(orderId) {
     console.log('DEBUG: sendPaymentEmail appelé avec orderId:', orderId);
     
+    // Function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
     if (confirm('Êtes-vous sûr de vouloir renvoyer l\'email de paiement au client ?')) {
+        $.ajaxSetup({
+            headers: { "X-CSRFToken": getCookie('csrftoken') }
+        });
+        
         $.ajax({
             url: '/gerant/commandes/' + orderId + '/renvoyer-email-paiement/',
             method: 'POST',
-            data: {
-                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
-            },
+            data: {},
             beforeSend: function() {
                 // Afficher un indicateur de chargement
                 $(`button[onclick="sendPaymentEmail(${orderId})"]`).html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
