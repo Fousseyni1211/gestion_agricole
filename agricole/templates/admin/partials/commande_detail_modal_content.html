@@ -245,10 +245,9 @@
             </form>
             {% endif %}
             
+            <!-- Paiement en ligne temporairement désactivé dans la modale -->
             {% if commande.statut in 'en_attente,validee,en_attente_paiement' %}
-            <a href="{% url 'payment_selection' commande.id %}" class="btn btn-success btn-sm">
-              <i class="fas fa-credit-card me-1"></i>Payer en ligne
-            </a>
+            <span class="text-muted small">Paiement en ligne disponible dans la liste des commandes</span>
             {% endif %}
             
             <a href="{% url 'generer_facture_pdf' commande.id %}" class="btn btn-primary btn-sm">

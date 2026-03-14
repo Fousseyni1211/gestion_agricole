@@ -678,13 +678,27 @@ body {
               {% if commande.statut == 'en_attente' %}
               <form method="POST" action="{% url 'gerant_valider_commande' commande.id %}" style="display: inline;">
                 {% csrf_token %}
-                <button type="submit" 
-                        class="btn btn-sm btn-outline-success" 
-                        data-bs-toggle="tooltip" 
-                        data-bs-placement="top" 
-                        title="Valider la commande">
-                  <i class="fas fa-check"></i>
-                </button>
+                <button class="action-btn detail" 
+                      onclick="showOrderDetail({{ commande.id }})"
+                      data-bs-toggle="tooltip" 
+                      data-bs-placement="top" 
+                      title="Voir les détails">
+                <i class="fas fa-eye"></i>
+              </button>
+              
+              {% if commande.statut in 'en_attente,validee,en_attente_paiement' %}
+              <a href="{% url 'payment_selection' commande.id %}" class="action-btn payment" 
+                 data-bs-toggle="tooltip" data-bs-placement="top" title="Payer en ligne">
+                <i class="fas fa-credit-card"></i>
+              </a>
+              {% endif %}
+              
+              {% if commande.statut in 'en_attente,validee,en_attente_paiement' %}
+              <a href="{% url 'payment_selection' commande.id %}" class="action-btn payment" 
+                 data-bs-toggle="tooltip" data-bs-placement="top" title="Payer en ligne">
+                <i class="fas fa-credit-card"></i>
+              </a>
+              {% endif %}
               </form>
               {% endif %}
 
