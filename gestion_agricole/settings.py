@@ -32,6 +32,21 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'fousseynimoussaberthe@gmail
 # IMPORTANT: Collez ici votre NOUVEAU mot de passe d'application Gmail (16 caractères, sans espaces)
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'lamcypzdmpidgfcm')
 
+# Configuration des fournisseurs de paiement
+PAYMENT_SANDBOX = os.environ.get('PAYMENT_SANDBOX', 'True').lower() == 'true'
+
+# Orange Money
+ORANGE_MONEY_API_KEY = os.environ.get('ORANGE_MONEY_API_KEY', '')
+ORANGE_MONEY_API_SECRET = os.environ.get('ORANGE_MONEY_API_SECRET', '')
+
+# Moov Money  
+MOOV_MONEY_API_KEY = os.environ.get('MOOV_MONEY_API_KEY', '')
+MOOV_MONEY_API_SECRET = os.environ.get('MOOV_MONEY_API_SECRET', '')
+
+# Wave
+WAVE_API_KEY = os.environ.get('WAVE_API_KEY', '')
+WAVE_API_SECRET = os.environ.get('WAVE_API_SECRET', '')
+
 LOGIN_URL = '/login'
 LOGOUT_REDIRECT_URL = 'login'
 

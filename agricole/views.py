@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import logout, authenticate, login
 from django.contrib import messages
 from .models import CustomUser, Client, Agriculteur, Admin, Produit, Commande, Paiement, Service, DemandeService
+from .payment_providers import PaymentManager
 from datetime import datetime
 from django.db.models import Count
 from django.contrib.auth import get_user_model
@@ -13,7 +14,7 @@ from django.contrib.auth.views import LoginView
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
-import os, requests
+import os, requests, json
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse, HttpResponse, Http404
 from decimal import Decimal
@@ -1503,3 +1504,104 @@ def gerant_tableau_de_bord(request):
     }
     
     return render(request, 'admin/tableau_de_bord.html', context)
+
+
+@login_required
+@require_POST
+def initiate_payment(request, commande_id):
+    """Initier un paiement avec le fournisseur choisi"""
+    try:
+        data = json.loads(request.body)
+        provider = data.get('provider')
+        phone_number = data.get('phone_number')
+        email = data.get('email')
+        
+        if not all([provider, phone_number, email]):
+            return JsonResponse({'success': False, 'error': 'Données manquantes'})
+        
+        commande = get_object_or_404(Commande, id=commande_id)
+        
+        # Vérifier que l'utilisateur a le droit d'initier le paiement
+        if not (request.user.is_staff or request.user.is_superuser or commande.client == request.user):
+            return JsonResponse({'success': False, 'error': 'Non autorisé'})
+        
+        # Initialiser le paiement
+        payment_manager = PaymentManager()
+        callback_url = request.build_absolute_uri(f'/payment/callback/{commande_id}/')
+        
+        result = payment_manager.initiate_payment(
+            provider=provider,
+            amount=float(commande.total),
+            phone_number=phone_number,
+            description=f"Paiement commande #{commande_id}",
+            callback_url=callback_url,
+            commande_id=commande_id
+        )
+        
+        if result['success']:
+            # Mettre à jour le statut de la commande
+            commande.statut = 'en_attente_paiement'
+            commande.save()
+            
+            return JsonResponse(result)
+        else:
+            return JsonResponse(result)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Données invalides'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def payment_selection(request, commande_id):
+    """Page de sélection du fournisseur de paiement"""
+    commande = get_object_or_404(Commande, id=commande_id)
+    
+    # Vérifier que l'utilisateur a le droit de voir cette commande
+    if not (request.user.is_staff or request.user.is_superuser or commande.client == request.user):
+        return redirect('login')
+    
+    # Vérifier que la commande peut être payée
+    if commande.statut not in ['en_attente', 'validee', 'en_attente_paiement']:
+        messages.error(request, f"La commande #{commande_id} ne peut pas être payée (statut: {commande.get_statut_display})")
+        return redirect('gerant_commandes')
+    
+    context = {
+        'commande': commande,
+        'providers': [
+            {'name': 'orange_money', 'display_name': 'Orange Money', 'icon': '🟠'},
+            {'name': 'moov_money', 'display_name': 'Moov Money', 'icon': '🟣'},
+            {'name': 'wave', 'display_name': 'Wave', 'icon': '🌊'}
+        ]
+    }
+    
+    return render(request, 'admin/payment_selection.html', context)
+
+@login_required
+def payment_callback(request, commande_id):
+    """Callback pour les retours de paiement"""
+    commande = get_object_or_404(Commande, id=commande_id)
+    
+    # Récupérer les paramètres de retour
+    transaction_id = request.GET.get('transaction_id')
+    status = request.GET.get('status', 'unknown')
+    
+    if status == 'success' and transaction_id:
+        # Mettre à jour le statut du paiement
+        try:
+            paiement = Paiement.objects.get(reference_transaction=transaction_id)
+            paiement.statut = 'validé'
+            paiement.date_paiement = timezone.now()
+            paiement.save()
+            
+            # Mettre à jour la commande
+            commande.statut = 'payee_en_attente'
+            commande.save()
+            
+            messages.success(request, 'Paiement effectué avec succès !')
+        except Paiement.DoesNotExist:
+            messages.error(request, 'Paiement non trouvé')
+    else:
+        messages.error(request, 'Paiement annulé ou échoué')
+    
+    return redirect('detail_commande', pk=commande_id)

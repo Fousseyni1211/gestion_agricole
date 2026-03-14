@@ -211,6 +211,11 @@ urlpatterns = [
     path('gerant/commandes/<int:commande_id>/renvoyer-email-paiement/', views.renvoyer_email_paiement_gerant, name='renvoyer_email_paiement'),
     path('commandes/<int:commande_id>/export_pdf/', views.export_commande_pdf, name='export_commande_pdf'),
 
+    # Payment URLs
+    path('payment/<int:commande_id>/', views.payment_selection, name='payment_selection'),
+    path('payment/initiate/<int:commande_id>/', views.initiate_payment, name='initiate_payment'),
+    path('payment/callback/<int:commande_id>/', views.payment_callback, name='payment_callback'),
+
     # Payment management for manager
     path('gerant/paiements/', views.gerant_liste_paiements, name='gerant_paiements'),
     path('gerant/paiements/<int:paiement_id>/valider/', views.gerant_valider_paiement, name='gerant_valider_paiement'),

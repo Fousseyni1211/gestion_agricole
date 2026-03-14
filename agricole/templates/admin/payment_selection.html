@@ -1,0 +1,359 @@
+{% extends "admin/base_template.html" %}
+{% load static %}
+
+{% block custom_css %}
+<style>
+.payment-provider-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+}
+.payment-provider-card:hover {
+    border-color: #10b981;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+.payment-provider-card.selected {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+}
+.provider-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+.provider-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+.provider-description {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+.payment-form {
+    display: none;
+    animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.phone-input-group {
+    position: relative;
+}
+.phone-input-group .flag {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+}
+.phone-input-group input {
+    padding-left: 50px;
+}
+.btn-payment {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    padding: 12px 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.btn-payment:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+.loading-spinner {
+    display: none;
+}
+.payment-status {
+    display: none;
+    margin-top: 20px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">💳 Paiement en ligne</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_home' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'gerant_commandes' %}">Commandes</a></li>
+                        <li class="breadcrumb-item active">Paiement</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Informations de la commande -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-shopping-cart mr-2"></i>
+                                Commande #{{ commande.id }}
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <p><strong>Client:</strong> {{ commande.client.get_full_name|default:commande.client.username }}</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <p><strong>Date:</strong> {{ commande.date_commande|date:"d/m/Y H:i" }}</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <p><strong>Statut:</strong> 
+                                        <span class="badge badge-warning">{{ commande.get_statut_display }}</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-3">
+                                    <p><strong>Montant:</strong> <strong>{{ commande.total }} FCFA</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sélection du fournisseur de paiement -->
+            <div class="row mb-4" id="provider-selection">
+                <div class="col-12">
+                    <h4 class="mb-3">Choisissez votre méthode de paiement</h4>
+                    <div class="row">
+                        <!-- Orange Money -->
+                        <div class="col-md-4 mb-3">
+                            <div class="card payment-provider-card" data-provider="orange_money">
+                                <div class="card-body text-center">
+                                    <div class="provider-logo mb-3">
+                                        🟠
+                                    </div>
+                                    <h5 class="provider-name">Orange Money</h5>
+                                    <p class="provider-description">Paiement rapide et sécurisé avec Orange Money</p>
+                                    <small class="text-muted">Disponible dans tous les pays Orange</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Moov Money -->
+                        <div class="col-md-4 mb-3">
+                            <div class="card payment-provider-card" data-provider="moov_money">
+                                <div class="card-body text-center">
+                                    <div class="provider-logo mb-3">
+                                        🟣
+                                    </div>
+                                    <h5 class="provider-name">Moov Money</h5>
+                                    <p class="provider-description">Paiement simple avec Moov Money</p>
+                                    <small class="text-muted">Réseau Moov étendu</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wave -->
+                        <div class="col-md-4 mb-3">
+                            <div class="card payment-provider-card" data-provider="wave">
+                                <div class="card-body text-center">
+                                    <div class="provider-logo mb-3">
+                                        🌊
+                                    </div>
+                                    <h5 class="provider-name">Wave</h5>
+                                    <p class="provider-description">Paiement instantané Wave</p>
+                                    <small class="text-muted">Sans frais de transaction</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire de paiement -->
+            <div class="row payment-form" id="payment-form">
+                <div class="col-md-8 mx-auto">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="fas fa-credit-card mr-2"></i>
+                                Informations de paiement
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="payment-form-element">
+                                <div class="form-group mb-3">
+                                    <label for="phone_number">
+                                        <i class="fas fa-phone mr-1"></i>
+                                        Numéro de téléphone
+                                    </label>
+                                    <div class="phone-input-group">
+                                        <span class="flag">🇨🇮</span>
+                                        <input type="tel" 
+                                               class="form-control" 
+                                               id="phone_number" 
+                                               name="phone_number"
+                                               placeholder="Ex: 07XXXXXXXX"
+                                               pattern="[0-9]{10}"
+                                               required>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Format: 07XXXXXXXX pour la Côte d'Ivoire
+                                    </small>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="email">
+                                        <i class="fas fa-envelope mr-1"></i>
+                                        Email de confirmation
+                                    </label>
+                                    <input type="email" 
+                                           class="form-control" 
+                                           id="email" 
+                                           name="email"
+                                           value="{{ commande.client.email|default:'' }}"
+                                           placeholder="client@example.com"
+                                           required>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="terms" required>
+                                        <label class="form-check-label" for="terms">
+                                            J'accepte les conditions générales de vente et la politique de confidentialité
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-payment btn-lg">
+                                        <span class="btn-text">
+                                            <i class="fas fa-lock mr-2"></i>
+                                            Payer {{ commande.total }} FCFA
+                                        </span>
+                                        <span class="loading-spinner">
+                                            <i class="fas fa-spinner fa-spin mr-2"></i>
+                                            Traitement en cours...
+                                        </span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statut du paiement -->
+            <div class="row payment-status" id="payment-status">
+                <div class="col-md-8 mx-auto">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div id="status-content"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+let selectedProvider = null;
+let commandeId = {{ commande.id }};
+
+// Gestion de la sélection du fournisseur
+document.querySelectorAll('.payment-provider-card').forEach(card => {
+    card.addEventListener('click', function() {
+        // Désélectionner les autres
+        document.querySelectorAll('.payment-provider-card').forEach(c => c.classList.remove('selected'));
+        
+        // Sélectionner celui-ci
+        this.classList.add('selected');
+        selectedProvider = this.dataset.provider;
+        
+        // Afficher le formulaire
+        document.getElementById('payment-form').style.display = 'block';
+        document.getElementById('provider-selection').style.display = 'none';
+    });
+});
+
+// Gestion de la soumission du formulaire
+document.getElementById('payment-form-element').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (!selectedProvider) {
+        alert('Veuillez sélectionner un fournisseur de paiement');
+        return;
+    }
+    
+    const formData = new FormData(this);
+    const phoneNumber = formData.get('phone_number');
+    const email = formData.get('email');
+    
+    // Validation du numéro de téléphone
+    if (!phoneNumber.match(/^07[0-9]{8}$/)) {
+        alert('Numéro de téléphone invalide. Format: 07XXXXXXXX');
+        return;
+    }
+    
+    // Afficher le chargement
+    document.querySelector('.btn-text').style.display = 'none';
+    document.querySelector('.loading-spinner').style.display = 'inline';
+    
+    // Envoyer la requête de paiement
+    fetch(`/payment/initiate/${commandeId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            provider: selectedProvider,
+            phone_number: phoneNumber,
+            email: email
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Rediriger vers la page de paiement du fournisseur
+            window.location.href = data.payment_url;
+        } else {
+            throw new Error(data.error || 'Erreur lors du paiement');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur: ' + error.message);
+        
+        // Restaurer le bouton
+        document.querySelector('.btn-text').style.display = 'inline';
+        document.querySelector('.loading-spinner').style.display = 'none';
+    });
+});
+
+// Fonction pour récupérer le token CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

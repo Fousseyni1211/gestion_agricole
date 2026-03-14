@@ -245,6 +245,12 @@
             </form>
             {% endif %}
             
+            {% if commande.statut in 'en_attente,validee,en_attente_paiement' %}
+            <a href="{% url 'payment_selection' commande.id %}" class="btn btn-success btn-sm">
+              <i class="fas fa-credit-card me-1"></i>Payer en ligne
+            </a>
+            {% endif %}
+            
             <a href="{% url 'generer_facture_pdf' commande.id %}" class="btn btn-primary btn-sm">
               <i class="fas fa-file-invoice me-1"></i>Facture
             </a>
