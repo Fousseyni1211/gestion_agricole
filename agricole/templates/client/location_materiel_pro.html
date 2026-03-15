@@ -1,0 +1,771 @@
+{% extends 'client/base.html' %}
+{% load static %}
+
+{% block title %}Location de Matériel Agricole - FAMA{% endblock %}
+
+{% block extra_css %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Font Awesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- AOS Animation Library -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<style>
+    :root {
+        /* Professional Agricultural Color Palette */
+        --primary-green: #2E7D32;
+        --primary-green-light: #4CAF50;
+        --primary-green-dark: #1B5E20;
+        --secondary-green: #66BB6A;
+        --accent-gold: #FFB300;
+        --earth-brown: #6D4C41;
+        --sky-blue: #42A5F5;
+        --sun-yellow: #FFCA28;
+        --soil-brown: #5D4037;
+        --leaf-green: #689F38;
+        --harvest-orange: #FF8A65;
+        --wheat-gold: #FDD835;
+        --nature-teal: #26A69A;
+        --forest-green: #2E4E2E;
+        --spring-green: #7CB342;
+        --autumn-orange: #FF6F00;
+        --winter-blue: #1976D2;
+        
+        /* Premium Gradients */
+        --gradient-primary: linear-gradient(135deg, #2E7D32 0%, #4CAF50 50%, #689F38 100%);
+        --gradient-secondary: linear-gradient(135deg, #66BB6A 0%, #7CB342 50%, #8BC34A 100%);
+        --gradient-accent: linear-gradient(135deg, #FFB300 0%, #FFCA28 50%, #FFD54F 100%);
+        --gradient-earth: linear-gradient(135deg, #6D4C41 0%, #5D4037 50%, #4E342E 100%);
+        --gradient-sky: linear-gradient(135deg, #42A5F5 0%, #1976D2 50%, #1565C0 100%);
+        --gradient-sun: linear-gradient(135deg, #FFCA28 0%, #FFB300 50%, #FF8F00 100%);
+        --gradient-harvest: linear-gradient(135deg, #FF8A65 0%, #FF6F00 50%, #FF5722 100%);
+        --gradient-forest: linear-gradient(135deg, #2E4E2E 0%, #1B5E20 50%, #0D47A1 100%);
+        
+        /* Advanced Shadows */
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+        --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
+        --shadow-green: 0 10px 30px rgba(46, 125, 50, 0.3);
+        --shadow-gold: 0 10px 30px rgba(255, 179, 0, 0.3);
+        --shadow-blue: 0 10px 30px rgba(66, 165, 245, 0.3);
+        
+        /* Modern Spacing */
+        --spacing-xs: 0.25rem;
+        --spacing-sm: 0.5rem;
+        --spacing-md: 1rem;
+        --spacing-lg: 1.5rem;
+        --spacing-xl: 2rem;
+        --spacing-2xl: 3rem;
+        --spacing-3xl: 4rem;
+        --spacing-4xl: 5rem;
+        
+        /* Modern Border Radius */
+        --radius-sm: 0.375rem;
+        --radius-md: 0.5rem;
+        --radius-lg: 0.75rem;
+        --radius-xl: 1rem;
+        --radius-2xl: 1.5rem;
+        --radius-3xl: 2rem;
+        --radius-4xl: 3rem;
+        --radius-full: 9999px;
+    }
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: 
+            radial-gradient(circle at 15% 25%, rgba(46, 125, 50, 0.08) 0%, transparent 40%),
+            radial-gradient(circle at 85% 15%, rgba(255, 179, 0, 0.06) 0%, transparent 35%),
+            radial-gradient(circle at 45% 75%, rgba(66, 165, 245, 0.04) 0%, transparent 30%),
+            radial-gradient(circle at 75% 85%, rgba(104, 159, 56, 0.05) 0%, transparent 25%),
+            linear-gradient(135deg, #f8fafc 0%, #f1f8e9 30%, #e8f5e9 60%, #f1f8e9 100%);
+        color: #1a1a1a;
+        line-height: 1.6;
+        font-weight: 400;
+        min-height: 100vh;
+        position: relative;
+    }
+    
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 20%, rgba(46, 125, 50, 0.12) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 179, 0, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 40% 60%, rgba(66, 165, 245, 0.06) 0%, transparent 50%),
+            radial-gradient(circle at 70% 30%, rgba(104, 159, 56, 0.04) 0%, transparent 40%);
+        pointer-events: none;
+        z-index: -1;
+        animation: backgroundPulse 20s ease-in-out infinite;
+    }
+    
+    @keyframes backgroundPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    /* Premium Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, rgba(46, 125, 50, 0.9) 0%, rgba(76, 175, 80, 0.8) 50%, rgba(104, 159, 56, 0.9) 100%),
+                    url('{% static "images/agricole.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        padding: var(--spacing-4xl) 0;
+        color: white;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 30% 40%, rgba(255, 179, 0, 0.2) 0%, transparent 50%),
+            radial-gradient(circle at 70% 60%, rgba(66, 165, 245, 0.15) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: var(--spacing-md);
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        animation: fadeInUp 1s ease-out;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+        font-weight: 500;
+        margin-bottom: var(--spacing-xl);
+        opacity: 0.95;
+        animation: fadeInUp 1s ease-out 0.2s both;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Professional Equipment Cards */
+    .equipment-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: var(--spacing-xl);
+        padding: var(--spacing-2xl) var(--spacing-xl);
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .equipment-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        border: 1px solid rgba(46, 125, 50, 0.1);
+    }
+    
+    .equipment-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--primary-green);
+    }
+    
+    .equipment-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        background: var(--gradient-earth);
+    }
+    
+    .equipment-badge {
+        position: absolute;
+        top: var(--spacing-md);
+        right: var(--spacing-md);
+        background: var(--gradient-accent);
+        color: white;
+        padding: var(--spacing-xs) var(--spacing-md);
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .equipment-content {
+        padding: var(--spacing-xl);
+    }
+    
+    .equipment-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-green);
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .equipment-description {
+        color: #6b7280;
+        line-height: 1.7;
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .equipment-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .feature-tag {
+        background: var(--gradient-secondary);
+        color: white;
+        padding: var(--spacing-xs) var(--spacing-md);
+        border-radius: var(--radius-full);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .equipment-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: var(--spacing-lg);
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .price-display {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--primary-green);
+    }
+    
+    .price-unit {
+        font-size: 1rem;
+        color: #6b7280;
+        font-weight: 400;
+    }
+    
+    .availability {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .available {
+        color: var(--secondary-green);
+    }
+    
+    .unavailable {
+        color: #ef4444;
+    }
+    
+    /* Professional Booking Section */
+    .booking-section {
+        background: var(--gradient-primary);
+        padding: var(--spacing-4xl) 0;
+        color: white;
+    }
+    
+    .booking-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 var(--spacing-xl);
+    }
+    
+    .booking-form {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-2xl);
+        padding: var(--spacing-3xl);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .form-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: var(--spacing-2xl);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-xl);
+        margin-bottom: var(--spacing-2xl);
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        margin-bottom: var(--spacing-sm);
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .form-control {
+        padding: var(--spacing-md) var(--spacing-lg);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: white;
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+    
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    /* Professional Buttons */
+    .btn-primary-custom {
+        background: var(--gradient-accent);
+        color: white;
+        border: none;
+        padding: var(--spacing-md) var(--spacing-2xl);
+        border-radius: var(--radius-lg);
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-lg);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-xl);
+        background: var(--gradient-sun);
+    }
+    
+    .btn-secondary-custom {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+        padding: var(--spacing-md) var(--spacing-2xl);
+        border-radius: var(--radius-lg);
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-secondary-custom:hover {
+        background: white;
+        color: var(--primary-green);
+        transform: translateY(-2px);
+    }
+    
+    /* Professional Features Section */
+    .features-section {
+        padding: var(--spacing-4xl) 0;
+        background: white;
+    }
+    
+    .features-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 var(--spacing-xl);
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-2xl);
+    }
+    
+    .feature-card {
+        text-align: center;
+        padding: var(--spacing-2xl);
+        border-radius: var(--radius-xl);
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto var(--spacing-lg);
+        background: var(--gradient-primary);
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        box-shadow: var(--shadow-green);
+    }
+    
+    .feature-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-green);
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .feature-description {
+        color: #6b7280;
+        line-height: 1.6;
+    }
+    
+    /* Professional Stats Section */
+    .stats-section {
+        background: var(--gradient-forest);
+        padding: var(--spacing-3xl) 0;
+        color: white;
+    }
+    
+    .stats-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 var(--spacing-xl);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-xl);
+    }
+    
+    .stat-card {
+        text-align: center;
+        padding: var(--spacing-xl);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-xl);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: var(--spacing-sm);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .stat-label {
+        font-size: 1.1rem;
+        font-weight: 500;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .equipment-grid {
+            grid-template-columns: 1fr;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .booking-form {
+            padding: var(--spacing-xl);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Premium Hero Section -->
+<section class="hero-section">
+    <div class="hero-content" data-aos="fade-up">
+        <h1 class="hero-title">Location de Matériel Agricole</h1>
+        <p class="hero-subtitle">Équipements professionnels pour une agriculture moderne et productive</p>
+    </div>
+</section>
+
+<!-- Equipment Showcase -->
+<section class="py-5">
+    <div class="equipment-grid">
+        {% for materiel in materiels %}
+        <div class="equipment-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }} * 100">
+            {% if materiel.statut == 'disponible' %}
+            <div class="equipment-badge">Disponible</div>
+            {% else %}
+            <div class="equipment-badge" style="background: #ef4444;">Indisponible</div>
+            {% endif %}
+            
+            {% if materiel.photo %}
+            <img src="{{ materiel.photo.url }}" alt="{{ materiel.nom }}" class="equipment-image">
+            {% else %}
+            <div class="equipment-image d-flex align-items-center justify-content-center">
+                <i class="fas fa-tractor fa-3x text-white"></i>
+            </div>
+            {% endif %}
+            
+            <div class="equipment-content">
+                <h3 class="equipment-title">{{ materiel.nom }}</h3>
+                <p class="equipment-description">{{ materiel.description }}</p>
+                
+                <div class="equipment-features">
+                    {% if materiel.type_materiel %}
+                    <span class="feature-tag">{{ materiel.get_type_materiel_display }}</span>
+                    {% endif %}
+                    {% if materiel.categorie %}
+                    <span class="feature-tag">{{ materiel.categorie }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="equipment-footer">
+                <div>
+                    <div class="price-display">
+                        {{ materiel.prix_location_jour }} 
+                        <span class="price-unit">FCFA/jour</span>
+                    </div>
+                    <div class="availability">
+                        {% if materiel.statut == 'disponible' %}
+                        <i class="fas fa-check-circle available"></i>
+                        <span class="available">En stock</span>
+                        {% else %}
+                        <i class="fas fa-times-circle unavailable"></i>
+                        <span class="unavailable">Indisponible</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Professional Booking Section -->
+<section class="booking-section">
+    <div class="booking-container">
+        <div class="booking-form" data-aos="fade-up">
+            <h2 class="form-title">Réserver votre Matériel</h2>
+            
+            <form method="POST" action="{% url 'create_reservation_materiel' %}">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Matériel souhaité</label>
+                        <select name="materiel" class="form-control" required>
+                            <option value="">Sélectionner un matériel...</option>
+                            {% for materiel in materiels %}
+                            {% if materiel.statut == 'disponible' %}
+                            <option value="{{ materiel.id }}">{{ materiel.nom }} - {{ materiel.prix_location_jour }} FCFA/jour</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Date de début</label>
+                        <input type="date" name="date_debut" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Date de fin</label>
+                        <input type="date" name="date_fin" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Message (optionnel)</label>
+                        <textarea name="message" class="form-control" rows="3" placeholder="Précisez vos besoins..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button type="submit" class="btn-primary-custom">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        Confirmer la réservation
+                    </button>
+                    <a href="{% url 'client_home' %}" class="btn-secondary-custom ms-3">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Professional Features Section -->
+<section class="features-section">
+    <div class="features-container">
+        <h2 class="text-center mb-5" data-aos="fade-up">Pourquoi choisir FAMA ?</h2>
+        
+        <div class="features-grid">
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="feature-title">Équipements Garantis</h3>
+                <p class="feature-description">Tout notre matériel est vérifié et entretenu par des professionnels qualifiés.</p>
+            </div>
+            
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3 class="feature-title">Disponibilité 24/7</h3>
+                <p class="feature-description">Support technique disponible à tout moment pour répondre à vos besoins urgents.</p>
+            </div>
+            
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <h3 class="feature-title">Tarifs Compétitifs</h3>
+                <p class="feature-description">Meilleurs prix du marché avec une transparence totale sur les coûts.</p>
+            </div>
+            
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <h3 class="feature-title">Livraison Rapide</h3>
+                <p class="feature-description">Livraison gratuite sur votre exploitation dans les plus brefs délais.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Professional Stats Section -->
+<section class="stats-section">
+    <div class="stats-container">
+        <div class="stats-grid">
+            <div class="stat-card" data-aos="zoom-in" data-aos-delay="100">
+                <div class="stat-number">150+</div>
+                <div class="stat-label">Matériels Disponibles</div>
+            </div>
+            
+            <div class="stat-card" data-aos="zoom-in" data-aos-delay="200">
+                <div class="stat-number">500+</div>
+                <div class="stat-label">Clients Satisfaits</div>
+            </div>
+            
+            <div class="stat-card" data-aos="zoom-in" data-aos-delay="300">
+                <div class="stat-number">98%</div>
+                <div class="stat-label">Satisfaction Client</div>
+            </div>
+            
+            <div class="stat-card" data-aos="zoom-in" data-aos-delay="400">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Support Technique</div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 1000,
+        once: true,
+        offset: 100
+    });
+    
+    // Set minimum dates
+    const today = new Date().toISOString().split('T')[0];
+    document.querySelector('input[name="date_debut"]').setAttribute('min', today);
+    document.querySelector('input[name="date_fin"]').setAttribute('min', today);
+    
+    // Calculate total price when dates change
+    const dateDebutInput = document.querySelector('input[name="date_debut"]');
+    const dateFinInput = document.querySelector('input[name="date_fin"]');
+    const materielSelect = document.querySelector('select[name="materiel"]');
+    
+    function updateTotalPrice() {
+        const materielId = materielSelect.value;
+        const dateDebut = new Date(dateDebutInput.value);
+        const dateFin = new Date(dateFinInput.value);
+        
+        if (materielId && dateDebut && dateFin && dateFin > dateDebut) {
+            const days = Math.ceil((dateFin - dateDebut) / (1000 * 60 * 60 * 24));
+            const materiel = {{ materiels|safe }};
+            const selectedMateriel = materiel.find(m => m.id == materielId);
+            
+            if (selectedMateriel) {
+                const total = days * selectedMateriel.prix_location_jour;
+                // Display total somewhere if needed
+            }
+        }
+    }
+    
+    dateDebutInput.addEventListener('change', updateTotalPrice);
+    dateFinInput.addEventListener('change', updateTotalPrice);
+    materielSelect.addEventListener('change', updateTotalPrice);
+    
+    console.log('🚜 Location Matériel Professionnel 2025 - Chargé avec succès!');
+</script>
+{% endblock %}
